@@ -79,7 +79,7 @@ filter, mark, edit, sort, tag, save, and operate on bookmarks.
 :CUSTOM_ID: quick-start
 :END:
 
-After loading Bookmark+, these commands cover the basic workflow:
+These commands cover the basic workflow:
 
 | Command                                  | Key                         | What it does                                      |
 |------------------------------------------+-----------------------------+---------------------------------------------------|
@@ -133,37 +133,50 @@ Suggested first session:
 - [[#compatibility][Compatibility with vanilla =bookmark.el=]]
 - [[#documentation-help][Built-in documentation and help]]
 - [[#commands-reference][Command reference]]
-- [[#key-binding-tables][Key-binding tables]]
-- [[#library-layout][Library layout]]
 
 * Installation
 :PROPERTIES:
 :CUSTOM_ID: installation
 :END:
 
-** From source
+** From a local checkout
 
-1. Place all =bookmark+*.el= files in a directory on your =load-path=.
-2. Byte-compile them after loading the source files in this order
-   (Bookmark+'s macros must be present before any user of them is
-   compiled):
-   #+begin_src emacs-lisp
-   (load-file "bookmark+-mac.el")     ; first, so macros are defined
-   (byte-compile-file "bookmark+-mac.el")
-   (byte-compile-file "bookmark+-1.el")
-   (byte-compile-file "bookmark+-bmu.el")
-   (byte-compile-file "bookmark+-lit.el")  ; optional
-   (byte-compile-file "bookmark+-key.el")
-   (byte-compile-file "bookmark+.el")
-   #+end_src
-3. Add this to your init file:
-   #+begin_src emacs-lisp
-   (require 'bookmark+)
-   #+end_src
+Clone or copy the Bookmark+ files into a local directory, then load
+them with =use-package=:
 
-That single =require= loads every required Bookmark+ library.  If
-you do not want highlighting, simply do not put =bookmark+-lit.el=
-on your =load-path=.
+#+begin_src emacs-lisp
+(use-package bookmark+
+  :load-path "/path/to/bookmark-plusplus"
+  :demand t)
+#+end_src
+
+Replace ="/path/to/bookmark-plusplus"= with the directory that
+contains =bookmark+.el= and the other =bookmark+*.el= files.  The
+single =use-package= form loads every required Bookmark+ library.
+
+If you do not want highlighting, omit =bookmark+-lit.el= from that
+directory or keep it outside the =:load-path=.
+
+** Optional byte-compilation
+
+Byte-compilation is not required.  Emacs can load the source files
+directly, and Emacs builds with native compilation can compile Lisp
+code separately.  Byte-compiling Bookmark+ is still useful if you
+want faster startup or byte-compiler diagnostics.
+
+If you byte-compile the files manually, load and compile them in
+this order.  Bookmark+'s macros must be present before any library
+that uses them is compiled:
+
+#+begin_src emacs-lisp
+(load-file "bookmark+-mac.el")     ; first, so macros are defined
+(byte-compile-file "bookmark+-mac.el")
+(byte-compile-file "bookmark+-1.el")
+(byte-compile-file "bookmark+-bmu.el")
+(byte-compile-file "bookmark+-lit.el")  ; optional
+(byte-compile-file "bookmark+-key.el")
+(byte-compile-file "bookmark+.el")
+#+end_src
 
 ** Optional dependencies
 
@@ -188,15 +201,6 @@ loads, to initialize =bmkp-last-as-first-bookmark-file= and
 in your init file, *set it before loading Bookmark+*.  In general,
 set =bookmark-default-file= once, then use
 =bmkp-switch-bookmark-file-create= (=C-x x L=) to switch as needed.
-
-** Caveats when migrating from old Bookmark+
-
-In 2010 the package's prefix changed from =bookmarkp-= to =bmkp-=.
-If your init file, bookmark file, =*Bookmark List*= state file, or
-=*Bookmark List*= commands file pre-date that change, replace all
-=bookmarkp-= occurrences with =bmkp-= before loading Bookmark+.  Do
-this manually under =emacs -Q= or with auto-save turned off; see
-the warning at the top of =bookmark+-doc.el=.
 
 ** Back up your bookmark file
 
@@ -1637,7 +1641,9 @@ Marker faces: =bmkp->-mark= (=>=), =bmkp-D-mark= (=D=),
 
 Bookmark+ is compatible with vanilla Emacs 20--26+.  Bookmarks
 created by either implementation can be used by the other, with
-one important caveat:
+one important caveat: if you need to save the same bookmark file
+from vanilla Emacs, set =bmkp-propertize-bookmark-names-flag= to
+=nil= before saving with Bookmark+.
 
 =bmkp-propertize-bookmark-names-flag= (non-nil by default on Emacs
 21+) makes Bookmark+ store bookmark records as /circular/ Lisp
@@ -1646,28 +1652,9 @@ That layout is readable by vanilla Emacs.  But if vanilla Emacs
 then /saves/ the file, the resulting file is unreadable --- vanilla
 does not bind =print-circle= when writing.
 
-Rule of thumb:
-
-- If you mainly use Bookmark+ and only occasionally jump (never
-  save) using vanilla Emacs, leave the flag at its default.  You
-  get the niceties of multiple bookmarks with the same name (vital
-  for autofiles).
-- If you regularly go back and forth, /set the flag to =nil=/.
-  You lose same-name bookmarks but the file stays interoperable.
-
-To convert an existing propertized file for use with vanilla
-Emacs:
-
-#+begin_example
-M-x set-variable RET bmkp-propertize-bookmark-names-flag RET nil RET
-C-x r l         ; or C-x x e --- open *Bookmark List*
-g               ; refresh
-S               ; save
-M-x bmkp-save-menu-list-state RET
-#+end_example
-
-Propertized names are also saved in any /full-snapshot/
-state-restoring command (from =C-c C-S-c=).
+If you use only Bookmark+, leave the option at its default.  It
+enables conveniences such as multiple bookmarks with the same name,
+which are especially useful for autofiles.
 
 * Built-in documentation and help
 :PROPERTIES:
@@ -1693,417 +1680,9 @@ state-restoring command (from =C-c C-S-c=).
 :CUSTOM_ID: commands-reference
 :END:
 
-This is a curated list of the user-level commands you are most
-likely to want.  Internal / less common commands are omitted; you
-can still discover them with =M-x bmkp-= =TAB=.
-
-** Creating bookmarks
-
-| Command                                    | Default key  | What it does                                |
-|--------------------------------------------+--------------+---------------------------------------------|
-| =bmkp-bookmark-set-confirm-overwrite=        | =C-x r m=, =C-x x m=, =C-x x c m= | Set / update a bookmark.  Buffer-local default. |
-| =bookmark-set=                              | =C-x x c M=    | Vanilla =bookmark-set=.                       |
-| =bmkp-toggle-autonamed-bookmark-set/delete=  | =C-x x RET=, =C-x x c RET= | Toggle autonamed bookmark here.             |
-| =bmkp-autofile-set= (=bmkp-bookmark-a-file=)  | =C-x x c a=    | Autofile bookmark for a file.                |
-| =bmkp-file-target-set=                       | =C-x x c f=    | File bookmark (file at point).                |
-| =bmkp-url-target-set=                        | =C-x x c u=    | URL bookmark.                                 |
-| =bmkp-set-desktop-bookmark=                  | =C-x x K=, =C-x x c K=, =C-x r K= | Desktop bookmark.                           |
-| =bmkp-set-sequence-bookmark=                 | =C-x x c s=    | Sequence (composite) bookmark.                |
-| =bmkp-make-function-bookmark=                | =C-x x c F=    | Function (or last-kbd-macro) bookmark.        |
-| =bmkp-wrap-bookmark-with-last-kbd-macro=     | =C-x x c C-k=  | Sequence: bookmark + last kbd macro.          |
-| =bmkp-set-bookmark-file-bookmark=            | =C-x x y=, =C-x x c y= | Bookmark-file bookmark.                     |
-| =bmkp-set-snippet-bookmark=                  | =C-x x M-w=, =C-x x c M-w= | Snippet bookmark from active region.        |
-| =bmkp-set-autonamed-bookmark=                | --           | Plain autonamed bookmark at point.            |
-| =bmkp-set-autonamed-bookmark-at-line=        | --           | Autonamed bookmark at start of line.          |
-| =bmkp-set-autonamed-regexp-buffer=           | --           | One per regexp match in buffer.               |
-| =bmkp-set-autonamed-regexp-region=           | --           | One per regexp match in region.               |
-| =bmkp-set-variable-list-bookmark=            | --           | Bookmark a set of variables and values.       |
-| =bmkp-set-izones-bookmark=                   | --           | Bookmark =zz-izones= (with =zones.el=).        |
-| =bmkp-set-kmacro-bookmark=                   | --           | Bookmark a named keyboard macro.              |
-| =bmkp-set-kmacro-list-bookmark=              | --           | Bookmark the entire keyboard-macro ring.      |
-| =bmkp-set-automatic-bookmark=                | --           | Put on a hook for automatic bookmarking.      |
-| =bmkp-compilation-target-set=                | =C-c C-b= (compilation, grep) | Bookmark the hit at point.                    |
-| =bmkp-compilation-target-set-all=            | =C-c C-M-b=    | Bookmark every hit.                           |
-| =bmkp-occur-target-set=                      | =C-c C-b= (Occur) | Bookmark the hit at point.                    |
-| =bmkp-occur-target-set-all=                  | =C-c C-M-b=    | Bookmark every hit.                           |
-| =bmkp-occur-create-autonamed-bookmarks=      | =C-c C-M-B=    | Autonamed bookmark per Occur hit.             |
-| =bmkp-clone-bookmark=                        | =C-x x 2=      | Duplicate a bookmark.                         |
-| =bmkp-empty-file=                            | =C-x x 0=      | Create / empty a bookmark file.               |
-| =bookmark-write=                             | =C-x x w=      | Write current bookmarks to a chosen file.     |
-
-** Jumping
-
-| Command                              | Default key | Notes                                  |
-|--------------------------------------+-------------+----------------------------------------|
-| =bookmark-jump=                        | =C-x j j=, =C-x r b= | All bookmarks; same window.            |
-| =bookmark-jump-other-window=           | =C-x 4 j j=, =C-x x o/q= | Other window.                          |
-| =bookmark-jump-other-frame=            | =C-x j 5=, =C-x 5 B=, =C-x x 5= | Other frame.                           |
-| =bmkp-jump-to-type=                    | =C-x j :=    | Pick type, then bookmark.              |
-| =bmkp-jump-to-type-other-window=       | =C-x 4 j :=  |                                        |
-| =bmkp-jump-to-list= (jump to a bookmark-list bookmark) | =C-x j C-j=, =C-x x C-j= | |
-| =bmkp-jump-in-navlist=                 | =C-x j N=    | Jump within the navigation list.       |
-| =bmkp-jump-in-navlist-other-window=    | =C-x 4 j N=  |                                        |
-| =bmkp-this-buffer-jump=                | =C-x j , ,=  | Bookmark in this buffer.               |
-| =bmkp-autonamed-this-buffer-jump=      | =C-x j , #=  | Autonamed bookmark in this buffer.     |
-| =bmkp-autonamed-jump=                  | =C-x j #=    | Any autonamed bookmark.                |
-| =bmkp-specific-buffers-jump=           | =C-x j = b=  | Bookmark for specified buffers.        |
-| =bmkp-specific-files-jump=             | =C-x j = f=  | Bookmark for specified files.          |
-| =bmkp-autofile-jump=                   | =C-x j a=    | Autofile bookmark.                     |
-| =bmkp-non-file-jump=                   | =C-x j b=    | Non-file (buffer) bookmark.            |
-| =bmkp-bookmark-list-jump=              | =C-x j B=    | Bookmark-list bookmark.                |
-| =bmkp-bookmark-file-jump=              | =C-x j y=    | Bookmark-file bookmark.                |
-| =bmkp-dired-jump=                      | =C-x j d=    | Dired bookmark.                        |
-| =bmkp-dired-this-dir-jump=             | =C-x j . d=, =C-j= in Dired | Dired bookmark for current dir.       |
-| =bmkp-file-jump=                       | =C-x j f=    | File or directory bookmark.            |
-| =bmkp-local-file-jump=                 | =C-x j l=    | Local file bookmark.                   |
-| =bmkp-remote-file-jump=                | =C-x j n=    | Remote (network) file bookmark.        |
-| =bmkp-file-this-dir-jump=              | =C-x j . f=  | File bookmark in =default-directory=.   |
-| =bmkp-find-file=                       | =C-x j C-f=  | =read-file-name= → handler.              |
-| =bmkp-find-file-other-window=          | =C-x 4 j C-f= |                                        |
-| =bmkp-info-jump=                       | =C-x j i=    | Info bookmark.                         |
-| =bmkp-man-jump=                        | =C-x j m=    | =man= / =woman= bookmark.                |
-| =bmkp-gnus-jump=                       | =C-x j g=    | Gnus article.                          |
-| =bmkp-w3m-jump=                        | =C-x j w=    | W3M bookmark.                          |
-| =bmkp-eww-jump=                        | =C-x j e=    | EWW bookmark (Emacs 25+).              |
-| =bmkp-image-jump=                      | =C-x j M-i=  | Image bookmark.                        |
-| =bmkp-url-jump=                        | =C-x j u=    | URL bookmark.                          |
-| =bmkp-region-jump=                     | =C-x j r=    | Region bookmark; activates region.     |
-| =bmkp-region-jump-narrow-indirect-other-window= | =C-x 4 j R= | Narrow into indirect clone (=narrow-indirect.el=). |
-| =bmkp-desktop-jump=                    | =C-x j K=    | Desktop bookmark.                      |
-| =bmkp-variable-list-jump=              | =C-x j v=    | Variable-list bookmark.                |
-| =bmkp-lighted-jump=                    | =C-x j h=    | Highlighted bookmark.                  |
-| =bmkp-temporary-jump=                  | =C-x j x=    | Temporary bookmark.                    |
-| =bmkp-snippet-to-kill-ring=            | =C-x j M-w=, =C-x 4 j M-w= | Yank a snippet bookmark.               |
-| =bmkp-{all,some}-tags-{regexp-}jump=    | =C-x j t ...= | Tag-based jump (see [[#tags][Tags]]).             |
-| =bmkp-find-file-{all,some}-tags-{regexp-}= | =C-x j t C-f ...= | Same, =find-file=-style.            |
-| =bmkp-next-bookmark-repeat= / =bmkp-previous-bookmark-repeat= | =C-x x f/b= ... | Cycle navlist.            |
-| =bmkp-next-bookmark-this-file/buffer-repeat= | =C-x x n/p= ... | Cycle this file/buffer.               |
-| =bmkp-next-lighted-this-buffer-repeat= | =C-x x C-down= | Cycle highlighted bookmarks here.       |
-
-** Tags
-
-(See the table in [[#tags][Tags]] for the most-used commands.)
-Additional: =bmkp-copy-tags=, =bmkp-paste-add-tags=,
-=bmkp-paste-replace-tags=, =bmkp-set-tag-value-for-bookmarks=,
-=bmkp-tag-a-file=, =bmkp-untag-a-file=, =bmkp-autofile-add-tags=,
-=bmkp-autofile-remove-tags=.
-
-** =*Bookmark List*= mode (in addition to the inline tables above)
-
-| Command                                          | Key            | Meaning                                  |
-|--------------------------------------------------+----------------+------------------------------------------|
-| =bookmark-bmenu-list=                              | =C-x x e=, =C-x r l= | Open =*Bookmark List*=.                   |
-| =bmkp-this-file/buffer-bmenu-list=                 | =C-x x ,=        | Open it filtered to this file/buffer.     |
-| =bmkp-navlist-bmenu-list=                          | =C-x x N=        | Open it for the navigation list.          |
-| =bmkp-bmenu-w32-open=                              | =M-RET=          | Open with MS-Windows file association.    |
-| =bmkp-bmenu-w32-open-with-mouse=                   | =M-mouse-2=      |                                          |
-| =bmkp-bmenu-w32-jump-to-marked=                    | =M-o=, =v=        | Open all marked via MS-Windows.           |
-| =bmkp-bmenu-jump-to-marked=                        | =j >=            | Jump to each marked bookmark, in other windows. |
-| =bookmark-bmenu-relocate=                          | =M-r=            | Vanilla relocate.                         |
-| =bmkp-bmenu-relocate-marked=                       | =M-R=            | Relocate all marked.                      |
-| =bmkp-bmenu-make-sequence-from-marked=             | --             | Sequence bookmark from marked.            |
-| =bmkp-bmenu-store-org-link=                        | (mouse-3 menu) | Store an Org link to this bookmark.       |
-
-** Highlighting
-
-(See [[#highlighting][Highlighting]] tables; standalone notable commands:)
-=bmkp-set-lighting-for-bookmark=,
-=bmkp-set-lighting-for-this-buffer=, =bmkp-light-this-buffer=,
-=bmkp-unlight-this-buffer=, =bmkp-light-autonamed-this-buffer=,
-=bmkp-unlight-autonamed-this-buffer=, =bmkp-light-non-autonamed-this-buffer=,
-=bmkp-unlight-non-autonamed-this-buffer=, =bmkp-light-bookmark=,
-=bmkp-unlight-bookmark=.
-
-** Help / describe
-
-| Command                              | Default key                                  |
-|--------------------------------------+----------------------------------------------|
-| =bmkp-describe-bookmark=               | =C-x h M=                                     |
-| =bmkp-describe-bookmark-lighted-here=  | =C-x x ?=                                      |
-| =bmkp-bmenu-mode-status-help=           | =?=, =C-h m= (in =*Bookmark List*=)            |
-| =bmkp-bmenu-describe-this-bookmark=    | =C-h RET=, =C-h C-RET=                          |
-| =bmkp-bmenu-describe-marked=           | =C-h >=                                         |
-| =bmkp-bmenu-describe-this+move-{down,up}= | =C-down=, =C-up=                              |
-| =bmkp-list-defuns-in-commands-file=    | (=Bookmarks= menu)                            |
-| =bmkp-send-bug-report=                  | =Bookmark+= menu → /Send Bug Report/           |
-
-* Key-binding tables
-:PROPERTIES:
-:CUSTOM_ID: key-binding-tables
-:END:
-
-** Global keys
-
-#+begin_example
-Setting / general bookmark commands  (prefix `bookmark-map' = C-x x)
-  C-x x m       Set or update bookmark (=bmkp-bookmark-set-confirm-overwrite=)
-  C-x x e       List bookmarks (=bookmark-bmenu-list=)
-  C-x x r       Edit name and location of bookmark
-  C-x x E       Edit full bookmark record (Lisp)
-  C-x x ,       List bookmarks for this file/buffer
-  C-x x :       Set navigation list to bookmarks of type
-  C-x x B       Set navigation list from bookmark-list bookmark
-  C-x x N       Show =*Bookmark List*= for the navigation list
-  C-x x L       Switch bookmark file (replace)
-  C-x x l       (vanilla) Add bookmarks from a file
-  C-x x C-l     Switch to bookmark file for this file/buffer
-  C-x x 0       Empty (or create empty) bookmark file
-  C-x x 2       Clone bookmark
-  C-x x 5       Jump to bookmark in other frame
-  C-x x y       Set a bookmark-file bookmark
-  C-x x I       Insert bookmark location
-  C-x x K       Set a desktop bookmark
-  C-x x M-w     Set a snippet bookmark from region
-  C-x x s       (vanilla) Save bookmarks
-  C-x x w       (vanilla) Save bookmarks to a chosen file
-  C-x x C-s     Save bookmarks for this file/buffer
-  C-x x C-j     Jump to a bookmark-list bookmark
-  C-x x delete  Delete bookmark(s)
-  C-x x x       Toggle auto-temporary on set
-  C-x x RET     Toggle autonamed bookmark here
-  C-x x ?       Describe highlighted bookmark here
-
-Setting commands  (prefix C-x x c)
-  C-x x c m     Set or update bookmark
-  C-x x c M     Vanilla bookmark-set
-  C-x x c a     Set autofile bookmark
-  C-x x c f     Set file bookmark
-  C-x x c u     Set URL bookmark
-  C-x x c F     Make function bookmark
-  C-x x c s     Set sequence bookmark
-  C-x x c y     Set bookmark-file bookmark
-  C-x x c K     Set desktop bookmark
-  C-x x c C-k   Wrap bookmark with last kbd macro
-  C-x x c M-w   Set snippet bookmark
-  C-x x c RET   Toggle autonamed bookmark here
-
-Annotation commands  (prefix C-x x a)
-  C-x x a a     Annotate a bookmark
-  C-x x a b     Annotate a bookmark for this file/buffer
-  C-x x a B     Annotate all bookmarks for this file/buffer
-  C-x x a e     Edit annotation
-  C-x x a s     Show annotation
-  C-x x a S     Show all annotations
-
-Tag commands  (prefix C-x x t)
-  C-x x t + b   Add tags to bookmark
-  C-x x t - b   Remove tags from bookmark
-  C-x x t + a   Tag a file (autofile)
-  C-x x t - a   Untag a file (autofile)
-  C-x x t 0     Remove all tags from bookmark
-  C-x x t c     Copy tags
-  C-x x t M-w   Copy tags
-  C-x x t p     Paste tags (add)
-  C-x x t C-y   Paste tags (add)
-  C-x x t q     Paste tags (replace)
-  C-x x t r     Rename a tag everywhere
-  C-x x t d     Remove a tag from all bookmarks
-  C-x x t e     Edit a bookmark's tags
-  C-x x t l     List all tags
-  C-x x t v     Set a tag's value
-  C-x x t V     Set a tag's value across the navlist
-
-Jump commands  (prefix C-x j, same window; C-x 4 j, other window)
-  C-x j j       Bookmark (any)
-  C-x j 5       Bookmark in other frame
-  C-x j :       Bookmark of a chosen type
-  C-x j C-j     Bookmark-list bookmark
-  C-x j C-f     find-file-style jump (handler-aware)
-  C-x j a       Autofile bookmark
-  C-x j b       Non-file (buffer) bookmark
-  C-x j d       Dired bookmark
-  C-x j f       File bookmark
-  C-x j l       Local file bookmark
-  C-x j n       Remote (network) file bookmark
-  C-x j i       Info bookmark
-  C-x j g       Gnus bookmark
-  C-x j m       man / woman bookmark
-  C-x j w       W3M bookmark
-  C-x j e       EWW bookmark
-  C-x j M-i     Image bookmark
-  C-x j r       Region bookmark
-  C-x j u       URL bookmark
-  C-x j v       Variable-list bookmark
-  C-x j K       Desktop bookmark
-  C-x j y       Bookmark-file bookmark
-  C-x j B       Bookmark-list bookmark
-  C-x j N       Bookmark in navlist
-  C-x j h       Highlighted bookmark
-  C-x j x       Temporary bookmark
-  C-x j M-w     Snippet bookmark (copies to kill ring)
-  C-x j # / , # Autonamed bookmark / autonamed in this buffer
-  C-x j , ,     Bookmark for this buffer
-  C-x j = f /b  Bookmark for a specific file / buffer
-  C-x j . f /d  File / Dired bookmark for current directory
-  C-x j t * / + / % * / % +              tag combinations
-  C-x j t f * / + / % * / % +            file
-  C-x j t . * / + / % * / % +            file-this-dir
-  C-x j t a * / + / % * / % +            autofile
-  C-x j t C-f * / + / % * / % +          find-file style
-
-Navlist cycling  (prefix C-x x)
-  C-x x f / C-f / right        bmkp-next-bookmark-repeat
-  C-x x b / C-b / left         bmkp-previous-bookmark-repeat
-  C-x x next                    bmkp-next-bookmark-w32-repeat (PageDown)
-  C-x x prior                   bmkp-previous-bookmark-w32-repeat (PageUp)
-
-This-file/buffer cycling  (prefix C-x x)
-  C-x x n / C-n / down          bmkp-next-bookmark-this-file/buffer-repeat
-  C-x x p / C-p / up            bmkp-previous-bookmark-this-file/buffer-repeat
-  C-x x mouse-wheel-up/down    same
-
-Highlight cycling  (prefix C-x x)
-  C-x x C-down                  bmkp-next-lighted-this-buffer-repeat
-  C-x x C-up                    bmkp-previous-lighted-this-buffer-repeat
-
-Highlight commands  (prefix C-x x)
-  C-x x h       Highlight a bookmark in this buffer
-  C-x x H       Highlight bookmarks (buffer / all / navlist via prefix)
-  C-x x u       Unhighlight a bookmark in this buffer
-  C-x x U       Unhighlight bookmarks
-  C-x x C-u     Unhighlight bookmark at point or on line
-  C-x x =       List bookmarks lighted at point
-
-Help
-  C-x h M       bmkp-describe-bookmark
-#+end_example
-
-** =*Bookmark List*= mode keys
-
-#+begin_example
-Marking
-  m   bookmark-bmenu-mark                       % m  bmkp-bmenu-regexp-mark
-  u   bookmark-bmenu-unmark                     M-m  bmkp-bmenu-mark-all
-  t   bmkp-bmenu-toggle-marks                   U / M-DEL  bmkp-bmenu-unmark-all
-  d / k  bmkp-bmenu-flag-for-deletion           C-d   bmkp-bmenu-flag-for-deletion-backwards
-  D   bmkp-bmenu-delete-marked
-
-Filtering / showing
-  .   bmkp-bmenu-show-all                       >   show only marked
-  <   show only unmarked                        M-t  toggle showing file names
-  P A / B / F / T  incremental-filter by annotation / name / file / tag
-  F S / F M       file bookmarks (show / mark)  I S / I M  Info
-  B S / B M       non-file                      Y S / Y M  bookmark-file
-  R S / R M       region                        Z S / Z M  bookmark-list
-  G S / G M       Gnus                          K S / K M  desktop
-  A S / A M       autofile                      Q S / Q M  function
-  M S / M M       man                           N S / N M  non-invokable
-  V S / V M       variable-list                 O S / O M  orphaned local file
-  W3 S / W3 M     W3M                           WE S / WE M  EWW (Emacs 25+)
-  M-d M-s / M-d M-m  Dired                      M-I M-S / M-I M-M  image
-  X S / X M       temporary                     # S / # M  autonamed
-  H S / H M       highlighted (with bookmark+-lit)
-  T S / T U       tagged / untagged             i S / i M  Icicles search-hits
-  w S / w M       snippet
-  - >   omit/un-omit marked                     - S   show only omitted
-  - U   un-omit all
-  = f S / = b S / = f M / = b M  specific file / buffer
-
-Sorting
-  s s     cycle sort orders                     s r     reverse direction
-  s C-r   reverse a composite multi-sort
-  s >     marked first                          s *     modified first
-  s 0     by creation time                      s a     annotated first
-  s b     by last buffer/file access            s d     by last bookmark access
-  s D     flagged first                         s f n   by file name
-  s f k   by file kind                          s f s   by file size
-  s f d   by last local-file access             s f u   by last local-file update
-  s g     by Gnus thread                        s i     by Info node name
-  s I     by Info position                      s k     by bookmark type
-  s n     by bookmark name                      s t     tagged first
-  s u     by URL                                s v     by visit frequency
-  T s     define a sort command from tags
-
-Jump (and other-window)
-  RET / J     bookmark-bmenu-this-window (or in other window) / J → C-x j
-  j  → C-x 4 j (other window)                 j >   bmkp-bmenu-jump-to-marked
-  M-RET  / M-mouse-2 / M-o / v                 MS-Windows file-association open
-
-Edit / clone
-  r     edit name & location                   e     edit record (Lisp)
-  E     edit records of marked                 M-n   clone
-  T e   edit tags                              T 0   remove all tags
-
-Tags (T = prefix; > = on marked; m = mark; u = unmark; * = AND; + = OR; ~ = NOT)
-  T + / T -                add / remove tags
-  T c / T M-w              copy tags
-  T p / T C-y              paste tags (add)    T q   paste tags (replace)
-  T r   rename tag         T d   remove tag from all
-  T l   list all tags      T v   set tag value
-  T > + / -                add / remove tags on marked
-  T > p / q / C-y          paste add / replace / add  on marked
-  T > l   list union of tags of marked         T > v  set tag value on marked
-  T > e   edit records of marked               T > +  add tags on marked
-  T m * / + / % / ~ * / ~ +    mark by tag combination
-  T u * / + / % / ~ * / ~ +    unmark by tag combination
-
-Annotation
-  a a   show annotation        a e   edit annotation
-  a A   show all               a >   edit annotations for marked
-  M-down / M-up   show this annotation + move
-
-Highlighting (with bookmark+-lit.el)
-  H +     set highlight for this              H > +   for marked
-  H H     highlight this                       H > H   highlight marked
-  H U     unhighlight this                     H > U   unhighlight marked
-  H M     mark highlighted                     H S     show only highlighted
-
-Bookmark file
-  S     save                                   L     switch file
-  M-l   load all marked bookmark-file bookmarks
-  M-~   toggle saving the bookmark file        C-M-~  toggle saving display state
-  M-L   temporary-bookmarking mode
-  Y > + / - / 0   copy / move / new-file from marked
-
-Temporary
-  X M / X S       mark / show only temporary
-  M-X             toggle marked temporary/savable
-  C-M-X           toggle temporary for this
-
-Define commands
-  C-c C-c    define state-restoring command     C-c C-S-c (C-c C-C)  full snapshot
-  C-c C-j    define jump command from marked
-
-Search / replace marked targets
-  M-q                       query-replace
-  M-s a M-s                 regexp search
-  M-s a C-s / M-s a M-C-s   Isearch / regexp Isearch
-
-Describe
-  ? / C-h m   status & help                    C-h RET   describe this bookmark
-  C-h >       describe all marked              C-down / C-up  move + describe
-
-Mouse
-  mouse-3     popup menu for this bookmark
-  C-mouse-3   Bookmark+ menu
-
-Refresh / quit
-  g     refresh from in-memory list             C-u g  reload from bookmark file
-  q     quit (saves display state, optionally)
-#+end_example
-
-* Library layout
-:PROPERTIES:
-:CUSTOM_ID: library-layout
-:END:
-
-The package is composed of the following files.  Loading
-=bookmark+.el= pulls in everything required automatically.
-
-| File              | Lines | Purpose                                                              |
-|-------------------+-------+----------------------------------------------------------------------|
-| =bookmark+.el=     |   ~250 | Driver: =require= the other libraries.                                |
-| =bookmark+-mac.el= |   ~625 | Lisp macros (define type-specific commands, sort orders, etc.).       |
-| =bookmark+-1.el=   |  ~14k | Core: bookmark types, jump handlers, set commands, tag commands, ... |
-| =bookmark+-bmu.el= |   ~7k | The =*Bookmark List*= (bmenu) buffer: faces, sorting, marking, ...    |
-| =bookmark+-lit.el= |   ~1.6k | Optional: highlighting of bookmark locations in their buffers.       |
-| =bookmark+-key.el= |   ~1.5k | Key bindings and menu definitions.                                   |
-| =bookmark+-doc.el= |   ~4.4k | Comment-only file: the canonical detailed manual.                    |
-| =bookmark+-chg.el= |   ~3.9k | Comment-only file: the change log.                                   |
-
-=bookmark+-lit.el= is optional --- if it is not on your =load-path=,
-the highlighting feature is silently disabled but everything else
-still works.
+The command reference has moved to [[file:doc/reference.org][doc/reference.org]].
+It is kept separate from this README so the overview remains
+readable while command lookup stays available.
 
 * Notes
 :PROPERTIES:
