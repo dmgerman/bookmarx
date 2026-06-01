@@ -118,6 +118,9 @@
 
 (defvar bmkp-bmenu-buffer) ; In `bookmark+.el'
 (defvar grep-mode-map)
+(defvar compilation-mode-map)              ; In `compile.el'
+(defvar compilation-minor-mode-map)        ; In `compile.el'
+(defvar compilation-shell-minor-mode-map)  ; In `compile.el'
 
 
 ;; Prefix keys.

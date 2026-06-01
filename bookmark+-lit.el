@@ -260,6 +260,7 @@
 (defvar bmkp-nav-alist)                 ; In `bookmark+-1.el'.
 (defvar bmkp-this-file/buffer-cycle-sort-comparer) ; In `bookmark+-1.el'.
 (defvar fringe-bitmaps)                 ; Built-in for Emacs 22+.
+(defvar icicle-unpropertize-completion-result-flag) ; In `icicles-opt.el'.
 
  
 ;;(@* "Faces (Customizable)")

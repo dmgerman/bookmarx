@@ -1769,17 +1769,10 @@ different Emacs version from that of the current session."
   (bmkp-make-obsolete-variable 'bmkp-auto-idle-bookmark-mode-timer 'bmkp-automatic-bookmark-mode-timer
                                "2021-08-18"))
 
-(defvar bmkp-automatic-bookmark-mode-timer nil
+(defvar-local bmkp-automatic-bookmark-mode-timer nil
   "Timer for `bmkp-automatic-bookmark-mode'.
 This variable is buffer-local, which means that there is a separate
-timer for each buffer where automatic bookmarking is enabled.
-
-NOTE: For Emacs 20, the variable is not buffer-local, by default.  To
-make it so, do this:
-
-  (make-variable-buffer-local \\='bmkp-automatic-bookmark-mode-timer)")
-
-(unless (< emacs-major-version 21) (make-variable-buffer-local 'bmkp-automatic-bookmark-mode-timer))
+timer for each buffer where automatic bookmarking is enabled.")
 
 
 (defvar bmkp-autotemp-all-when-set-p nil "Non-nil means make any bookmark temporary whenever it is set.")
@@ -2905,11 +2898,9 @@ words are stripped out."
   "If bookmarks have not yet been loaded, load them.
 If `bmkp-last-as-first-bookmark-file' is non-nil, load it.
 Otherwise, load `bookmark-default-file'."
-  ;; If there is no file at `bookmark-default-file' but there is a file with the obsolete default
-  ;; name, then rename that file to the value of `bookmark-default-file'.
-  ;; Do this regardless of whether it is `bookmark-default-file' that we load here.
-  (when (and (file-exists-p bookmark-old-default-file)  (not (file-exists-p bookmark-default-file)))
-    (rename-file bookmark-old-default-file bookmark-default-file))
+  ;; The Emacs-27 one-time migration from `bookmark-old-default-file' to
+  ;; `bookmark-default-file' was removed when this fork dropped support for
+  ;; Emacs < 30.  Anyone on Emacs 30+ has already migrated.
   (let ((file-to-load  (bmkp-default-bookmark-file)))
     (and (not bmkp-bookmarks-already-loaded)
          (null bookmark-alist)
@@ -2958,7 +2949,7 @@ DISPLAY-FUNCTION is as in `bookmark-jump'."
         (all-in-buffer            (bmkp-light-this-buffer nil 'MSG))))
     ;; $$$$$$ Not sure we should place the vanilla fringe mark in this case.  Try it for a while
     (when (and (boundp 'bookmark-set-fringe-mark)  bookmark-set-fringe-mark) ; Emacs 28+
-      (let ((overlays  (overlays-in (point-at-bol) (1+ (point-at-bol))))
+      (let ((overlays  (overlays-in (pos-bol) (1+ (pos-bol))))
             temp found)
         (while (and (not found)  (setq temp  (pop overlays)))
           (when (eq 'bookmark (overlay-get temp 'category)) (setq found  t)))
@@ -3595,10 +3586,11 @@ contain a `%s' construct, so that it can be passed along with FILE to
     (message msg (abbreviate-file-name file))
     (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect file))
       (goto-char (point-min))
-      (if (file-exists-p file)
-          (bookmark-maybe-upgrade-file-format)
+      (unless (file-exists-p file)
         (delete-region (point-min) (point-max)) ; In case a find-file hook inserted a header, etc.
-        (unless (> emacs-major-version 25) (bookmark-insert-file-format-version-stamp)) ; See below for > 25
+        ;; Don't insert the version stamp here; the block guarded by
+        ;; `(when (> emacs-major-version 25) ...)' below will do that with
+        ;; proper coding-system handling.
         (insert "(\n)"))
       (setq start  (and (file-exists-p file)
                         (or (save-excursion (goto-char (point-min))
@@ -3658,14 +3650,13 @@ contain a `%s' construct, so that it can be passed along with FILE to
                                                    (cdr prop) " ")
                           ")\n")))
               (insert " )\n")))))
-      (when (> emacs-major-version 25)
-        ;; Make sure specified encoding can encode the bookmarks.  If not, suggest utf-8-emacs as default.
-        (with-coding-priority '(utf-8-emacs)
-          (setq coding-system-for-write  (select-safe-coding-system (point-min) (point-max)
-                                                                    (list t coding-system-for-write))))
-        (when start (delete-region 1 (1- start))) ; Delete old header.
-        (goto-char 1)
-        (bookmark-insert-file-format-version-stamp coding-system-for-write))
+      ;; Make sure specified encoding can encode the bookmarks.  If not, suggest utf-8-emacs as default.
+      (with-coding-priority '(utf-8-emacs)
+        (setq coding-system-for-write  (select-safe-coding-system (point-min) (point-max)
+                                                                  (list t coding-system-for-write))))
+      (when start (delete-region 1 (1- start))) ; Delete old header.
+      (goto-char 1)
+      (bookmark-insert-file-format-version-stamp coding-system-for-write)
       (let ((version-control        (cl-case bookmark-version-control
                                       ((nil)      nil)
                                       (never      'never)
@@ -3848,7 +3839,6 @@ bookmark files that were created using the bookmark functions."
         blist)
     (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect file))
       (goto-char (point-min))
-      (bookmark-maybe-upgrade-file-format)
       (setq blist  (bookmark-alist-from-buffer))
       (unless (listp blist) (error "Invalid bookmark list in `%s'" file))
       (cond (overwrite
@@ -5535,12 +5525,14 @@ Add/remove `bmkp-refresh-latest-bookmark-list' to/from
                                       bookmark-alist)))
 
 ;;;###autoload (autoload 'bmkp-toggle-saving-menu-list-state "bookmark+")
-(defun bmkp-toggle-saving-menu-list-state () ; Bound to `C-M-~' in bookmark list
+(defun bmkp-toggle-saving-menu-list-state (&optional _interactively) ; Bound to `C-M-~' in bookmark list
   "Toggle the value of option `bmkp-bmenu-state-file'.
 Tip: You can use this before quitting Emacs, to not save the state.
 If the initial value of `bmkp-bmenu-state-file' is nil, then this
-command has no effect."
-  (interactive)
+command has no effect.
+The optional argument is accepted for compatibility with the menu-bar
+toggle definition (which redefines this function), but ignored here."
+  (interactive "p")
   (unless (or bmkp-last-bmenu-state-file  bmkp-bmenu-state-file)
     (error "Cannot toggle: initial value of `bmkp-bmenu-state-file' is nil"))
   (setq bmkp-last-bmenu-state-file  (prog1 bmkp-bmenu-state-file
@@ -5931,12 +5923,9 @@ non-nil, require confirmation if the file already exists."
         imported)
     (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect file))
       (goto-char (point-min))
-      (if (file-exists-p file)
-          (bookmark-maybe-upgrade-file-format)
+      (unless (file-exists-p file)
         (delete-region (point-min) (point-max)) ; In case a find-file hook inserted a header etc.
-        (if (> emacs-major-version 25) ; Insert timestamp and an empty bookmark list.
-            (bookmark-insert-file-format-version-stamp coding-system-for-write)
-          (bookmark-insert-file-format-version-stamp))
+        (bookmark-insert-file-format-version-stamp coding-system-for-write)
         (insert "(\n)"))
       (let ((blist  (bookmark-alist-from-buffer)))
         (unless (listp blist) (error "Invalid bookmark list in file `%s'" file))
@@ -6569,8 +6558,7 @@ Otherwise, return an alist of the full tags."
       (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect file))
         (goto-char (point-min))
         (condition-case nil ; Check whether it's a valid bookmark file.
-            (progn (bookmark-maybe-upgrade-file-format)
-                   (unless (listp (setq bmk-alist  (bookmark-alist-from-buffer))) (error "")))
+            (unless (listp (setq bmk-alist  (bookmark-alist-from-buffer))) (error ""))
           (error (message "Not a valid bookmark file: `%s'" file))))
       (dolist (bmk  bmk-alist)
         (setq bmk-tags  (bmkp-get-tags bmk))
@@ -8638,21 +8626,19 @@ The bookmarked position will be the beginning of the file."
           (t
            `(lambda () ',common)))))
 
+(defun bmkp--ad-file-cache-add-file (orig-fn file)
+  "Respect option `bmkp-autofile-filecache'.
+Around-advice for `file-cache-add-file'."
+  (cond ((eq bmkp-autofile-filecache 'autofile-only)
+         (bmkp-autofile-set file nil nil 'NO-REFRESH-P))
+        ((eq bmkp-autofile-filecache 'autofile+cache)
+         (funcall orig-fn file)
+         (bmkp-autofile-set file nil nil 'NO-REFRESH-P 'MSG-P))
+        ((eq bmkp-autofile-filecache 'cache-only)
+         (funcall orig-fn file))))
+
 (when (fboundp 'file-cache-add-file)
-  (defadvice file-cache-add-file (around bmkp-autofile-filecache activate)
-    "Respect option `bmkp-autofile-filecache'."
-    (cond ((eq bmkp-autofile-filecache  'autofile-only)
-           (bmkp-autofile-set
-            (ad-get-arg 0) nil nil
-            'NO-REFRESH-P))
-          ((eq bmkp-autofile-filecache  'autofile+cache)
-           (progn
-             ad-do-it
-             (bmkp-autofile-set
-              (ad-get-arg 0) nil nil
-              'NO-REFRESH-P 'MSG-P)))
-          ((eq bmkp-autofile-filecache  'cache-only)
-           ad-do-it))))
+  (advice-add 'file-cache-add-file :around #'bmkp--ad-file-cache-add-file))
 
 (defun bmkp-find-file-invoke-bookmark-if-autofile ()
   "Invoke the autofile bookmark associated with the visited file.
@@ -9853,8 +9839,7 @@ Non-interactively, non-nil MSG-P means display a status message."
   (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect file))
     (goto-char (point-min))
     (condition-case nil                 ; Check whether it's a valid bookmark file.
-        (progn (bookmark-maybe-upgrade-file-format)
-               (unless (listp (bookmark-alist-from-buffer)) (error "")))
+        (unless (listp (bookmark-alist-from-buffer)) (error ""))
       (error (error "Not a valid bookmark file: `%s'" file))))
   (let ((bookmark-make-record-function  (bmkp-lexlet ((ff  file))
                                           (lambda () (bmkp-make-bookmark-file-record ff))))
@@ -10714,18 +10699,17 @@ BOOKMARK is a bookmark name or a bookmark record."
     (browse-url url)))
 
 
-;; EWW support
-(when (> emacs-major-version 24)        ; Emacs 25+
+;; EWW support.  The (when (> emacs-major-version 24)) wrapper that guarded
+;; this block was removed when the fork dropped support for Emacs < 30.
+;; Leading indentation is preserved to keep the diff small.
 
-  ;; This is set by `bmkp-eww-rename-buffer' and used in `bmkp-jump-eww' for local var `after-render-function'.
-  (defvar bmkp-eww-new-buf-name nil
-    "If non-nil, the name of the EWW buffer to jump to.")
-  (make-variable-buffer-local 'bmkp-eww-new-buf-name)
+;; This is set by `bmkp-eww-rename-buffer' and used in `bmkp-jump-eww' for local var `after-render-function'.
+(defvar-local bmkp-eww-new-buf-name nil
+  "If non-nil, the name of the EWW buffer to jump to.")
 
-  ;; This is set by `bmkp-jump-eww' and used in `bmkp-eww-rename-buffer'.
-  (defvar bmkp-eww-jumping-p nil
-    "Non-nil only if we are currently jumping to an EWW bookmark.")
-  (make-variable-buffer-local 'bmkp-eww-jumping-p)
+;; This is set by `bmkp-jump-eww' and used in `bmkp-eww-rename-buffer'.
+(defvar-local bmkp-eww-jumping-p nil
+  "Non-nil only if we are currently jumping to an EWW bookmark.")
 
   (defun bmkp-eww-title ()
     "Return the web-page title of the current `eww-mode' buffer."
@@ -10917,7 +10901,7 @@ bookmarks.  If it does not exist then it is created."
         (bookmark-write-file bmk-file 'ADD)))
     (when msgp (message "Wrote Bookmark file `%s'" bmk-file)))
 
-  )
+;; End of former (when (> emacs-major-version 24)) EWW-support block.
 
 ;; W3M support
 (defun bmkp-make-w3m-record ()
@@ -13829,9 +13813,7 @@ Don't forget to mention your Emacs and library versions."))
                       (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect new-file))
                         (goto-char (point-min))
                         (delete-region (point-min) (point-max)) ; In case a find-file hook inserted a header.
-                        (if (> emacs-major-version 25)
-                            (bookmark-insert-file-format-version-stamp coding-system-for-write)
-                          (bookmark-insert-file-format-version-stamp))
+                        (bookmark-insert-file-format-version-stamp coding-system-for-write)
                         (insert "(\n)"))
                       (bmkp-empty-file new-file)
                       (setq bmkp-last-as-first-bookmark-file  nil) ; Prevent starting from a file of temp bmks.
@@ -13881,7 +13863,7 @@ positive.  Non-interactively there is no prompt for confirmation."
              (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect new-file))
                (goto-char (point-min))
                (delete-region (point-min) (point-max)) ; In case a find-file hook inserted a header, etc.
-               (bookmark-insert-file-format-version-stamp)
+               (bookmark-insert-file-format-version-stamp coding-system-for-write)
                (insert "(\n)"))
              (bmkp-empty-file new-file)
              (bookmark-load new-file t 'nosave) ; Saving was done just above.
@@ -14062,9 +14044,7 @@ See command `bmkp-store-org-link'."
                             (format "Store %sOrg link for bookmark" (if other-win "other-window " ""))))
                (link       (format "bookmark%s:%s" (if other-win "-other-win" "") bmk))
                (bmk-desc   (format "Bookmark: %s" bmk)))
-          (if (fboundp 'org-store-link-props)
-              (org-store-link-props :type "bookmark" :link link :description bmk-desc) ; < Org 9.3 (renamed)
-            (org-link-store-props :type "bookmark" :link link :description bmk-desc)))))
+          (org-link-store-props :type "bookmark" :link link :description bmk-desc))))
 
   (advice-add 'org-store-link :before #'bmkp-reset-bmkp-store-org-link-checking-p)
   (defun bmkp-reset-bmkp-store-org-link-checking-p (&rest _IGNORE)
