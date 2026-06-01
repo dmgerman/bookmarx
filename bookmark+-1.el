@@ -210,8 +210,7 @@
 ;;    `bmkp-local-non-dir-file-jump-other-window',
 ;;    `bmkp-make-bookmark-savable', `bmkp-make-bookmark-temporary',
 ;;    `bmkp-make-function-bookmark', `bmkp-man-jump',
-;;    `bmkp-man-jump-other-window', `bmkp-menu-jump-other-window'
-;;    (Emacs 20, 21), `bmkp-navlist-bmenu-list',
+;;    `bmkp-man-jump-other-window', `bmkp-navlist-bmenu-list',
 ;;    `bmkp-next-autonamed-bookmark',
 ;;    `bmkp-next-autonamed-bookmark-other-window',
 ;;    `bmkp-next-autonamed-bookmark-other-window-repeat',
@@ -861,7 +860,7 @@ Returns nil if neither is available."
 ;; bookmark-get-rear-context-string, bookmark-insert-file-format-version-stamp, bookmark-kill-line,
 ;; bookmark-make-record, bookmark-maybe-historicize-string, bookmark-maybe-upgrade-file-format,
 ;; bookmark-menu-popup-paned-menu, bookmark-name-from-full-record, bookmark-name-from-record,
-;; bookmark-popup-menu-and-apply-function, bookmark-prop-get, bookmark-save-flag, bookmark-search-size,
+;; bookmark-prop-get, bookmark-save-flag, bookmark-search-size,
 ;; bookmark-set-annotation, bookmark-set-filename, bookmark-set-position, bookmark-time-to-save-p,
 ;; bookmark-use-annotations, bookmark-yank-point
 
@@ -2091,90 +2090,7 @@ the state of buffer `*Bookmark List*' at the time it is created:
  (bookmark-list . STATE)
 
  STATE records the sort order, filter function, omit list, and title.")
- 
-;;(@* "Compatibility Code for Older Emacs Versions")
-;;; Compatibility Code for Older Emacs Versions ----------------------
 
-(when (< emacs-major-version 23)
-
-  ;; These definitions are for Emacs versions prior to Emacs 23.
-  ;; They are the same as the vanilla Emacs 24+ definitions, except as noted.
-  ;; They let older versions of Emacs handle bookmarks created with Emacs 23+.
-  ;; (Emacs < 23 also needs a compatible `bookmark-make-record' version,
-  ;; but I redefine it for all versions, in any case.)
-
-  (defun Info-bookmark-make-record ()
-    "Create a bookmark record for the current Info node (and point).
-Implements `bookmark-make-record-function' for Info nodes."
-    (let* ((file           (and (stringp Info-current-file)  (file-name-nondirectory Info-current-file)))
-           (bookmark-name  (if file
-                               (concat "(" file ") " Info-current-node)
-                             Info-current-node))
-           (defaults       (delq nil (list bookmark-name file Info-current-node))))
-      `(,bookmark-name
-        ,@(bookmark-make-record-default 'NO-FILE)
-        (filename . ,Info-current-file)
-        (info-node . ,Info-current-node)
-        (handler . Info-bookmark-jump)
-        (defaults . ,defaults))))
-
-  (add-hook 'Info-mode-hook (lambda () (set (make-local-variable 'bookmark-make-record-function)
-                                       'Info-bookmark-make-record)))
-
-  (defvar bookmark-make-record-function 'bookmark-make-record-default
-    "Function called with no arguments, to create a bookmark record.
-Modes can set this buffer-locally to enable bookmarking of locations
-that should be treated specially for the mode.  Global commands can
-bind this and then create a bookmark, to get special treatment
-anywhere.
-
-The function value should return a new bookmark record, which should
-be a cons cell of the form (NAME . ALIST) or just ALIST, where ALIST
-is as described in `bookmark-alist'.  If it cannot construct the
-record, then it should raise an error.
-
-NAME is a string that names the new bookmark.  NAME can be nil, in
-which case a default name is used.
-
-ALIST can contain an entry (handler . FUNCTION) which sets the handler
-to FUNCTION, which is then used instead of `bookmark-default-handler'.
-FUNCTION must accept the same arguments as `bookmark-default-handler'.")
-
-  (defun bookmark-prop-get (bookmark prop)
-    "Return entry (property) PROP of BOOKMARK, or nil if no such entry.
-BOOKMARK is a bookmark name or a bookmark record."
-    (cdr (assq prop (bmkp-bookmark-data-from-record bookmark))))
-
-  (defun bookmark-get-handler (bookmark)
-    "Return the `handler' entry for BOOKMARK.
-BOOKMARK is a bookmark name or a bookmark record."
-    (bookmark-prop-get bookmark 'handler))
-
-  (defun bookmark-jump-noselect (bookmark)
-    "Return the location recorded for BOOKMARK.
-BOOKMARK is a bookmark name or a bookmark record.
-The return value has the form (BUFFER . POINT), where BUFFER is a
-buffer and POINT is the location within BUFFER."
-    (save-excursion (bookmark-handle-bookmark bookmark) (cons (current-buffer) (point)))))
-
-(when (< emacs-major-version 22)
-
-  ;; These definitions are for Emacs versions prior to Emacs 22.
-  ;; They are the same as the vanilla Emacs 22+ definitions, except as noted.
-
-;;;   ;; Bookmark+ doesn't use this, but `bookmark.el' still does.  Who has a slow `baud-rate' now?
-;;;   (defun bookmark-maybe-message (fmt &rest args)
-;;;     "Apply `message' to FMT and ARGS, but only if the display is fast enough."
-;;;     (when (>= baud-rate 9600) (apply 'message fmt args)))
-
-  ;; Emacs 22+ just uses `bookmark-jump-other-window' for the menu also.
-  (defun bmkp-menu-jump-other-window (event)
-    "Jump to BOOKMARK (a point in some file) in another window.
-See `bookmark-jump-other-window'."
-    (interactive "e")
-    (bookmark-popup-menu-and-apply-function 'bookmark-jump-other-window
-                                            "Jump to Bookmark (Other Window)" event)))
- 
 ;;(@* "Core Replacements (`bookmark-*' except `bookmark-bmenu-*')")
 ;;; Core Replacements (`bookmark-*' except `bookmark-bmenu-*') -------
 
