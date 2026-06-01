@@ -976,6 +976,9 @@
 (declare-function bmkp-toggle-auto-light-when-jump "bookmark+-lit")
 (declare-function bmkp-toggle-auto-light-when-set  "bookmark+-lit")
 
+;; In bookmark+-bmu.el.
+(declare-function bmkp-fit-bmenu-frame                    "bookmark+-bmu")
+
 ;; Defined here (via define-button-type or inside conditional defun forms).
 (declare-function bmkp-describe-bookmark-button           "bookmark+-1")
 (declare-function bmkp-describe-bookmark-internals-button "bookmark+-1")
@@ -3931,7 +3934,7 @@ read-only and edit mode using `C-x C-q'."
                 (set-buffer-modified-p buf-modified-p))
               (goto-char (point-min))
               (bookmark-show-annotation-mode)
-              (when (fboundp 'fit-frame-if-one-window) (fit-frame-if-one-window))
+              (when (one-window-p t) (fit-frame-to-buffer))
               (setq bookmark-annotation-name  bmk))
             (select-frame-set-input-focus oframe)))))))
 
@@ -3976,7 +3979,7 @@ in the current sort order."
         (if (> emacs-major-version 23) ; Incompatible change introduced in Emacs 24.1
             (view-mode-enter)
           (view-mode-enter (cons (selected-window) (cons nil 'quit-window))))
-        (when (fboundp 'fit-frame-if-one-window) (fit-frame-if-one-window))))
+        (when (one-window-p t) (fit-frame-to-buffer))))
     (select-frame-set-input-focus oframe)))
 
 
@@ -5005,7 +5008,7 @@ That is, switch from edit mode to read-only mode."
         (set-buffer-modified-p buf-modified-p))
       (goto-char (point-min))
       (bookmark-show-annotation-mode)
-      (when (fboundp 'fit-frame-if-one-window) (fit-frame-if-one-window))
+      (when (one-window-p t) (fit-frame-to-buffer))
       (setq bookmark-annotation-name  bmk)
       (kill-buffer obuf))))
 
@@ -5025,7 +5028,7 @@ That is, switch from read-only mode to edit mode."
       (bookmark-insert-annotation bname)
       (set-buffer-modified-p buf-modified-p))
     (bookmark-edit-annotation-mode)
-    (when (fboundp 'fit-frame-if-one-window) (fit-frame-if-one-window))
+    (when (one-window-p t) (fit-frame-to-buffer))
     (setq bookmark-annotation-name  bmk)
     (kill-buffer obuf)))
 
@@ -6334,8 +6337,7 @@ message."
     (bookmark-bmenu-surreptitiously-rebuild-list (not msg-p))
     (when msg-p (message "UN-omitted %d bookmarks" count)))
   (when (equal (buffer-name (current-buffer)) bmkp-bmenu-buffer) (bmkp-bmenu-show-all))
-  (when (and (fboundp 'fit-frame-if-one-window)  (equal (buffer-name (current-buffer)) bmkp-bmenu-buffer))
-    (fit-frame-if-one-window)))
+  (bmkp-fit-bmenu-frame))
 
 
 ;;(@* "Search-and-Replace Locations of Marked Bookmarks")

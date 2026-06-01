@@ -22,7 +22,7 @@
 ;;   `bookmark+-key', `bookmark+-lit', `button', `bytecomp', `cconv',
 ;;   `cl-generic', `cl-lib', `cl-macs', `cmds-menu',
 ;;   `eieio', `eieio-core', `eieio-loaddefs',
-;;   `epg-config', `fit-frame', `font-lock', `font-lock+',
+;;   `epg-config', `font-lock', `font-lock+',
 ;;   `frame-fns', `gv', `help+', `help-fns', `help-fns+',
 ;;   `help-macro', `help-macro+', `help-mode', `hl-line', `hl-line+',
 ;;   `info', `info+', `kmacro', `macroexp', `menu-bar', `menu-bar+',
@@ -425,6 +425,17 @@
   (if (fboundp 'replace-regexp-in-string) ; Emacs > 20.
       (replace-regexp-in-string regexp rep string fixedcase literal subexp start)
     (if (string-match regexp string) (replace-match rep nil nil string) string))) ; Emacs 20
+
+(defvar bmkp-bmenu-buffer) ; In `bookmark+.el' (declared again below for clarity).
+
+(defun bmkp-fit-bmenu-frame ()
+  "Fit the current frame to its buffer, if the *Bookmark List* owns it.
+Does nothing unless the selected window is the only one in its frame
+and shows the `*Bookmark List*' buffer."
+  (when (and (one-window-p t)
+             (eq (selected-window)
+                 (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
+    (fit-frame-to-buffer)))
 
 (defun bmkp-assoc-delete-all (key alist)
   "Delete from ALIST all elements whose car is `equal' to KEY.
@@ -1379,9 +1390,7 @@ Non-nil INTERACTIVEP means `bookmark-bmenu-list' was called
     (bookmark-bmenu-mode)
     (when (and bookmark-alist  bookmark-bmenu-toggle-filenames)
       (bookmark-bmenu-toggle-filenames t 'NO-MSG-P))
-    (when (and (fboundp 'fit-frame-if-one-window)
-               (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-      (fit-frame-if-one-window)))
+    (bmkp-fit-bmenu-frame))
   (when (fboundp 'bmkp-bmenu-mode-line) (bmkp-bmenu-mode-line))
   (when (and interactivep  bmkp-sort-comparer) (bmkp-msg-about-sort-order (bmkp-current-sort-order))))
 
@@ -1999,9 +2008,7 @@ Non-nil optional arg NO-MSG-P means do not show progress messages."
                                                      (point) 'help-echo help))))
                   (forward-line 1)))))))
     (unless no-msg-p (message "Showing file names...done"))
-    (when (and (fboundp 'fit-frame-if-one-window)
-               (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-      (fit-frame-if-one-window))))
+    (bmkp-fit-bmenu-frame)))
 
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
@@ -2045,9 +2052,7 @@ Non-nil optional arg NO-MSG-P means do not show progress messages."
                     (setq bookmark-bmenu-hidden-bookmarks  (cdr bookmark-bmenu-hidden-bookmarks))
                     (forward-line 1))))))))
     (unless no-msg-p (message "Hiding file names...done"))
-    (when (and (fboundp 'fit-frame-if-one-window)
-               (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-      (fit-frame-if-one-window))))
+    (bmkp-fit-bmenu-frame)))
 
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
@@ -2701,9 +2706,7 @@ From Lisp, non-nil optional arg MSG-P means show progress messages."
                (when (re-search-forward "^>" (point-max) t)  (forward-line 0))
                (message "Marked bookmarks no longer hidden"))))
     (message "No marked bookmarks to hide"))
-  (when (and (fboundp 'fit-frame-if-one-window)
-             (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-    (fit-frame-if-one-window)))
+  (bmkp-fit-bmenu-frame))
 
 ;;;###autoload (autoload 'bmkp-bmenu-toggle-show-only-marked "bookmark+")
 (defun bmkp-bmenu-toggle-show-only-marked () ; Bound to `>' in bookmark list
@@ -2734,9 +2737,7 @@ From Lisp, non-nil optional arg MSG-P means show progress messages."
                (when (re-search-forward "^>" (point-max) t)  (forward-line 0))
                (message "Unmarked bookmarks no longer hidden"))))
     (message "No unmarked bookmarks to hide"))
-  (when (and (fboundp 'fit-frame-if-one-window)
-             (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-    (fit-frame-if-one-window)))
+  (bmkp-fit-bmenu-frame))
 
 
 ;;(@* "Menu-List (`*-bmenu-*') Commands Involving Marks")
@@ -3127,9 +3128,7 @@ If none are marked, toggle status of the bookmark of the current line."
         (bmkp-bmenu-goto-bookmark-named o-str)
       (goto-char o-point)
       (beginning-of-line)))
-  (when (and (fboundp 'fit-frame-if-one-window)
-             (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-    (fit-frame-if-one-window)))
+  (bmkp-fit-bmenu-frame))
 
 ;;;###autoload (autoload 'bmkp-bmenu-toggle-temporary "bookmark+")
 (defun bmkp-bmenu-toggle-temporary ()   ; Bound to `C-M-X' in bookmark list
@@ -3557,9 +3556,7 @@ You can then mark some of them and use `\\[bmkp-bmenu-omit/unomit-marked]' to ma
         (bmkp-bmenu-goto-bookmark-named o-str)
       (goto-char o-point)
       (beginning-of-line)))
-  (when (and (fboundp 'fit-frame-if-one-window)
-             (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-    (fit-frame-if-one-window)))
+  (bmkp-fit-bmenu-frame))
 
 ;;;###autoload (autoload 'bmkp-bmenu-unomit-marked "bookmark+")
 (defun bmkp-bmenu-unomit-marked ()      ; `- >' in bookmark list when showing omitted bookmarks
@@ -3588,9 +3585,7 @@ They will henceforth be available for display in the bookmark list.
             bmkp-latest-bookmark-alist  bookmark-alist)
       (bookmark-bmenu-surreptitiously-rebuild-list 'NO-MSG-P)
       (message "UN-omitted %d bookmarks" count)))
-  (when (and (fboundp 'fit-frame-if-one-window)
-             (eq (selected-window) (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
-    (fit-frame-if-one-window)))
+  (bmkp-fit-bmenu-frame))
 
 ;;;###autoload (autoload 'bmkp-bmenu-show-only-omitted-bookmarks "bookmark+")
 (defun bmkp-bmenu-show-only-omitted-bookmarks ()  ; Bound to `- S' in bookmark list to show only omitted
@@ -4539,8 +4534,7 @@ Autosave bookmarks:\t%s\nAutosave list display:\t%s\n\n\n"
                          (message "Getting Bookmark+ doc from file commentary...")
                          (finder-commentary "bookmark+-doc")
                          (when (condition-case nil (require 'linkd nil t) (error nil)) (linkd-mode 1))
-                         (when (condition-case nil (require 'fit-frame nil t) (error nil))
-                           (fit-frame)))
+                         (fit-frame-to-buffer))
       'help-echo (purecopy "mouse-2, RET: Bookmark+ documentation (no Internet needed)"))
   (define-button-type 'bmkp-customize-button
       :supertype 'help-xref

@@ -23,7 +23,7 @@
 ;;   `bookmark+-key', `bookmark+-lit', `button', `bytecomp', `cconv',
 ;;   `cl-generic', `cl-lib', `cl-macs', `cmds-menu',
 ;;   `eieio', `eieio-core', `eieio-loaddefs',
-;;   `epg-config', `fit-frame', `font-lock', `font-lock+',
+;;   `epg-config', `font-lock', `font-lock+',
 ;;   `frame-fns', `gv', `help+', `help-fns', `help-fns+',
 ;;   `help-macro', `help-macro+', `help-mode', `hl-line', `hl-line+',
 ;;   `info', `info+', `kmacro', `macroexp', `menu-bar', `menu-bar+',
