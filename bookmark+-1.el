@@ -725,7 +725,7 @@
 ;;    `bookmark-jump-other-window', `bookmark-load',
 ;;    `bookmark-relocate', `bookmark-rename', `bookmark-save',
 ;;    `bookmark-send-edited-annotation', `bookmark-set',
-;;    `bookmark-set-name', `bmkp-yank-word'.
+;;    `bmkp-set-name', `bmkp-yank-word'.
 ;;
 ;;
 ;;  ***** NOTE: The following user options defined in `bookmark.el'
@@ -1791,7 +1791,7 @@ timer for each buffer where automatic bookmarking is enabled.")
 
 ;;; $$$$$$ No - don't bother.
 ;;; (defconst bmkp-bookmark-modifier-functions  '(bookmark-prop-set bmkp-replace-existing-bookmark
-;;;                                               bookmark-set-name bookmark-store)
+;;;                                               bmkp-set-name bookmark-store)
 ;;;   "List of functions that modify bookmarks.
 ;;; Used to mark modified, unsaved bookmarks, in `*Bookmark List*'.
 ;;; Should not include any function that calls another in the list.")
@@ -2171,7 +2171,7 @@ bookmark file.  Saving the file depends on `bookmark-save-flag'."
           ((not (setq bmk  (bmkp-get-bookmark-in-alist bname 'NOERROR)))
            (push (setq bmk  (cons bname data)) bookmark-alist)) ; Add new bookmark.
           (t                            ; Overwrite existing bookmark.
-           (bookmark-set-name bmk bname)
+           (bmkp-set-name bmk bname)
            (when (and (boundp 'bookmark-set-fringe-mark)  bookmark-set-fringe-mark) ; Emacs 28+
              (bookmark--remove-fringe-mark bmk))
            (setcdr bmk data)))
@@ -2621,27 +2621,13 @@ From Lisp code:
           bookmark-current-buffer nil)))
 
 
-;; REPLACES ORIGINAL in `bookmark.el'.
-;;
-;; 1. Put full bookmark record on the name as property `bmkp-full-record'.
-;; 2. Add BOOKMARK to `bmkp-modified-bookmarks'.
-;; 3. The different `bookmark-get-bookmark' behavior from vanilla Emacs means we can get the right bookmark
-;;    if it has a name with property `bmkp-full-record', without looking it up in `bookmark-alist'.
-;;    But we don't require that BOOKMARK have a name, so calls from vanilla or other code aren't bothered.
-;;
-(defun bookmark-set-name (bookmark newname)
+(defun bmkp-set-name (bookmark newname)
   "Set name of BOOKMARK to NEWNAME.
-BOOKMARK is a bookmark name or a bookmark record.
-Put the full bookmark on its name as property `bmkp-full-record'.
-Add BOOKMARK to `bmkp-modified-bookmarks'.
-
-If BOOKMARK is a name with text property `bmkp-full-record', or if it
-is a bookmark record, then it is NOT looked up in `bookmark-alist' (it
-need not belong).  If it is a name without that property then it is
-looked up in `bookmark-alist'."
+BOOKMARK is a bookmark name (a string) or a bookmark record.
+Adds BOOKMARK to `bmkp-modified-bookmarks' so it will be saved on
+the next bookmark-file write."
   (setq bookmark  (bookmark-get-bookmark bookmark))
   (setcar bookmark newname)
-  ;; This is the same as `add-to-list' with `EQ' (not available for Emacs 20-21).
   (unless (memq bookmark bmkp-modified-bookmarks)
     (setq bmkp-modified-bookmarks  (cons bookmark bmkp-modified-bookmarks))))
 
@@ -3140,7 +3126,7 @@ should be non-nil if BATCH is non-nil.)"
 ;;;             now-map)
 ;;;           nil 'bookmark-history))))
     (when newname
-      (bookmark-set-name old newname)   ; (This also puts `bmkp-full-record' on bookmark name.)
+      (bmkp-set-name old newname)
       (when (fboundp 'bookmark-update-last-modified) (bookmark-update-last-modified newname)) ; Emacs 29+
       (bmkp-rename-for-marked-and-omitted-lists old newname) ; Rename in marked & omitted lists, if present.
       (setq bookmark-current-bookmark  newname)
@@ -3469,7 +3455,7 @@ Return non-nil if the bookmark was renamed, nil otherwise."
         (while (member new-name names)
           (setq new-name  (concat found-name (format "<%d>" count))
                 count     (1+ count)))
-        (bookmark-set-name full-record new-name)
+        (bmkp-set-name full-record new-name)
         (not (string= found-name new-name))))))
 
 
