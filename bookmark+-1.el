@@ -739,7 +739,7 @@
 ;;              `bookmark.el' have been REDEFINED HERE:
 ;;
 ;;    `bookmark--jump-via', `bookmark-alist-from-buffer',
-;;    `bookmark-all-names', `bookmark-completing-read',
+;;    `bmkp-all-names', `bookmark-completing-read',
 ;;    `bookmark-default-handler', `bookmark-edit-annotation' (command
 ;;    here), `bookmark-exit-hook-internal', `bookmark-get-bookmark',
 ;;    `bookmark-get-bookmark-record' (Emacs 20-22),
@@ -2312,16 +2312,12 @@ Non-interactively, BOOKMARK is a bookmark name or a bookmark record."
   (setq bookmark-annotation-name  bookmark))
 
 
-;; REPLACES ORIGINAL in `bookmark.el'.
-;;
-;; Added optional arg ALIST.
-;;
-(defun bookmark-all-names (&optional alist)
-  "Return a list of all bookmark names.
-The names are those of the bookmarks in ALIST or, if nil,
-`bookmark-alist'."
+(defun bmkp-all-names (&optional alist)
+  "Return a list of all bookmark names in ALIST (default `bookmark-alist').
+Calls `bookmark-maybe-load-default-file' first.  Like the built-in
+`bookmark-all-names', plus an optional ALIST arg."
   (bookmark-maybe-load-default-file)
-  (mapcar (lambda (bmk) (bmkp-bookmark-name-from-record bmk)) (or alist  bookmark-alist)))
+  (mapcar #'bmkp-bookmark-name-from-record (or alist  bookmark-alist)))
 
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
@@ -3415,7 +3411,7 @@ Return a list (NB-RENAMED NB-ADDED BMKS-ADDED) of the number renamed,
 the number added, and the full bookmarks that were added.  If
 RETURN-BMKS is nil then BMKS-ADDED is just nil (the bookmarks are not
 returned)."
-  (let ((names       (bookmark-all-names))
+  (let ((names       (bmkp-all-names))
         (nb-added    0)
         (nb-renamed  0)
         (bmks-added  ()))
@@ -4669,8 +4665,8 @@ See `bookmark-completing-read' for the argument descriptions."
       (bookmark-menu-popup-paned-menu
        t prompt
        (if bmkp-sort-comparer           ; Test whether to sort, but always use `string-lessp'.
-           (sort (bookmark-all-names alist) 'string-lessp)
-         (bookmark-all-names alist)))
+           (sort (bmkp-all-names alist) 'string-lessp)
+         (bmkp-all-names alist)))
     (let* ((completion-ignore-case          bookmark-completion-ignore-case)
            (default                         (and (not (equal "" default))  default)) ; Treat "" like nil.
            (prompt                          (concat prompt (if default
@@ -6486,7 +6482,7 @@ Non-interactively:
      (list (bmkp-read-tags-completing nil t current-prefix-arg) 'MSG)))
   (let ((bookmark-save-flag  (and (not bmkp-count-multi-mods-as-one-flag)
                                   bookmark-save-flag))) ; Save only after `dolist'.
-    (dolist (bmk  (bookmark-all-names)) (bmkp-remove-tags bmk tags 'NO-UPDATE-P)))
+    (dolist (bmk  (bmkp-all-names)) (bmkp-remove-tags bmk tags 'NO-UPDATE-P)))
   (bmkp-tags-list)        ; Update the tags cache (only once, at end).
   (bmkp-maybe-save-bookmarks) ; Increments `bookmark-alist-modification-count'.
   (bmkp-refresh/rebuild-menu-list nil (not msg-p)) ; So remove `t' markers when no tags anymore.
@@ -6503,7 +6499,7 @@ deletion."
   (let ((tag-exists-p        nil)
         (bookmark-save-flag  (and (not bmkp-count-multi-mods-as-one-flag)
                                   bookmark-save-flag))) ; Save only after `dolist'.
-    (dolist (bmk  (bookmark-all-names))
+    (dolist (bmk  (bmkp-all-names))
       (let ((newtags  (copy-alist (bmkp-get-tags bmk))))
         (when newtags
           (let* ((assoc-tag   (assoc tag newtags))
