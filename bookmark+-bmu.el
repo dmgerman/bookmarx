@@ -5533,6 +5533,10 @@ are marked or ALLP is non-nil."
 ;; `bmkp-list-mode-map'
 
 (define-key bmkp-list-mode-map (kbd "RET")            'bmkp-list-this-window)
+(define-key bmkp-list-mode-map "f"                    'bmkp-list-this-window)
+(define-key bmkp-list-mode-map "o"                    'bmkp-list-other-window)
+(define-key bmkp-list-mode-map "m"                    'bmkp-list-mark)
+(define-key bmkp-list-mode-map "u"                    'bmkp-list-unmark)
 (define-key bmkp-list-mode-map "\M-~"                 'bmkp-toggle-saving-bookmark-file)
 (define-key bmkp-list-mode-map (kbd "C-M-~")          'bmkp-toggle-saving-menu-list-state)
 (define-key bmkp-list-mode-map "."                    'bmkp-bmenu-show-all)
@@ -5550,15 +5554,14 @@ are marked or ALLP is non-nil."
 (define-key bmkp-list-mode-map "=fS"                  'bmkp-bmenu-show-only-specific-file-bookmarks)
 (define-key bmkp-list-mode-map "%"                    nil) ; For Emacs 20
 (define-key bmkp-list-mode-map "%m"                   'bmkp-bmenu-regexp-mark)
-(define-key bmkp-list-mode-map "*"                    nil) ; For Emacs 20
-(when (< emacs-major-version 21)
-  (define-key bmkp-list-mode-map "*m"                 'bmkp-list-mark))
+(define-key bmkp-list-mode-map "*"                    nil) ; Free `*' as a prefix key
+(define-key bmkp-list-mode-map "*m"                   'bmkp-list-mark)
 (define-key bmkp-list-mode-map "#"                    nil) ; For Emacs 20
 (define-key bmkp-list-mode-map "#M"                   'bmkp-bmenu-mark-autonamed-bookmarks)
 (define-key bmkp-list-mode-map "#S"                   'bmkp-bmenu-show-only-autonamed-bookmarks)
-;; `a' is `bmkp-list-show-annotation' in vanilla Emacs.
-;; `A' is `bookmark-bmenu-show-all-annotations' in vanilla Emacs.
-;; `e' is `bookmark-bmenu-edit-annotation' in vanilla Emacs.
+;; In the built-in `bookmark.el', `a' shows the current annotation,
+;; `A' shows all annotations, and `e' edits the current annotation.
+;; Here, those become `aa', `aA', `ae' so that `a' can be a prefix.
 (define-key bmkp-list-mode-map "a"                    nil) ; For Emacs 20
 (define-key bmkp-list-mode-map "aa"                   'bmkp-list-show-annotation)
 (define-key bmkp-list-mode-map "aA"                   'bmkp-show-all-annotations)
