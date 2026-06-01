@@ -5532,8 +5532,7 @@ are marked or ALLP is non-nil."
 
 ;; `bmkp-list-mode-map'
 
-(when (< emacs-major-version 21)
-  (define-key bmkp-list-mode-map (kbd "RET")          'bmkp-list-this-window))
+(define-key bmkp-list-mode-map (kbd "RET")            'bmkp-list-this-window)
 (define-key bmkp-list-mode-map "\M-~"                 'bmkp-toggle-saving-bookmark-file)
 (define-key bmkp-list-mode-map (kbd "C-M-~")          'bmkp-toggle-saving-menu-list-state)
 (define-key bmkp-list-mode-map "."                    'bmkp-bmenu-show-all)
