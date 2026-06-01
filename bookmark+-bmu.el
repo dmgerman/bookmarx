@@ -2069,19 +2069,23 @@ See `bmkp-jump' for info about the prefix arg."
 ;; 2. Raise error if not in buffer `*Bmkp List*'.
 ;;
 ;;;###autoload (autoload 'bmkp-list-switch-other-window "bookmark+")
-(defun bmkp-list-switch-other-window (&optional flip-use-region-p) ; Bound to `C-o' in bookmark list
+(defun bmkp-list-switch-other-window (&optional flip-use-region-p) ; Bound to `C-o'/`TAB' in bookmark list
   "Make the other window select this line's bookmark.
 The current window remains selected.
 See `bmkp-jump' for info about the prefix arg."
   (interactive "P")
   (bmkp-bmenu-barf-if-not-in-menu-list)
   (bmkp-list-ensure-position)
-  (let ((bookmark-name             (bmkp-list-bookmark))
-        (pop-up-windows            t)
-        (same-window-buffer-names  ())
-        (same-window-regexps       ()))
-    ;; (bookmark-automatically-show-annotations t)) ; $$$$$$ Needed?
-    (bmkp-jump-1 bookmark-name 'display-buffer flip-use-region-p)))
+  (let ((bookmark-name  (bmkp-list-bookmark))
+        ;; Force display in a non-selected window: never reuse the `*Bmkp List*'
+        ;; window for the destination buffer.
+        (display-buffer-overriding-action
+         '((display-buffer-reuse-window
+            display-buffer-use-some-window
+            display-buffer-pop-up-window)
+           (inhibit-same-window . t))))
+    (save-selected-window
+      (bmkp-jump-1 bookmark-name #'display-buffer flip-use-region-p))))
 
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
@@ -5541,6 +5545,8 @@ are marked or ALLP is non-nil."
 (define-key bmkp-list-mode-map "1"                    'bmkp-list-1-window)
 (define-key bmkp-list-mode-map "2"                    'bmkp-list-2-window)
 (define-key bmkp-list-mode-map (kbd "C-o")            'bmkp-list-switch-other-window)
+(define-key bmkp-list-mode-map (kbd "TAB")            'bmkp-list-switch-other-window)
+(define-key bmkp-list-mode-map (kbd "<tab>")          'bmkp-list-switch-other-window)
 (define-key bmkp-list-mode-map "\M-p"                 'bmkp-list-preview-mode)
 (define-key bmkp-list-mode-map "\M-~"                 'bmkp-toggle-saving-bookmark-file)
 (define-key bmkp-list-mode-map (kbd "C-M-~")          'bmkp-toggle-saving-menu-list-state)
