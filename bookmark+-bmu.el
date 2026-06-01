@@ -1473,7 +1473,7 @@ Jump to (Visit) Bookmarks
 
 Prefix `j' uses another window; prefix `J' reuses this window:
 
-`\\[bookmark-jump-other-window]'\t- Bookmark by name
+`\\[bmkp-jump-other-window]'\t- Bookmark by name
 `\\[bmkp-jump-in-navlist-other-window]'\t- Bookmark in the navigation list
 `\\[bmkp-lighted-jump-other-window]'\t- Highlighted bookmark
 
@@ -1984,7 +1984,7 @@ Non-nil optional arg NO-MSG-P means do not show progress messages."
 ;;;###autoload (autoload 'bookmark-bmenu-1-window "bookmark+")
 (defun bookmark-bmenu-1-window (&optional flip-use-region-p) ; Bound to `1' in bookmark list
   "Select this line's bookmark, alone, in full frame.
-See `bookmark-jump' for info about the prefix arg."
+See `bmkp-jump' for info about the prefix arg."
   (interactive "P")
   (bmkp-bmenu-barf-if-not-in-menu-list)
   (bookmark-bmenu-ensure-position)
@@ -2001,7 +2001,7 @@ See `bookmark-jump' for info about the prefix arg."
 ;;;###autoload (autoload 'bookmark-bmenu-2-window "bookmark+")
 (defun bookmark-bmenu-2-window (&optional flip-use-region-p) ; Bound to `2' in bookmark list
   "Select this line's bookmark, with previous buffer in second window.
-See `bookmark-jump' for info about the prefix arg."
+See `bmkp-jump' for info about the prefix arg."
   (interactive "P")
   (bmkp-bmenu-barf-if-not-in-menu-list)
   (bookmark-bmenu-ensure-position)
@@ -2023,7 +2023,7 @@ See `bookmark-jump' for info about the prefix arg."
 ;;;###autoload (autoload 'bookmark-bmenu-this-window "bookmark+")
 (defun bookmark-bmenu-this-window (&optional flip-use-region-p) ; Bound to `RET' in bookmark list
   "Select this line's bookmark in this window.
-See `bookmark-jump' for info about the prefix arg."
+See `bmkp-jump' for info about the prefix arg."
   (interactive "P")
   (bmkp-bmenu-barf-if-not-in-menu-list)
   (bookmark-bmenu-ensure-position)
@@ -2040,13 +2040,13 @@ See `bookmark-jump' for info about the prefix arg."
 ;;;###autoload (autoload 'bookmark-bmenu-other-window "bookmark+")
 (defun bookmark-bmenu-other-window (&optional flip-use-region-p) ; Bound to `o' in bookmark list
   "Select this line's bookmark in other window.  Show `*Bookmark List*' still.
-See `bookmark-jump' for info about the prefix arg."
+See `bmkp-jump' for info about the prefix arg."
   (interactive "P")
   (bmkp-bmenu-barf-if-not-in-menu-list)
   (bookmark-bmenu-ensure-position)
   (let ((bookmark-name  (bookmark-bmenu-bookmark)))
     ;; (bookmark-automatically-show-annotations  t)) ; $$$$$$ Needed?
-    (bookmark-jump-other-window bookmark-name flip-use-region-p)))
+    (bmkp-jump-other-window bookmark-name flip-use-region-p)))
 
 
 ;; REPLACES ORIGINAL in `bookmark.el' (Emacs 27+).
@@ -2058,13 +2058,13 @@ See `bookmark-jump' for info about the prefix arg."
 ;;;###autoload (autoload 'bookmark-bmenu-other-window "bookmark+")
 (defun bookmark-bmenu-other-frame (&optional flip-use-region-p) ; Bound to `j 5' in bookmark list
   "Select this line's bookmark in another frame.
-See `bookmark-jump' for info about the prefix arg."
+See `bmkp-jump' for info about the prefix arg."
   (interactive "P")
   (bmkp-bmenu-barf-if-not-in-menu-list)
   (bookmark-bmenu-ensure-position)
   (let ((bookmark-name  (bookmark-bmenu-bookmark)))
     ;; (bookmark-automatically-show-annotations  t)) ; $$$$$$ Needed?
-    (bookmark-jump-other-frame bookmark-name flip-use-region-p)))
+    (bmkp-jump-other-frame bookmark-name flip-use-region-p)))
 
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
@@ -2076,7 +2076,7 @@ See `bookmark-jump' for info about the prefix arg."
 (defun bookmark-bmenu-switch-other-window (&optional flip-use-region-p) ; Bound to `C-o' in bookmark list
   "Make the other window select this line's bookmark.
 The current window remains selected.
-See `bookmark-jump' for info about the prefix arg."
+See `bmkp-jump' for info about the prefix arg."
   (interactive "P")
   (bmkp-bmenu-barf-if-not-in-menu-list)
   (bookmark-bmenu-ensure-position)
@@ -2096,7 +2096,7 @@ See `bookmark-jump' for info about the prefix arg."
 ;;;###autoload (autoload 'bookmark-bmenu-other-window-with-mouse "bookmark+")
 (defun bookmark-bmenu-other-window-with-mouse (event &optional flip-use-region-p)
   "Select clicked bookmark in other window.  Show `*Bookmark List*' still.
-See `bookmark-jump' for info about the prefix arg."
+See `bmkp-jump' for info about the prefix arg."
   (interactive "e\nP")
   (with-current-buffer (window-buffer (posn-window (event-end event)))
     (save-excursion (goto-char (posn-point (event-end event)))
@@ -4215,7 +4215,7 @@ Unlike `bookmark-bmenu-select', this command:
 * does not include the current bookmark - only the marked are accessed"
   (interactive)
   (dolist (bmk  bmkp-bmenu-marked-bookmarks)
-    (bookmark-jump-other-window bmk)))
+    (bmkp-jump-other-window bmk)))
 
 ;;;###autoload (autoload 'bmkp-bmenu-w32-open "bookmark+")
 (defun bmkp-bmenu-w32-open ()           ; Bound to `M-RET' in bookmark list.
@@ -4233,7 +4233,7 @@ Unlike `bookmark-bmenu-select', this command:
                                    (save-excursion (goto-char (posn-point (event-end event)))
                                                    (bookmark-bmenu-bookmark)))))
     (unless bmk (error "No bookmark here"))
-    (bookmark-handle-bookmark bmk)
+    (bmkp-handle-bookmark bmk)
     ;; Probably do not want this.  Users can use `jump-fn' tag if need be.
     ;; (run-hooks 'bookmark-after-jump-hook)
     (let ((jump-fn  (bmkp-get-tag-value bmk "bmkp-jump")))
@@ -5119,8 +5119,8 @@ For each number indication:
   )
 
 (when (fboundp 'org-add-link-type)
-  (org-add-link-type "bookmark"           'bookmark-jump)
-  (org-add-link-type "bookmark-other-win" 'bookmark-jump-other-window)
+  (org-add-link-type "bookmark"           'bmkp-jump)
+  (org-add-link-type "bookmark-other-win" 'bmkp-jump-other-window)
   (add-hook 'org-store-link-functions 'bmkp-bmenu-store-org-link 'APPEND)
   (defun bmkp-bmenu-store-org-link ()
     "Store a link to this bookmark for insertion in an Org-mode buffer.

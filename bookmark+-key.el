@@ -230,12 +230,12 @@ there are such bookmarks can take a little time."
 ;; `bookmark-map'
 
 ;; (define-key ctl-x-map "x" bookmark-map)
-;; (define-key ctl-x-map "xj" 'bookmark-jump-other-window)               ; `C-x x j' (also `C-x 4 j j')
+;; (define-key ctl-x-map "xj" 'bmkp-jump-other-window)               ; `C-x x j' (also `C-x 4 j j')
 (define-key ctl-x-map "rK" 'bmkp-set-desktop-bookmark)        ; `C-x r K' (also `C-x x K', `C-x x c K')
 
 (define-key bookmark-map "0"      'bmkp-empty-file)                                   ; `C-x x 0'
 (define-key bookmark-map "2"      'bmkp-clone-bookmark)                               ; `C-x x 2'
-(define-key bookmark-map "5"      'bookmark-jump-other-frame)                         ; `C-x x 5'
+(define-key bookmark-map "5"      'bmkp-jump-other-frame)                         ; `C-x x 5'
 (define-key bookmark-map "B"      'bmkp-choose-navlist-from-bookmark-list)            ; `C-x x B'
 ;; `e' is `edit-bookmarks' (aka `bookmark-bmenu-list', from vanilla Emacs.
 (define-key bookmark-map "E"      'bmkp-edit-bookmark-record)                         ; `C-x x E'
@@ -247,8 +247,8 @@ there are such bookmarks can take a little time."
 (define-key bookmark-map "\C-l"   'bmkp-switch-to-bookmark-file-this-file/buffer)     ; `C-x x C-l'
 (define-key bookmark-map "m"      'bmkp-bookmark-set-confirm-overwrite)               ; `C-x x m'
 (define-key bookmark-map "N"      'bmkp-navlist-bmenu-list)                           ; `C-x x N'
-(define-key bookmark-map "o"      'bookmark-jump-other-window)           ; `C-x x o' (also `C-x 4 j j')
-(define-key bookmark-map "q"      'bookmark-jump-other-window)           ; `C-x x q' (also `C-x 4 j j')
+(define-key bookmark-map "o"      'bmkp-jump-other-window)           ; `C-x x o' (also `C-x 4 j j')
+(define-key bookmark-map "q"      'bmkp-jump-other-window)           ; `C-x x q' (also `C-x 4 j j')
 (define-key bookmark-map "r"      'bmkp-edit-bookmark-name-and-location)              ; `C-x x r'
 (define-key bookmark-map "\C-s"   'bmkp-save-bookmarks-this-file/buffer)              ; `C-x x C-s'
 (define-key bookmark-map "\M-w"   'bmkp-set-snippet-bookmark)        ; `C-x x M-w' (also `C-x x c M-w')
@@ -450,8 +450,8 @@ there are such bookmarks can take a little time."
 (define-key bookmark-bmenu-mode-map "j"  bmkp-jump-other-window-map)
 (define-key bookmark-bmenu-mode-map "j>" 'bmkp-bmenu-jump-to-marked)                           ; `j >'
 
-(define-key ctl-x-5-map                "B"    'bookmark-jump-other-frame)       ; `C-x j 5', `C-x 5 B'
-(define-key bmkp-jump-map              "5"    'bookmark-jump-other-frame )                     ; `J 5'
+(define-key ctl-x-5-map                "B"    'bmkp-jump-other-frame)       ; `C-x j 5', `C-x 5 B'
+(define-key bmkp-jump-map              "5"    'bmkp-jump-other-frame )                     ; `J 5'
 (define-key bmkp-jump-map              "."    nil) ; For Emacs 20
 (define-key bmkp-jump-other-window-map "."    nil) ; For Emacs 20
 (define-key bmkp-jump-map              ".d"   'bmkp-dired-this-dir-jump)                 ; `C-x j . d'
@@ -508,11 +508,11 @@ there are such bookmarks can take a little time."
 (define-key bmkp-jump-other-window-map "i"    'bmkp-info-jump-other-window)               ; `C-x 4 j i'
 (define-key bmkp-jump-map              "\M-i" 'bmkp-image-jump)                           ; `C-x j M-i'
 (define-key bmkp-jump-other-window-map "\M-i" 'bmkp-image-jump-other-window)            ; `C-x 4 j M-i'
-(define-key bmkp-jump-map              "j"    'bookmark-jump)                               ; `C-x j j'
-(put 'bookmark-jump :advertised-binding "\C-xjj")
+(define-key bmkp-jump-map              "j"    'bmkp-jump)                               ; `C-x j j'
+(put 'bmkp-jump :advertised-binding "\C-xjj")
 
-(define-key bmkp-jump-other-window-map "j"    'bookmark-jump-other-window)                ; `C-x 4 j j'
-(put 'bookmark-jump-other-window :advertised-binding "\C-x4jj")
+(define-key bmkp-jump-other-window-map "j"    'bmkp-jump-other-window)                ; `C-x 4 j j'
+(put 'bmkp-jump-other-window :advertised-binding "\C-x4jj")
 (put 'jump-other :advertised-binding "\C-x4jj")
 
 (define-key bmkp-jump-map              "\C-j" 'bmkp-jump-to-list)                         ; `C-x j C-j'
@@ -1350,11 +1350,11 @@ Menu for bookmarks that target this file or buffer.")
   '(menu-item "Of Type..." bmkp-jump-to-type-other-window
     :help "Jump to a bookmark of a type that you specify"))
 
-(define-key bmkp-jump-menu [bookmark-jump-other-window]
-  '(menu-item "Any in Other Window..." bookmark-jump-other-window
+(define-key bmkp-jump-menu [bmkp-jump-other-window]
+  '(menu-item "Any in Other Window..." bmkp-jump-other-window
     :help "Jump to a bookmark of any type, in another window"))
-(define-key bmkp-jump-menu [bookmark-jump]
-  '(menu-item "Any..." bookmark-jump :help "Jump to a bookmark of any type, in this window"))
+(define-key bmkp-jump-menu [bmkp-jump]
+  '(menu-item "Any..." bmkp-jump :help "Jump to a bookmark of any type, in this window"))
 
 (define-key bmkp-jump-menu [bmkp-bmenu-jump-to-marked]
   '(menu-item "Marked" bmkp-bmenu-jump-to-marked

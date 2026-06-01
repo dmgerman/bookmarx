@@ -189,7 +189,7 @@
 
 (require 'bookmark)
 ;; bookmark-alist, bookmark-bmenu-bookmark, bmkp-completing-read, bmkp-get-bookmark,
-;; bookmark-get-position, bookmark-handle-bookmark, bmkp-maybe-load-default-file,
+;; bookmark-get-position, bmkp-handle-bookmark, bmkp-maybe-load-default-file,
 ;; bookmark-name-from-full-record, bookmark-name-from-record, bookmark-prop-get, bmkp-prop-set
 ;; (Note: bmkp-prop-set is provided by bookmark+-1.el.)
 
@@ -604,7 +604,7 @@ Non-interactively, non-nil MSGP means echo a status message."
 ;;;###autoload (autoload 'bmkp-lighted-jump "bookmark+")
 (defun bmkp-lighted-jump (bookmark-name &optional flip-use-region-p) ; `C-x j h'
   "Jump to a highlighted bookmark.
-This is a specialization of `bookmark-jump' - see that, in particular
+This is a specialization of `bmkp-jump' - see that, in particular
 for info about using a prefix argument."
   (interactive
    (let ((alist  (bmkp-lighted-alist-only)))
@@ -948,12 +948,12 @@ Non-interactively:
                (save-excursion
 
                  ;; See note in comments of `bmkp-light-bookmarks' - same considerations here.
-                 ;; (let ((bmkp-jump-display-function  nil)) (bookmark-handle-bookmark bmk))
+                 ;; (let ((bmkp-jump-display-function  nil)) (bmkp-handle-bookmark bmk))
                  ;;
                  (with-current-buffer (or (and buf  (get-buffer buf))  (current-buffer))
 
                    ;; POINTP is non-nil when `bmkp-light-bookmark' is called from
-                   ;; `bookmark--jump-via'.
+                   ;; `bmkp--jump-via'.
                    (when (and pointp  bmkp-auto-light-relocate-when-jump-flag)
                      (setq pos  (point)))
                    (when (and pos  (< pos (point-max)))
@@ -1080,7 +1080,7 @@ Non-nil optional args used when called from Lisp:
             ;; Calling the handler would be good for some cases, such as Info, where the
             ;; highlighting is not really specific to the buffer but to a narrowed part of it.
             ;;
-            ;; (let ((bmkp-jump-display-function  nil)) (bookmark-handle-bookmark bmk))
+            ;; (let ((bmkp-jump-display-function  nil)) (bmkp-handle-bookmark bmk))
             ;;
             ;; But calling the handler is in general the wrong thing.  We don't want highlighting
             ;; all Dired bookmarks in a given directory to also do all the file marking and
