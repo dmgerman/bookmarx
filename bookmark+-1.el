@@ -13,7 +13,7 @@
 ;; URL: https://www.emacswiki.org/emacs/download/bookmark%2b-1.el
 ;; Doc URL: https://www.emacswiki.org/emacs/BookmarkPlus
 ;; Keywords: bookmarks, bookmark+, placeholders, annotations, search, info, url, eww, w3m, gnus
-;; Compatibility: GNU Emacs: 20.x, 21.x, 22.x, 23.x, 24.x, 25.x, 26.x
+;; Compatibility: GNU Emacs: 30.x and later
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -841,7 +841,7 @@ Returns nil if neither is available."
     (let ((sym  (bmkp-symbol-nearest-point)))
       (and sym (symbol-name sym)))))
 
-(when (> emacs-major-version 21) (require 'font-lock+ nil t)) ;; font-lock-ignore (text property)
+(require 'font-lock+ nil t)             ; font-lock-ignore (text property)
 
 (require 'bookmark)
 ;; bookmark-alist, bookmark-alist-modification-count, bookmark-annotation-name,
@@ -1035,10 +1035,9 @@ function, then add/remove `bmkp-find-file-invoke-bookmark-if-autofile'
 to/from `find-file-hook'."
   :set (lambda (sym new-val)
          (custom-set-default sym new-val)
-         (let ((hook-var  (if (< emacs-major-version 22) 'find-file-hooks 'find-file-hook)))
-           (if bmkp-autofile-access-invokes-bookmark-flag
-               (add-hook hook-var 'bmkp-find-file-invoke-bookmark-if-autofile)
-             (remove-hook hook-var 'bmkp-find-file-invoke-bookmark-if-autofile))))
+         (if bmkp-autofile-access-invokes-bookmark-flag
+             (add-hook 'find-file-hook 'bmkp-find-file-invoke-bookmark-if-autofile)
+           (remove-hook 'find-file-hook 'bmkp-find-file-invoke-bookmark-if-autofile)))
   :type 'boolean :group 'bookmark-plus)
 
 ;;;###autoload (autoload 'bmkp-autofile-filecache "bookmark+")
@@ -1144,7 +1143,7 @@ The name returned should match the application of
   :type 'function :group 'bookmark-plus)
 
 ;;;###autoload (autoload 'bmkp-autoname-format "bookmark+")
-(defcustom bmkp-autoname-format (if (> emacs-major-version 21) "^[0-9]\\{9\\} %B" "^[0-9]+ %B")
+(defcustom bmkp-autoname-format "^[0-9]\\{9\\} %B"
   "*Format string to match an autonamed bookmark name.
 You can use `%B' instead of `%s' to accept the buffer name.  This has
 the advantage that commands and other functions that check for a
@@ -1255,7 +1254,6 @@ of the following, if available:
 ;;;###autoload (autoload 'bmkp-default-handlers-for-file-types "bookmark+")
 (defcustom bmkp-default-handlers-for-file-types
   (and (require 'dired-x)         ; It in turn requires `dired-aux.el'
-       (eval-when-compile (when (< emacs-major-version 21) (require 'cl))) ;; `dolist', for Emacs 20
        (let ((assns  ()))
          (dolist (shell-assn  dired-guess-shell-alist-user)
            (push (cons (car shell-assn)
@@ -1316,7 +1314,7 @@ the save (only)."
 
 
 ;; EWW support
-(when (> emacs-major-version 24)        ; Emacs 25+
+(progn ; Emacs 25+
 
   (defcustom bmkp-eww-auto-type 'update-only
     "How `bmkp-eww-auto-bookmark-mode' behaves when enabled.
@@ -1325,11 +1323,6 @@ You can toggle this option using `\\[bmkp-toggle-eww-auto-type]'."
             (const :tag "Create EWW bookmark or update existing EWW bookmark" create-or-update)
             (const :tag "Update existing EWW bookmark (only)" update-only))
     :group 'bookmark-plus)
-
-  ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
-  ;; works for newer Emacs too.
-  (defvaralias 'bmkp-eww-buffer-handling 'bmkp-eww-buffer-renaming)
-  (bmkp-make-obsolete-variable 'bmkp-eww-buffer-handling 'bmkp-eww-buffer-renaming "2018-02-23")
 
   (defcustom bmkp-eww-buffer-renaming nil
     "Whether and how an EWW buffer is renamed.
@@ -1344,6 +1337,8 @@ Non-nil values affect EWW behavior even when bookmarks are not used.
             ;; Any symbol other than `page' and nil is treated the same as `page'.
             (const :tag "Rename buffer to web-page title"                            page))
     :group 'bookmark-plus)
+  (defvaralias 'bmkp-eww-buffer-handling 'bmkp-eww-buffer-renaming)
+  (bmkp-make-obsolete-variable 'bmkp-eww-buffer-handling 'bmkp-eww-buffer-renaming "2018-02-23")
 
   (defcustom bmkp-eww-generate-buffer-flag nil
     "Whether to generate a new buffer when jumping to an EWW bookmark.
@@ -1351,16 +1346,13 @@ Non-nil values affect EWW behavior even when bookmarks are not used.
 * Non-nil means use a new buffer."
     :type 'boolean :group 'bookmark-plus)
 
-  ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
-  ;; works for newer Emacs too.
-  (defvaralias 'bmkp-replace-eww-keys-flag 'bmkp-eww-replace-keys-flag)
-  (bmkp-make-obsolete-variable 'bmkp-replace-eww-keys-flag 'bmkp-eww-replace-keys-flag "2017-01-10")
-
   (defcustom bmkp-eww-replace-keys-flag t
     "Non-nil means replace EWW bookmarking keys and menus with Bookmark+ ones.
 If you change the value of this option then you must restart Emacs for
 it to take effect."
     :type 'boolean :group 'bookmark-plus)
+  (defvaralias 'bmkp-replace-eww-keys-flag 'bmkp-eww-replace-keys-flag)
+  (bmkp-make-obsolete-variable 'bmkp-replace-eww-keys-flag 'bmkp-eww-replace-keys-flag "2017-01-10")
   )
 
 ;;;###autoload (autoload 'bmkp-annotation-modes-inherit-from "bookmark+")
@@ -1394,7 +1386,7 @@ the bookmarks for a given release to appear together."
   :type 'number :group 'bookmark-plus)
 
 
-(when (> emacs-major-version 21)        ; Emacs 22+ (need also `Info-selection-hook').
+(progn ; Emacs 22+ (need also `Info-selection-hook').
 
   (defcustom bmkp-info-auto-type 'create-or-update
     "How `bmkp-info-auto-bookmark-mode' behaves when enabled.
@@ -1647,29 +1639,20 @@ still be used in Emacs 20 and 21.)
 
 If a relative file name is specified for a bookmark file then the
 current value of `default-directory' is used to find the file."
-  :type (if (> emacs-major-version 21)
-            '(choice
-              (const :tag "From current bookmarks only" current)
-              (list :tag "From current bookmarks and other sources"
-               (const  :tag "" current)
-               (repeat :inline t :tag "Additional sources or specific tags"
-                (choice
-                 (string :tag "Specific tag")
-                 (cons   :tag "All tags from a bookmark file"
-                  (const :tag "" bmkfile) (file :must-match t)))))
-              (repeat :tag "Choose sources or specific tags"
-               (choice
-                (string :tag "Specific tag")
-                (cons   :tag "All tags from a bookmark file"
-                 (const :tag "" bmkfile) (file :must-match t)))))
-          ;; A bug in Emacs 20-21 means we must sacrifice the user choice of current plus other sources.
-          '(choice
-            (const :tag "From current bookmarks only" current)
-            (repeat :tag "Choose sources or specific tags" ; A 2nd Emacs 20-21 bug ignores `:tag' for menu.
-             (choice
-              (string :tag "Specific tag")
-              (cons   :tag "All tags from a bookmark file"
-               (const :tag "" bmkfile) (file :must-match t))))))
+  :type '(choice
+          (const :tag "From current bookmarks only" current)
+          (list :tag "From current bookmarks and other sources"
+           (const  :tag "" current)
+           (repeat :inline t :tag "Additional sources or specific tags"
+            (choice
+             (string :tag "Specific tag")
+             (cons   :tag "All tags from a bookmark file"
+              (const :tag "" bmkfile) (file :must-match t)))))
+          (repeat :tag "Choose sources or specific tags"
+           (choice
+            (string :tag "Specific tag")
+            (cons   :tag "All tags from a bookmark file"
+             (const :tag "" bmkfile) (file :must-match t)))))
   :group 'bookmark-plus)
 
 ;; Emacs 20 only.
@@ -2377,8 +2360,7 @@ Non-nil POSITION means record it, not point, as the `position' entry.
 Non-nil VISITS means record it as the `visits' entry.
 
 Non-nil NO-REGION means do not include the region end, `end-position'."
-  (unless (> emacs-major-version 23) (setq no-context  nil))
-  (let* ((dired-p  (and (boundp 'dired-buffers)  (car (rassq (current-buffer) dired-buffers))))
+    (let* ((dired-p  (and (boundp 'dired-buffers)  (car (rassq (current-buffer) dired-buffers))))
          (buf      (buffer-name))
          (ctime    (current-time))
 
@@ -3031,7 +3013,7 @@ Optional arg NO-HISTORY means do not record BOOKMARK-NAME in
 `bookmark-history'."
   (interactive
    (let ((bmk  (bmkp-completing-read "Insert bookmark location" (bmkp-default-bookmark-name))))
-     (if (> emacs-major-version 21) (list bmk) bmk)))
+     (list bmk)))
   (unless no-history (bookmark-maybe-historicize-string bookmark-name))
   (insert (bmkp-location bookmark-name))) ; Return the line inserted.
 
@@ -3297,9 +3279,8 @@ contain a `%s' construct, so that it can be passed along with FILE to
       (goto-char (point-min))
       (unless (file-exists-p file)
         (delete-region (point-min) (point-max)) ; In case a find-file hook inserted a header, etc.
-        ;; Don't insert the version stamp here; the block guarded by
-        ;; `(when (> emacs-major-version 25) ...)' below will do that with
-        ;; proper coding-system handling.
+        ;; Don't insert the version stamp here; the block below will do that
+        ;; with proper coding-system handling.
         (insert "(\n)"))
       (setq start  (and (file-exists-p file)
                         (or (save-excursion (goto-char (point-min))
@@ -3678,9 +3659,7 @@ in the current sort order."
               (put-text-property (line-beginning-position 0) (line-end-position 0) 'face 'bmkp-heading)
               (insert ann) (unless (bolp) (insert "\n\n")))))
         (goto-char (point-min))
-        (if (> emacs-major-version 23) ; Incompatible change introduced in Emacs 24.1
-            (view-mode-enter)
-          (view-mode-enter (cons (selected-window) (cons nil 'quit-window))))
+        (view-mode-enter)
         (when (one-window-p t) (fit-frame-to-buffer))))
     (select-frame-set-input-focus oframe)))
 
@@ -4325,10 +4304,8 @@ symbol at point exactly."
                     (format "\\_<%s\\_>" (regexp-quote tag))
                   (regexp-quote tag)))))
 
-  ;; Same as `icicle-read-regexp' in `icicles-fn.el'.
-  (if (fboundp 'find-tag-default)
-      (defun bmkp-read-regexp (&optional prompt default history) ; Emacs 22-24.2
-        "Read and return a regular expression as a string.
+  (defun bmkp-read-regexp (&optional prompt default history)
+    "Read and return a regular expression as a string.
 If PROMPT does not end with a colon and possibly whitespace then
 append \": \" to it.
 
@@ -4341,54 +4318,35 @@ The string DEFAULT or DEFLT is added to the prompt and is returned as
 the default value if the user enters empty input.  The empty string is
 returned if DEFAULT or DEFLT is nil and the user enters empty input.
 
-SUGGESTIONS is used only for Emacs 23 and later.  It is a list of
-strings that can be inserted into the minibuffer using `\\<minibuffer-local-map>\\[next-history-element]'.
+SUGGESTIONS is a list of strings that can be inserted into the
+minibuffer using `\\<minibuffer-local-map>\\[next-history-element]'.
 The values supplied in SUGGESTIONS are prepended to the list of
 standard suggestions, which include the tag at point, the last isearch
 regexp, the last isearch string, and the last replacement regexp.
 
 Optional argument HISTORY is a symbol to use for the history list.
 If nil then use `regexp-history'."
-        (unless prompt (setq prompt  "Regexp: "))
-        (let* ((deflt                  (if (consp default) (car default) default))
-               (suggestions            (and (> emacs-major-version 22)
-                                            (if (listp default) default (list default))))
-               (suggestions            (and (> emacs-major-version 22)
-                                            (append
-                                             suggestions
-                                             (list (bmkp-find-tag-default-as-regexp)
-                                                   (car regexp-search-ring)
-                                                   (regexp-quote (or (car search-ring)  ""))
-                                                   (car (symbol-value query-replace-from-history-variable))))))
-               (suggestions            (and (> emacs-major-version 22)
-                                            (delete-dups (delq nil (delete "" suggestions)))))
-               (history-add-new-input  nil) ; Do not automatically add default to history for empty input.
-               (input                  (read-from-minibuffer
-                                        (cond ((bmkp-string-match-p ":[ \t]*\\'" prompt) prompt)
-                                              (deflt (format "%s (default %s): " prompt
-                                                             (query-replace-descr deflt)))
-                                              (t (format "%s: " prompt)))
-                                        nil nil nil (or history  'regexp-history) suggestions t)))
-          (if (equal input "")
-              (or deflt  input)         ; Return the default value when the user enters empty input.
-            (prog1 input                ; Add non-empty input to the history and return input.
-              (add-to-history (or history  'regexp-history) input)))))
-
-    (defun bmkp-read-regexp (&optional prompt default history) ; Emacs 20-21
-      "Read and return a string.
-PROMPT defaults to \"Regexp: \".
-Optional arg DEFAULT is a string that is returned when the user enters
-empty input.  It can also be a list of strings, of which only the
-first is used.
-Optional arg HISTORY is a symbol to use for the history list.  If nil,
-use `regexp-history'."
-      (unless prompt (setq prompt  "Regexp: "))
-      (when (consp default) (setq default  (car default)))
-      (read-string (cond ((bmkp-string-match-p ":[ \t]*\\'" prompt) prompt)
-                         (default (format "%s (default %s): " prompt
-                                          (mapconcat #'isearch-text-char-description default "")))
-                         (t (format "%s: " prompt)))
-                   nil (or history  'regexp-history) default))))
+    (unless prompt (setq prompt  "Regexp: "))
+    (let* ((deflt                  (if (consp default) (car default) default))
+           (suggestions            (if (listp default) default (list default)))
+           (suggestions            (append
+                                    suggestions
+                                    (list (bmkp-find-tag-default-as-regexp)
+                                          (car regexp-search-ring)
+                                          (regexp-quote (or (car search-ring)  ""))
+                                          (car (symbol-value query-replace-from-history-variable)))))
+           (suggestions            (delete-dups (delq nil (delete "" suggestions))))
+           (history-add-new-input  nil) ; Do not automatically add default to history for empty input.
+           (input                  (read-from-minibuffer
+                                    (cond ((bmkp-string-match-p ":[ \t]*\\'" prompt) prompt)
+                                          (deflt (format "%s (default %s): " prompt
+                                                         (query-replace-descr deflt)))
+                                          (t (format "%s: " prompt)))
+                                    nil nil nil (or history  'regexp-history) suggestions t)))
+      (if (equal input "")
+          (or deflt  input)         ; Return the default value when the user enters empty input.
+        (prog1 input                ; Add non-empty input to the history and return input.
+          (add-to-history (or history  'regexp-history) input))))))
 
 ;; Same as `icicle-propertize'.  (Not used yet.)
 ;;
@@ -4411,46 +4369,32 @@ The other names are as described below.
 
 Uses option `bmkp-new-bookmark-default-names' to come up with the
 other names.  To these names, `bookmark-current-bookmark' and
-`bookmark-buffer-name' are appended, if available (non-nil).
-
-NOTE: For Emacs versions prior to Emacs 23, return only a single
-default name, not a list of names.  The name is the first in the list
-of names described above for Emacs 23+."
+`bookmark-buffer-name' are appended, if available (non-nil)."
   (let ((defs  (and first-def  (list first-def)))
         val)
-    (unless (and (< emacs-major-version 23)  defs) ; Just use FIRST-DEF for Emacs < 23.
-      ;; If region is active, first default is its text, with buffer name prepended.
-      (when (and transient-mark-mode  mark-active  (> (region-end) (region-beginning)))
-        (let* ((regname  (concat (buffer-name) ": " (buffer-substring (region-beginning) (region-end))))
-               (defname  (bmkp-replace-regexp-in-string
-                          "\n" " "
-                          (progn (save-excursion (goto-char (region-beginning))
-                                                 (skip-chars-forward " ")
-                                                 (setq bookmark-yank-point  (point)))
-                                 (substring regname 0 (min bmkp-bookmark-name-length-max
-                                                           (length regname)))))))
-          (if (< emacs-major-version 23)
-              (setq defs  defname)
-            ;; This is the same as `add-to-list' with `EQ' (not available for Emacs 20-21).
-            (unless (memq defname defs) (setq defs  (cons defname defs))))))
-      ;; Names provided by option `bmkp-new-bookmark-default-names',
-      ;; plus `bookmark-current-bookmark' and `bookmark-buffer-name'.
-      (unless (and (< emacs-major-version 23)  defs)
-        (catch 'bmkp-new-bookmark-default-names
-          (dolist (fn  bmkp-new-bookmark-default-names)
-            (when (functionp fn) ; Be sure it is defined and is a function.
-              (setq val  (funcall fn))
-              (when (and (stringp val)  (not (string= "" val)))
-                (setq val  (bmkp-replace-regexp-in-string "\n" " " val))
-                (if (> emacs-major-version 22)
-                    (unless (memq val defs) (setq defs  (cons val defs)))
-                  (throw 'bmkp-new-bookmark-default-names (setq defs  val)))))))
-        (when (and (< emacs-major-version 23)  (null defs))
-          (setq defs  (or bookmark-current-bookmark  (bookmark-buffer-name))))
-        (when (listp defs)
-          (when bookmark-current-bookmark (push bookmark-current-bookmark defs))
-          (let ((buf  (bookmark-buffer-name))) (when buf (push buf defs)))
-          (setq defs  (nreverse defs)))))
+    ;; If region is active, first default is its text, with buffer name prepended.
+    (when (and transient-mark-mode  mark-active  (> (region-end) (region-beginning)))
+      (let* ((regname  (concat (buffer-name) ": " (buffer-substring (region-beginning) (region-end))))
+             (defname  (bmkp-replace-regexp-in-string
+                        "\n" " "
+                        (progn (save-excursion (goto-char (region-beginning))
+                                               (skip-chars-forward " ")
+                                               (setq bookmark-yank-point  (point)))
+                               (substring regname 0 (min bmkp-bookmark-name-length-max
+                                                         (length regname)))))))
+        (unless (memq defname defs) (setq defs  (cons defname defs)))))
+    ;; Names provided by option `bmkp-new-bookmark-default-names',
+    ;; plus `bookmark-current-bookmark' and `bookmark-buffer-name'.
+    (dolist (fn  bmkp-new-bookmark-default-names)
+      (when (functionp fn)              ; Be sure it is defined and is a function.
+        (setq val  (funcall fn))
+        (when (and (stringp val)  (not (string= "" val)))
+          (setq val  (bmkp-replace-regexp-in-string "\n" " " val))
+          (unless (memq val defs) (setq defs  (cons val defs))))))
+    (when (listp defs)
+      (when bookmark-current-bookmark (push bookmark-current-bookmark defs))
+      (let ((buf  (bookmark-buffer-name))) (when buf (push buf defs)))
+      (setq defs  (nreverse defs)))
     defs))
 
 (defun bmkp-bookmark-record-from-name (bookmark-name &optional noerror _memp alist)
@@ -5618,8 +5562,7 @@ The other args are the same as for `read-file-name'."
 (defun bmkp-read-bookmark-file-default ()
   "A default value for `bmkp-read-bookmark-file-name' DEFAULT-FILENAME arg.
 A value to use if you want a default and there is none better."
-  (if (and (> emacs-major-version 22)
-           (not (bmkp-same-file-p "~/.emacs.bmk" bookmark-default-file)))
+  (if (not (bmkp-same-file-p "~/.emacs.bmk" bookmark-default-file))
       (list "~/.emacs.bmk" bookmark-default-file)
     "~/.emacs.bmk"))
 
@@ -6082,8 +6025,7 @@ message."
 ;;(@* "Search-and-Replace Locations of Marked Bookmarks")
 ;;  *** Search-and-Replace Locations of Marked Bookmarks ***
 
-(when (> emacs-major-version 22)
-  (defvar bmkp-isearch-bookmarks nil
+(progn (defvar bmkp-isearch-bookmarks nil
     "Bookmarks whose locations are to be incrementally searched.")
 
   (defun bmkp-isearch-next-bookmark-buffer (&optional _buffer wrap)
@@ -6642,7 +6584,7 @@ If it is a record then it need not belong to `bookmark-alist'."
        (let ((file  (bookmark-get-filename bookmark)))
          (and (stringp file)  (bmkp-string-match-p (regexp-quote "*") file)))))
 
-(when (> emacs-major-version 24)        ; Emacs 25+
+(progn ; Emacs 25+
 
   (defun bmkp-eww-bookmark-p (bookmark)
     "Return non-nil if BOOKMARK is an EWW bookmark.
@@ -7670,7 +7612,7 @@ If either is a record then it need not belong to `bookmark-alist'."
           (t                            nil)))) ; Neither buffer exists
 
 ;; EWW.  Not used yet.
-(when (> emacs-major-version 24)        ; Emacs 25
+(progn ; Emacs 25
 
   (defun bmkp-eww-cp (b1 b2)
     "True if bookmark B1 sorts as an EWW URL bookmark before B2.
@@ -8372,23 +8314,16 @@ Non-interactively:
   (interactive
    (list (let ()
            (read-file-name "File: " nil
-                           (if (or (> emacs-major-version 23)
-                                   (and (= emacs-major-version 23)  (> emacs-minor-version 1)))
-                               (let ((deflts  ())
-                                     def)
-                                 (when (setq def  (buffer-file-name)) (push def deflts))
-                                 (when (setq def  (bmkp-thing-at-point 'filename)) (push def deflts))
-                                 (when (setq def  (bmkp-ffap-guesser)) (push def deflts))
-                                 (when (and (boundp 'file-name-at-point-functions)
-                                            (setq def  (run-hook-with-args-until-success
-                                                        'file-name-at-point-functions)))
-                                   (push def deflts))
-                                 deflts)
-                             (or (if (boundp 'file-name-at-point-functions) ; In `files.el', Emacs 23.2+.
-                                     (run-hook-with-args-until-success 'file-name-at-point-functions)
-                                   (bmkp-ffap-guesser))
-                                 (bmkp-thing-at-point 'filename)
-                                 (buffer-file-name)))))
+                           (let ((deflts  ())
+                                 def)
+                             (when (setq def  (buffer-file-name)) (push def deflts))
+                             (when (setq def  (bmkp-thing-at-point 'filename)) (push def deflts))
+                             (when (setq def  (bmkp-ffap-guesser)) (push def deflts))
+                             (when (and (boundp 'file-name-at-point-functions)
+                                        (setq def  (run-hook-with-args-until-success
+                                                    'file-name-at-point-functions)))
+                               (push def deflts))
+                             deflts)))
          nil
          (and current-prefix-arg  (read-string "Prefix for bookmark name: "))
          nil
@@ -8642,8 +8577,7 @@ use this as the `handler' entry.  New sound bookmarks use
 `play-sound-file' as entry `file-handler'."
   (play-sound-file (bookmark-get-filename bookmark)))
 
-(when (> emacs-major-version 21)
-  (defun bmkp-compilation-target-set (&optional prefix) ; Bound to `C-c C-b' in compilation mode
+(progn (defun bmkp-compilation-target-set (&optional prefix) ; Bound to `C-c C-b' in compilation mode
     "Set a bookmark at the start of the line for this compilation hit.
 The bookmark is set in the indicated file at the indicated line.
 You are prompted for the bookmark name.  But with a prefix arg, you
@@ -8678,8 +8612,7 @@ POSITION is the beginning of the line indicated by the message."
            (spec-dir   (if directory (expand-file-name directory) default-directory)))
       (cons (expand-file-name filename spec-dir) line))))
 
-(when (> emacs-major-version 21)
-  (defun bmkp-compilation-target-set-all (prefix &optional msg-p) ; Bound to `C-c C-M-b' in compilation mode
+(defun bmkp-compilation-target-set-all (prefix &optional msg-p) ; Bound to `C-c C-M-b' in compilation mode
     "Set a bookmark for each hit of a compilation buffer.
 NOTE: You can use `C-x C-q' to make the buffer writable and then
       remove any hits that you do not want to bookmark.  Only the hits
@@ -8707,14 +8640,13 @@ status messages."
               (bmkp-compilation-target-set prefix) ; Ignore error here (e.g. killed buffer).
             (error nil))
           (setq count  (1+ count)))
-        (when msg-p (message "Set %d bookmarks" count))))))
+        (when msg-p (message "Set %d bookmarks" count)))))
 
 
 ;; We could make the `occur' code work for Emacs 20 & 21 also, but you would not be able to
 ;; delete some occurrences and bookmark only the remaining ones.
 
-(when (> emacs-major-version 21)
-  (defun bmkp-occur-target-set (&optional prefix) ; Bound to `C-c C-b' in Occur mode
+(defun bmkp-occur-target-set (&optional prefix) ; Bound to `C-c C-b' in Occur mode
     "Set a bookmark at the start of the line for this `(multi-)occur' hit.
 You are prompted for the bookmark name.  But with a prefix arg, you
 are prompted only for a PREFIX string.  In that case, and in Lisp
@@ -8741,10 +8673,9 @@ You can use this only in `Occur' mode (commands such as `occur' and
                           (when (called-interactively-p 'interactive)
                             (setq prefix  (read-string "Prefix for bookmark name: ")))
                           (unless (stringp prefix) (setq prefix  ""))
-                          (bmkp-set (format "%s%s, line %s" prefix buf line) 99 'INTERACTIVEP)))))))
+                          (bmkp-set (format "%s%s, line %s" prefix buf line) 99 'INTERACTIVEP))))))
 
-(when (> emacs-major-version 21)
-  (defun bmkp-occur-target-set-all (&optional prefix msg-p) ; Bound to `C-c C-M-b' in Occur mode
+(defun bmkp-occur-target-set-all (&optional prefix msg-p) ; Bound to `C-c C-M-b' in Occur mode
     "Set a bookmark for each hit of a `(multi-)occur' buffer.
 NOTE: You can use `C-x C-q' to make the buffer writable and then
       remove any hits that you do not want to bookmark.  Only the hits
@@ -8775,15 +8706,13 @@ messages."
               (bmkp-occur-target-set prefix) ; Ignore error here (e.g. killed buffer).
             (error nil))
           (setq count  (1+ count)))
-        (when msg-p (message "Set %d bookmarks" count))))))
+        (when msg-p (message "Set %d bookmarks" count)))))
 
 
 ;;(@* "Bookmark Links")
 ;;  *** Bookmark Links ***
 
-(when (> emacs-major-version 21)
-
-  (defun bmkp-bookmark-linked-at (&optional position msgp)
+(progn (defun bmkp-bookmark-linked-at (&optional position msgp)
     "Return the bookmark linked at POSITION (default: point), or nil if none."
     (interactive "d\np")
     (unless position (setq position  (point)))
@@ -9069,8 +8998,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
                     (error nil))))))
       help-text)))
 
-(when (and (> emacs-major-version 21)
-           (condition-case nil (require 'help-mode nil t) (error nil))
+(when (and (condition-case nil (require 'help-mode nil t) (error nil))
            (get 'help-xref 'button-category-symbol)) ; In `button.el'
   
   (define-button-type 'bmkp-jump-to-list-button
@@ -9098,9 +9026,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
   (with-current-buffer "*Help*"
     (let ((buffer-read-only  nil))
       ;; Add button to go to the bookmark entry in `*Bmkp List*'.
-      ;; Not for Emacs 21.3 - its `help-insert-xref-button' signature is different.
-      (when (and (> emacs-major-version 21) ; In `help-mode.el'.
-                 (condition-case nil (require 'help-mode nil t) (error nil))
+      (when (and (condition-case nil (require 'help-mode nil t) (error nil))
                  (fboundp 'help-insert-xref-button))
         (goto-char (point-min)) (forward-line 2)
         (help-insert-xref-button "[Show in `*Bmkp List*']"
@@ -9113,9 +9039,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
   (with-current-buffer "*Help*"
     (let ((buffer-read-only  nil))
       ;; Add button to go to the bookmark entry in `*Bmkp List*'.
-      ;; Not for Emacs 21.3 - its `help-insert-xref-button' signature is different.
-      (when (and (> emacs-major-version 21) ; In `help-mode.el'.
-                 (condition-case nil (require 'help-mode nil t) (error nil))
+      (when (and (condition-case nil (require 'help-mode nil t) (error nil))
                  (fboundp 'help-insert-xref-button))
         (goto-char (point-max))
         (insert "\n")
@@ -9129,9 +9053,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
   (with-current-buffer "*Help*"
     (let ((buffer-read-only  nil))
       ;; Add button to go to the bookmark entry in `*Bmkp List*'.
-      ;; Not for Emacs 21.3 - its `help-insert-xref-button' signature is different.
-      (when (and (> emacs-major-version 21) ; In `help-mode.el'.
-                 (condition-case nil (require 'help-mode nil t) (error nil))
+      (when (and (condition-case nil (require 'help-mode nil t) (error nil))
                  (fboundp 'help-insert-xref-button))
         (goto-char (point-max))
         (insert "\n")
@@ -9672,12 +9594,7 @@ enter, just use it to set the bookmark."
         (desktop-restore-eager    t)    ; Don't bother with lazy restore.
         (desktop-globals-to-save  (bmkp-remove-if (lambda (elt) (memq elt bmkp-desktop-no-save-vars))
                                                   desktop-globals-to-save)))
-    (cond ((< emacs-major-version 22)   ; Emacs 22 introduced `RELEASE' (locking).
-           (desktop-save desk-dir))
-          ((or (< emacs-major-version 24)  (and (= emacs-major-version 24)  (< emacs-minor-version 4)))
-           (desktop-save desk-dir 'RELEASE))
-          (t                            ; Emacs 24.4 introduced `AUTOSAVE'.
-           (desktop-save desk-dir 'RELEASE 'AUTOSAVE)))
+    (desktop-save desk-dir 'RELEASE 'AUTOSAVE)
     (message "Desktop saved in `%s'" desktop-file)))
 
 (unless (fboundp 'desktop-full-file-name) ; Emacs < 22.  (This is the vanilla definition.)
@@ -9768,7 +9685,7 @@ Clear the desktop and load DESKTOP-FILE."
                                                   desktop-globals-to-save)))
     (bmkp-desktop-kill)
     (desktop-clear)
-    (if (< emacs-major-version 22) (desktop-read) (desktop-read desktop-dir))))
+    (desktop-read desktop-dir)))
 
 ;; Derived from code in `desktop-kill'.
 (defun bmkp-desktop-kill ()
@@ -9785,10 +9702,7 @@ This function does nothing in Emacs versions prior to Emacs 22."
                             (and exists  (eq desktop-save 'ask-if-exists)))
                         (y-or-n-p "Save current desktop first? ")))))
     (condition-case err
-        (if (or (< emacs-major-version 24)
-                (and (= emacs-major-version 24)  (< emacs-minor-version 4)))
-            (desktop-save desktop-dirname 'RELEASE)
-          (desktop-save desktop-dirname 'RELEASE 'AUTOSAVE)) ; Emacs 24.4 introduced `AUTOSAVE'.
+        (desktop-save desktop-dirname 'RELEASE 'AUTOSAVE)
       (file-error (unless (yes-or-no-p "Error while saving the desktop.  IGNORE? ")
                     (signal (car err) (cdr err))))))
   ;; Just release lock, regardless of whether this Emacs process is the owner.
@@ -10289,9 +10203,7 @@ BOOKMARK is a bookmark name or a bookmark record."
     (browse-url url)))
 
 
-;; EWW support.  The (when (> emacs-major-version 24)) wrapper that guarded
-;; this block was removed when the fork dropped support for Emacs < 30.
-;; Leading indentation is preserved to keep the diff small.
+;; EWW support.
 
 ;; This is set by `bmkp-eww-rename-buffer' and used in `bmkp-jump-eww' for local var `after-render-function'.
 (defvar-local bmkp-eww-new-buf-name nil
@@ -10370,7 +10282,7 @@ that `bmkp-jump-eww' will use the already visited buffer."
 
   ;; The EWW buffer is renamed on each visit, if `bmkp-eww-buffer-renaming' is non-nil.
   (eval-after-load "eww"
-    '(when (> emacs-major-version 24)   ; Emacs 25+
+    '(progn ; Emacs 25+
        (add-hook   'eww-after-render-hook      'bmkp-eww-rename-buffer)
        (advice-add 'eww-restore-history :after 'bmkp-eww-rename-buffer)))
 
@@ -10491,7 +10403,7 @@ bookmarks.  If it does not exist then it is created."
         (bmkp-write-file bmk-file 'ADD)))
     (when msgp (message "Wrote Bookmark file `%s'" bmk-file)))
 
-;; End of former (when (> emacs-major-version 24)) EWW-support block.
+;; End of EWW support.
 
 ;; W3M support: legacy compatibility only.
 ;; w3m.el (emacs-w3m) is effectively dead.  This fork does not create new
@@ -10549,12 +10461,10 @@ Current buffer can be the article buffer or the summary buffer."
 ;; Better to use `bmkp-make-gnus-record' even for Emacs 24+, because `bmkp-jump-gnus' is better than
 ;; `gnus-summary-bmkp-jump' (no `sit-for' if article buffer not needed).
 
-;; $$$$$$ (unless (> emacs-major-version 23) ; Emacs 24 has `gnus-summary-bmkp-make-record'.
 (add-hook 'gnus-summary-mode-hook (lambda ()
                                     (set (make-local-variable 'bookmark-make-record-function)
                                          'bmkp-make-gnus-record)))
 
-;; $$$$$$ (unless (> emacs-major-version 23) ; Emacs 24 has `gnus-summary-bmkp-make-record'.
 (add-hook 'gnus-article-mode-hook (lambda ()
                                     (set (make-local-variable 'bookmark-make-record-function)
                                          'bmkp-make-gnus-record)))
@@ -10570,7 +10480,7 @@ BOOKMARK is a bookmark name or a bookmark record."
          (id       (bookmark-prop-get bookmark 'message-id))
          (loc      (bookmark-prop-get bookmark 'location))
          (buf      (if loc (car (split-string loc)) (bookmark-prop-get bookmark 'buffer))))
-    (if (< emacs-major-version 22) (gnus-fetch-group group) (gnus-fetch-group group (list article)))
+    (gnus-fetch-group group (list article))
     (gnus-summary-insert-cached-articles)
     (gnus-summary-goto-article id nil 'force)
     ;; Go to article buffer if appropriate.  Wait for it to be ready, so `bmkp-default-handler' has time
@@ -10587,16 +10497,10 @@ BOOKMARK is a bookmark name or a bookmark record."
 
 ;; `man' and `woman' support for Emacs < 24.
 
-(when (> emacs-major-version 20)
-  (defun bmkp-make-woman-record ()
+(progn (defun bmkp-make-woman-record ()
     "Create bookmark record for `man' page bookmark created by `woman'."
     `(,@(bmkp-make-record-default 'NO-FILE)
-      (filename . ,woman-last-file-name) (handler . bmkp-jump-woman)))
-
-  (unless (> emacs-major-version 23)
-    (add-hook 'woman-mode-hook (lambda ()
-                                 (set (make-local-variable 'bookmark-make-record-function)
-                                      'bmkp-make-woman-record)))))
+      (filename . ,woman-last-file-name) (handler . bmkp-jump-woman))))
 
 (defun bmkp-make-man-record ()
   "Create bookmark record for `man' page bookmark created by `man'."
@@ -10604,9 +10508,6 @@ BOOKMARK is a bookmark name or a bookmark record."
     (filename . ,bmkp-non-file-filename)
     (man-args . ,Man-arguments) (handler . bmkp-jump-man)))
 
-(unless (> emacs-major-version 23)
-  (add-hook 'Man-mode-hook (lambda () (set (make-local-variable 'bookmark-make-record-function)
-                                           'bmkp-make-man-record))))
 
 (defun bmkext-jump-woman (bookmark)     ; Compatibility code.
   "`woman-bmkp-jump' if defined, else `bmkp-jump-woman'."
@@ -10617,9 +10518,7 @@ BOOKMARK is a bookmark name or a bookmark record."
 (defun bmkp-jump-woman (bookmark)
   "Handler function for `man' page bookmark created by `woman'.
 BOOKMARK is a bookmark name or a bookmark record."
-  (unless (> emacs-major-version 20)
-    (error "`woman' bookmarks are not supported in Emacs prior to Emacs 21"))
-  (bmkp-default-handler
+    (bmkp-default-handler
    `("" (buffer . ,(save-window-excursion (woman-find-file (bookmark-get-filename bookmark))
                                           (current-buffer)))
      . ,(bmkp-bookmark-data-from-record bookmark))))
@@ -12057,7 +11956,7 @@ Non-interactively:
 ;;; We could allow these even for Emacs 20 for Icicles users,
 ;;; but the predicate would have no effect when not in Icicle mode.  So don't bother with Emacs 20.
 
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-all-tags (tags &optional file) ; `C-x j t C-f *'
     "Visit a file or directory that has all of the TAGS.
 You are prompted first for the tags.  Hit `RET' to enter each tag,
@@ -12090,7 +11989,7 @@ time.  Use a prefix argument if you want to refresh them."
                    (bmk                                         (bmkp-get-autofile-bookmark fil)))
       (when bmk  (bmkp-jump bmk)))))
 
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-all-tags-other-window (tags &optional file) ; `C-x 4 j t C-f *'
     "`bmkp-find-file-all-tags', but in another window."
     (interactive (list (bmkp-read-tags-completing nil nil current-prefix-arg)))
@@ -12108,7 +12007,7 @@ time.  Use a prefix argument if you want to refresh them."
                    (bmk                                         (bmkp-get-autofile-bookmark fil)))
       (bmkp-jump-other-window bmk))))
 
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-all-tags-regexp (regexp &optional file) ; `C-x j t C-f % *'
     "Visit a file or directory that has each tag matching REGEXP.
 You are prompted for the REGEXP."
@@ -12129,7 +12028,7 @@ You are prompted for the REGEXP."
       (bmkp-jump bmk))))
 
 ;;;###autoload (autoload 'bmkp-find-file-all-tags-regexp-other-window "bookmark+")
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-all-tags-regexp-other-window (regexp &optional file) ; `C-x 4 j t C-f % *'
     "`bmkp-find-file-all-tags-regexp', but in another window."
     (interactive (list (bmkp-read-regexp "Regexp for tags: ")))
@@ -12149,7 +12048,7 @@ You are prompted for the REGEXP."
       (bmkp-jump-other-window bmk))))
 
 ;;;###autoload (autoload 'bmkp-find-file-some-tags "bookmark+")
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-some-tags (tags &optional file) ; `C-x j t C-f +'
     "Visit a file or directory that has at least one of the TAGS.
 You are prompted first for the tags.  Hit `RET' to enter each tag,
@@ -12180,7 +12079,7 @@ time.  Use a prefix argument if you want to refresh them."
       (bmkp-jump bmk))))
 
 ;;;###autoload (autoload 'bmkp-find-file-some-tags-other-window "bookmark+")
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-some-tags-other-window (tags &optional file) ; `C-x 4 j t C-f +'
     "`bmkp-find-file-some-tags', but in another window."
     (interactive (list (bmkp-read-tags-completing nil nil current-prefix-arg)))
@@ -12199,7 +12098,7 @@ time.  Use a prefix argument if you want to refresh them."
       (bmkp-jump-other-window bmk))))
 
 ;;;###autoload (autoload 'bmkp-find-file-some-tags-regexp "bookmark+")
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-some-tags-regexp (regexp &optional file) ; `C-x j t C-f % +'
     "Visit a file or directory that has a tag matching REGEXP.
 You are prompted for the REGEXP."
@@ -12220,7 +12119,7 @@ You are prompted for the REGEXP."
       (bmkp-jump bmk))))
 
 ;;;###autoload (autoload 'bmkp-find-file-some-tags-regexp-other-window "bookmark+")
-(when (> emacs-major-version 21)        ; Needs `read-file-name' with a PREDICATE arg.
+(progn ; Needs `read-file-name' with a PREDICATE arg.
   (defun bmkp-find-file-some-tags-regexp-other-window (regexp &optional file) ; `C-x 4 j t C-f % +'
     "`bmkp-find-file-some-tags-regexp', but in another window."
     (interactive (list (bmkp-read-regexp "Regexp for tags: ")))
@@ -12957,8 +12856,7 @@ prefix value."
       (let ((inhibit-field-text-motion  t))
         (bmkp-set-autonamed-bookmark (line-beginning-position number))))))
 
-(when (> emacs-major-version 21)
-  (defun bmkp-occur-create-autonamed-bookmarks (&optional msg-p) ; Bound to `C-c C-M-B' (aka `C-c C-M-S-b')
+(defun bmkp-occur-create-autonamed-bookmarks (&optional msg-p) ; Bound to `C-c C-M-B' (aka `C-c C-M-S-b')
     "Create an autonamed bookmark for each `occur' hit.
 You can use this only in `Occur' mode (commands such as `occur' and
 `multi-occur').
@@ -12976,7 +12874,7 @@ Non-interactively, non-nil MSG-P means display a status message."
                 (goto-char pos)
                 (bmkp-set-autonamed-bookmark (point)))
               (setq count  (1+ count))))))
-      (when msg-p (message "Created %d autonamed bookmarks" count)))))
+      (when msg-p (message "Created %d autonamed bookmarks" count))))
 
 ;;;###autoload (autoload 'bmkp-set-autonamed-regexp-buffer "bookmark+")
 (defun bmkp-set-autonamed-regexp-buffer (regexp &optional msg-p)
@@ -13199,7 +13097,7 @@ Do nothing if bookmark would be too near another automatic bookmark."
   (when (bmkp-not-near-other-automatic-bmks)
     (let ((bmkp-setting-automatic-bmk-p  t)) (funcall bmkp-automatic-bookmark-set-function))))
 
-(when (> emacs-major-version 21) ; Emacs 22+ (need also `Info-selection-hook').
+(progn ; Emacs 22+ (need also `Info-selection-hook').
 
   ;; Eval this so that even if the library is byte-compiled with Emacs 20,
   ;; loading it into Emacs 22+ will define variable `bmkp-info-auto-bookmark-mode'.
