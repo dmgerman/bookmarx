@@ -190,7 +190,8 @@
 (require 'bookmark)
 ;; bookmark-alist, bookmark-bmenu-bookmark, bookmark-completing-read, bmkp-get-bookmark,
 ;; bookmark-get-position, bookmark-handle-bookmark, bookmark-maybe-load-default-file,
-;; bookmark-name-from-full-record, bookmark-name-from-record, bookmark-prop-get, bookmark-prop-set
+;; bookmark-name-from-full-record, bookmark-name-from-record, bookmark-prop-get, bmkp-prop-set
+;; (Note: bmkp-prop-set is provided by bookmark+-1.el.)
 
 
 ;; Just repeat definition of `bmkp-make-obsolete', to make requires less complicated.
@@ -535,7 +536,7 @@ When called from Lisp, the arguments are passed to
 You are prompted for the highlight STYLE, FACE, and condition (WHEN)
 that make up the property-list value of the `lighting' entry.
 
-When called from Lisp, the args are passed to `bookmark-prop-set' for
+When called from Lisp, the args are passed to `bmkp-prop-set' for
 the current line's bookmark."
   (interactive (append (bmkp-read-set-lighting-args) '(MSG)))
   (bmkp-bmenu-barf-if-not-in-menu-list)
@@ -544,7 +545,7 @@ the current line's bookmark."
         (curr-bmk  (bookmark-bmenu-bookmark)))
     (unless marked (error "No marked bookmarks"))
     (dolist (bmk  marked)
-      (bookmark-prop-set bmk 'lighting (if (or face  style  when)
+      (bmkp-prop-set bmk 'lighting (if (or face  style  when)
                                            `(,@(and face   (not (eq face 'auto))   `(:face ,face))
                                              ,@(and style  (not (eq style 'none))  `(:style ,style))
                                              ,@(and when   (not (eq when 'auto))   `(:when ,when)))
@@ -834,7 +835,7 @@ Non-interactively:
               (and bmk-when   (format "%S" bmk-when)))
              (list 'MSGP (not current-prefix-arg)))))
   (when msgp (message "Setting highlighting..."))
-  (bookmark-prop-set bookmark-name 'lighting (if (or face  style  when)
+  (bmkp-prop-set bookmark-name 'lighting (if (or face  style  when)
                                                  `(,@(and face   (not (eq face 'auto))   `(:face ,face))
                                                    ,@(and style  (not (eq style 'none))  `(:style ,style))
                                                    ,@(and when   (not (eq when 'auto))   `(:when ,when)))
