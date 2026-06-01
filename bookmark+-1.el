@@ -2536,6 +2536,7 @@ Non-nil NO-REGION means do not include the region end, `end-position'."
       ,@(unless no-context `((rear-context-string . ,rcs)))
       ,@(unless no-context `((front-context-region-string . ,fcrs)))
       ,@(unless no-context `((rear-context-region-string  . ,ecrs)))
+      (id       . ,(bmkp-generate-id))
       (visits   . ,(or visits  0))
       ,@(and visits  `((last-visited . ,ctime)))
       (created  . ,ctime)
@@ -4702,6 +4703,52 @@ for its existence, as is `bmkp-get-bookmark-in-alist'."
   (cond ((consp bookmark) (and (memq bookmark (or alist  bookmark-alist))  bookmark))
         ((stringp bookmark) (bmkp-bookmark-record-from-name bookmark noerror 'MEMP alist))
         (t (and (not noerror)  (error "Invalid bookmark: `%s'" bookmark)))))
+
+;;(@* "Stable per-bookmark identity (`id' property)")
+;;; Stable per-bookmark identity (`id' property) ---------------------
+;;
+;; Every bookmark record carries an `(id . STRING)' property.  Identity
+;; is the `id', not the name string -- two bookmarks may share a name,
+;; their ids differ.  See DESIGN.md for the full rationale.
+;;
+;; Phase 1 (current): new records get an id at creation; on file load,
+;; any record lacking an id receives one and the alist is marked dirty
+;; so the next save persists it.  The legacy `bmkp-full-record'
+;; text-property machinery still runs in parallel; later phases drop it.
+
+(defun bmkp-generate-id ()
+  "Return a fresh opaque string id for a bookmark.
+Format is a sortable timestamp plus 24 random bits, e.g.
+\"20260531T230547-a3f2c1\".  Collision-resistant for normal use."
+  (format "%s-%06x"
+          (format-time-string "%Y%m%dT%H%M%S")
+          (random #x1000000)))
+
+(defun bmkp-get-by-id (id &optional alist)
+  "Return the bookmark record in ALIST whose `id' property equals ID.
+ALIST defaults to `bookmark-alist'.  Returns nil if none."
+  (cl-find id (or alist  bookmark-alist)
+           :key  (lambda (bmk) (cdr (assq 'id (cdr bmk))))
+           :test #'equal))
+
+(defun bmkp-ensure-record-ids (blist &rest _ignored)
+  "Assign an `id' to every record in BLIST that lacks one.
+Bumps `bookmark-alist-modification-count' if any record was updated,
+so the next save writes the new ids to disk.  Intended for
+`bmkp-read-bookmark-file-hook'."
+  (let (added)
+    (dolist (bmk blist)
+      (let ((data (cdr bmk)))
+        (unless (assq 'id data)
+          (setcdr bmk (cons (cons 'id (bmkp-generate-id)) data))
+          (setq added  t))))
+    (when added
+      (setq bookmark-alist-modification-count
+            (1+ bookmark-alist-modification-count)))
+    blist))
+
+(add-hook 'bmkp-read-bookmark-file-hook #'bmkp-ensure-record-ids)
+
 
 (defun bmkp-default-bookmark-file ()
   "`bmkp-last-as-first-bookmark-file', or `bookmark-default-file' if nil."
