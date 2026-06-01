@@ -36,7 +36,6 @@
 ;;    `bookmark+-key.el' - key and menu bindings
 ;;
 ;;    `bookmark+-doc.el' - documentation (comment-only - this file)
-;;    `bookmark+-chg.el' - change log (comment-only file)
 ;;
 ;;    The documentation includes how to byte-compile and install
 ;;    Bookmark+.  It is also available in these ways:

@@ -38,7 +38,6 @@
 ;;    `bookmark+-key.el' - key and menu bindings
 ;;
 ;;    `bookmark+-doc.el' - documentation (comment-only file)
-;;    `bookmark+-chg.el' - change log (comment-only file)
 ;;
 ;;    This library (`bookmark+-lit.el') is a Bookmark+ option.  If you
 ;;    want to use it then load it before loading `bookmark+.el', so

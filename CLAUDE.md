@@ -15,7 +15,6 @@ under the parent `.emacs.d` repo; the `.git` file points to
 - `bookmark+-key.el` — key and menu bindings
 - `bookmark+-lit.el` — bookmark highlighting (optional)
 - `bookmark+-doc.el` — upstream documentation (comment-only, untouched)
-- `bookmark+-chg.el` — upstream changelog (comment-only, untouched)
 - `readme.org`, `doc/reference.org` — locally-authored user docs
 - `bookmark+-preview.el` — live preview for `bmkp-jump` and `*Bmkp List*`
   (always loaded; consult integration is soft-gated on `(featurep 'consult)`)
