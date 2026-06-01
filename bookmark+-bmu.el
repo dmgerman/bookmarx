@@ -20,8 +20,8 @@
 ;;   `apropos', `apropos+', `auth-source', `avoid', `backquote',
 ;;   `bookmark', `bookmark+', `bookmark+-1', `bookmark+-bmu',
 ;;   `bookmark+-key', `bookmark+-lit', `button', `bytecomp', `cconv',
-;;   `cl-generic', `cl-lib', `cl-macs', `cmds-menu', `col-highlight',
-;;   `crosshairs', `eieio', `eieio-core', `eieio-loaddefs',
+;;   `cl-generic', `cl-lib', `cl-macs', `cmds-menu',
+;;   `eieio', `eieio-core', `eieio-loaddefs',
 ;;   `epg-config', `fit-frame', `font-lock', `font-lock+',
 ;;   `frame-fns', `gv', `help+', `help-fns', `help-fns+',
 ;;   `help-macro', `help-macro+', `help-mode', `hl-line', `hl-line+',
@@ -1920,7 +1920,7 @@ Other Options
 
 `bmkp-autoname-format'        - Format of autonamed bookmark name
 `bmkp-last-as-first-bookmark-file' - Whether to start with last b. file
-`bmkp-crosshairs-flag'        - Highlight position when visit?
+`bmkp-highlight-on-jump-flag' - Highlight position when visit?
 `bmkp-menu-popup-max-length'  - Use menus to choose bookmarks?
 `bmkp-save-new-location-flag' - Save if bookmark relocated?
 `bmkp-sequence-jump-display-function' - How to display a sequence
@@ -4329,8 +4329,7 @@ Unlike `bookmark-bmenu-select', this command:
     (unless bmk (error "No bookmark here"))
     (bookmark-handle-bookmark bmk)
     ;; Probably do not want this.  Users can use `jump-fn' tag if need be.
-    ;; (let ((orig-buff  (current-buffer))) ; Used by `crosshairs-highlight'.
-    ;;   (run-hooks 'bookmark-after-jump-hook))
+    ;; (run-hooks 'bookmark-after-jump-hook)
     (let ((jump-fn  (bmkp-get-tag-value bmk "bmkp-jump")))
       (when jump-fn (funcall jump-fn)))
     (when bookmark-automatically-show-annotations (bookmark-show-annotation bmk))))
@@ -6192,14 +6191,11 @@ are marked or ALLP is non-nil."
                              "Toggle the value of option `bmkp-auto-light-when-jump'"
                              (progn (bmkp-toggle-auto-light-when-jump) bmkp-auto-light-when-jump)
                              :visible (featurep 'bookmark+-lit)))
-(when (> emacs-major-version 21)
-  (define-key bmkp-bmenu-toggle-menu [bmkp-toggle-crosshairs]
-    (bmkp-menu-bar-make-toggle bmkp-toggle-crosshairs bmkp-crosshairs-flag
-                               "Crosshairs Highlighting"
-                               "Highlighting bookmark location with crosshairs is now %s"
-                               "Toggle the value of option `bmkp-crosshairs-flag'"
-                               nil
-                               :visible (featurep 'crosshairs))))
+(define-key bmkp-bmenu-toggle-menu [bmkp-toggle-highlight-on-jump]
+  (bmkp-menu-bar-make-toggle bmkp-toggle-highlight-on-jump bmkp-highlight-on-jump-flag
+                             "Highlight Landing on Jump"
+                             "Highlighting the landing line after a jump is now %s"
+                             "Toggle the value of option `bmkp-highlight-on-jump-flag'"))
 
 (define-key bmkp-bmenu-toggle-menu [sep3] '("--")) ; ------------ Temporary bookmark stuff
 (define-key bmkp-bmenu-toggle-menu [bmkp-bmenu-toggle-marked-temporary/savable]

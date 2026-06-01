@@ -206,7 +206,7 @@ there are such bookmarks can take a little time."
 ;; Quiet the byte-compiler
 (defvar bmkp-bmenu-menubar-menu)        ; In `bookmark+-bmu.el'.
 (defvar bmkp-bmenu-toggle-menu)         ; In `bookmark+-bmu.el'.
-(defvar bmkp-crosshairs-flag)           ; In `bookmark+-1.el'.
+(defvar bmkp-highlight-on-jump-flag)    ; In `bookmark+-1.el'.
 (defvar bmkp-eww-replace-keys-flag)     ; In `bookmark+-1.el' (Emacs 25+).
 (defvar bmkp-prompt-for-tags-flag)      ; In `bookmark+-1.el'.
 (defvar bmkp-save-new-location-flag)    ; In `bookmark+-1.el'.

@@ -18,7 +18,7 @@
 ;; Features that might be required by this library:
 ;;
 ;;   `backquote', `bookmark', `bookmark+-1', `button', `bytecomp',
-;;   `cconv', `cl-lib', `col-highlight', `crosshairs', `font-lock',
+;;   `cconv', `cl-lib', `font-lock',
 ;;   `font-lock+', `help-mode', `hl-line', `hl-line+', `kmacro',
 ;;   `macroexp', `pp', `replace', `syntax', `text-mode', `thingatpt',
 ;;   `thingatpt+', `vline'.
@@ -128,7 +128,7 @@
 ;;    `bmkp-compilation-target-set',
 ;;    `bmkp-compilation-target-set-all', `bmkp-copy-bookmark',
 ;;    `bmkp-convert-eww-bookmarks' (Emacs 25+), `bmkp-copy-tags',
-;;    `bmkp-crosshairs-highlight', `bmkp-cycle',
+;;    `bmkp-highlight-jump-target', `bmkp-cycle',
 ;;    `bmkp-cycle-autonamed', `bmkp-cycle-autonamed-other-window',
 ;;    `bmkp-cycle-bookmark-list',
 ;;    `bmkp-cycle-bookmark-list-other-window', `bmkp-cycle-desktop',
@@ -460,7 +460,7 @@
 ;;    `bmkp-autoname-bookmark-function', `bmkp-autoname-format',
 ;;    `bmkp-autotemp-bookmark-predicates',
 ;;    `bmkp-bookmark-name-length-max',
-;;    `bmkp-count-multi-mods-as-one-flag', `bmkp-crosshairs-flag',
+;;    `bmkp-count-multi-mods-as-one-flag', `bmkp-highlight-on-jump-flag',
 ;;    `bmkp-default-bookmark-name',
 ;;    `bmkp-default-handlers-for-file-types',
 ;;    `bmkp-desktop-default-directory',
@@ -952,7 +952,6 @@
 (defvar Man-arguments)                  ; In `man.el'
 (defvar Man-notify-method)              ; In `man.el'
 (defvar org-store-link-functions)       ; In `org.el'
-(defvar orig-buff)                      ; In `crosshairs.el'
 (defvar pp-default-function)            ; Emacs 30+
 (defvar read-file-name-completion-ignore-case) ; Emacs 23+
 (defvar repeat-previous-repeated-command) ; In `repeat.el'
@@ -1171,27 +1170,23 @@ file during the sequence of modifications, so that when the command is
 done you can choose not to save (i.e., to quit) if you like."
   :type 'boolean :group 'bookmark-plus)
 
-;;;###autoload (autoload 'bmkp-crosshairs-flag "bookmark+")
-(defcustom bmkp-crosshairs-flag (> emacs-major-version 21)
-  "*Non-nil means highlight with crosshairs when you visit a bookmark.
-The highlighting is temporary - until your next action.
-You need library `crosshairs.el' for this feature, and you need Emacs
-22 or later.
+;;;###autoload (autoload 'bmkp-highlight-on-jump-flag "bookmark+")
+(defcustom bmkp-highlight-on-jump-flag t
+  "*Non-nil means briefly pulse-highlight the landing line after a jump.
+Implemented with `pulse.el' (built in since Emacs 27.1).
 
-NOTE: Crosshairs highlighting is shown in the buffer that is current
-after jumping.  If the bookmarked jumped to does not really have an
-associated buffer, for example a bookmark with a handler such as
-`w32-browser' that just invokes a separate, non-Emacs program, then
-the current buffer after jumping will be the buffer before jumping.
+The highlight appears in whatever buffer is current after jumping.
+If the bookmark's handler does not switch to a buffer (e.g. one whose
+handler just invokes an external program), the highlight appears in
+the buffer that was current before the jump.
 
-If you use this option in Lisp code, you will want to add/remove
-`bmkp-crosshairs-highlight' to/from `bookmark-after-jump-hook'."
+If you set this option from Lisp, add or remove
+`bmkp-highlight-jump-target' on `bookmark-after-jump-hook' yourself."
   :set (lambda (sym new-val)
          (custom-set-default sym new-val)
-         (if (and bmkp-crosshairs-flag  (> emacs-major-version 21)
-                  (condition-case nil (require 'crosshairs nil t) (error nil)))
-             (add-hook 'bookmark-after-jump-hook 'bmkp-crosshairs-highlight)
-           (remove-hook 'bookmark-after-jump-hook 'bmkp-crosshairs-highlight)))
+         (if bmkp-highlight-on-jump-flag
+             (add-hook 'bookmark-after-jump-hook 'bmkp-highlight-jump-target)
+           (remove-hook 'bookmark-after-jump-hook 'bmkp-highlight-jump-target)))
   :type 'boolean :group 'bookmark-plus)
 
 ;;;###autoload (autoload 'bmkp-default-bookmark-name "bookmark+")
@@ -2954,8 +2949,7 @@ DISPLAY-FUNCTION is as in `bookmark-jump'."
         (while (and (not found)  (setq temp  (pop overlays)))
           (when (eq 'bookmark (overlay-get temp 'category)) (setq found  t)))
         (unless found (bookmark--set-fringe-mark))))
-    (let ((orig-buff  (current-buffer))) ; Used by `crosshairs-highlight'.
-      (run-hooks 'bookmark-after-jump-hook))
+    (run-hooks 'bookmark-after-jump-hook)
     (let ((jump-fn  (bmkp-get-tag-value bookmark "bmkp-jump")))
       (when jump-fn (funcall jump-fn)))
     (when bookmark-automatically-show-annotations (bookmark-show-annotation bookmark))))
@@ -5962,19 +5956,16 @@ This does NOT make FILE the current bookmark file.  To do that, use
     (error "OK - canceled"))
   (bmkp-write-alist-bookmarks-to-file (bmkp-this-file/buffer-alist-only) file))
 
-;;;###autoload (autoload 'bmkp-crosshairs-highlight "bookmark+")
-(defun bmkp-crosshairs-highlight ()     ; Not bound
-  "Highlight point with crosshairs temporarily.
-Do not highlight if either the region is active or
-`bmkp-crosshairs-flag' is nil.
-
-You can add this to hook `bookmark-after-jump-hook'.
-You need library `crosshairs.el' to use this command."
+;;;###autoload (autoload 'bmkp-highlight-jump-target "bookmark+")
+(defun bmkp-highlight-jump-target ()    ; Not bound
+  "Briefly highlight the line at point.
+Intended for `bookmark-after-jump-hook' to flag where you landed.
+Does nothing if the region is active or `bmkp-highlight-on-jump-flag'
+is nil."
   (interactive)
-  (when (and bmkp-crosshairs-flag  (> emacs-major-version 21)) ; No-op for Emacs 20-21.
-    (unless (condition-case nil (require 'crosshairs nil t) (error nil))
-      (error "You need library `crosshairs.el' to use this command"))
-    (unless mark-active (crosshairs-highlight))))
+  (when (and bmkp-highlight-on-jump-flag  (not mark-active))
+    (require 'pulse)
+    (pulse-momentary-highlight-one-line (point))))
 
 ;;;###autoload (autoload 'bmkp-choose-navlist-from-bookmark-list "bookmark+")
 (defun bmkp-choose-navlist-from-bookmark-list (bookmark &optional alist) ; Bound to `C-x x B'

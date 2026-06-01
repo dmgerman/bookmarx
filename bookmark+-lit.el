@@ -17,7 +17,7 @@
 ;; Features that might be required by this library:
 ;;
 ;;   `backquote', `bookmark', `bookmark+-1', `button', `bytecomp',
-;;   `cconv', `cl-lib', `col-highlight', `crosshairs', `font-lock',
+;;   `cconv', `cl-lib', `font-lock',
 ;;   `font-lock+', `help-mode', `hl-line', `hl-line+', `kmacro',
 ;;   `macroexp', `pp', `pp+', `replace', `syntax', `text-mode',
 ;;   `thingatpt', `thingatpt+', `vline'.
