@@ -739,7 +739,7 @@
 ;;              `bookmark.el' have been REDEFINED HERE:
 ;;
 ;;    `bookmark--jump-via', `bookmark-alist-from-buffer',
-;;    `bmkp-all-names', `bookmark-completing-read',
+;;    `bmkp-all-names', `bmkp-completing-read',
 ;;    `bookmark-default-handler', `bookmark-edit-annotation' (command
 ;;    here), `bookmark-exit-hook-internal', `bookmark-get-bookmark',
 ;;    `bookmark-get-bookmark-record' (Emacs 20-22),
@@ -1426,9 +1426,9 @@ overwritten."
 
 ;;;###autoload (autoload 'bmkp-menu-popup-max-length "bookmark+")
 (defcustom bmkp-menu-popup-max-length 20
-  "*Max number of bookmarks for `bookmark-completing-read' to use a menu.
+  "*Max number of bookmarks for `bmkp-completing-read' to use a menu.
 When choosing a bookmark from a list of bookmarks using
-`bookmark-completing-read', this controls whether to use a menu or
+`bmkp-completing-read', this controls whether to use a menu or
 minibuffer input with completion.
 If t, then always use a menu.
 If nil, then never use a menu.
@@ -2299,7 +2299,7 @@ are candidates.
 Non-interactively, BOOKMARK is a bookmark name or a bookmark record."
   (interactive
    (let ((alist  (bmkp-annotated-alist-only)))
-     (list (bookmark-completing-read (format "%s annotation for bookmark"
+     (list (bmkp-completing-read (format "%s annotation for bookmark"
                                              (if current-prefix-arg "Add or edit" "Edit"))
                                      (bmkp-default-bookmark-name alist)
                                      alist
@@ -2327,7 +2327,7 @@ Calls `bookmark-maybe-load-default-file' first.  Like the built-in
 ;;    (a) binds `icicle-delete-candidate-object' to (essentially) `bookmark-delete'.
 ;;    (b) forces you to enter a non-empty name, if DEFAULT is nil or "".
 ;;
-(defun bookmark-completing-read (prompt &optional default alist pred hist use-nil-alist-p)
+(defun bmkp-completing-read (prompt &optional default alist pred hist use-nil-alist-p)
   "Read a bookmark name, prompting with PROMPT.
 PROMPT is automatically suffixed with \": \", so do not include that.
 
@@ -2766,7 +2766,7 @@ BOOKMARK is a bookmark name or a bookmark record.
 Non-nil DISPLAY-FUNCTION is a function to display the bookmark.  By
  default, use `pop-to-buffer-same-window'.
 Non-nil FLIP-USE-REGION-P flips the value of `bmkp-use-region'."
-  (interactive (list (bookmark-completing-read "Jump to bookmark" (bmkp-default-bookmark-name))
+  (interactive (list (bmkp-completing-read "Jump to bookmark" (bmkp-default-bookmark-name))
                      nil
                      current-prefix-arg))
   (bmkp-jump-1 bookmark (or display-function  'bmkp--pop-to-buffer-same-window) flip-use-region-p))
@@ -2783,7 +2783,7 @@ Non-nil FLIP-USE-REGION-P flips the value of `bmkp-use-region'."
                                         ; Bound to `C-x 4 j j', `C-x x j', `C-x x o', `C-x x q'
   "Jump to bookmark BOOKMARK in another window.
 See `bookmark-jump', in particular for info about using a prefix arg."
-  (interactive (list (bookmark-completing-read "Jump to bookmark (in another window)"
+  (interactive (list (bmkp-completing-read "Jump to bookmark (in another window)"
                                                (bmkp-default-bookmark-name))
                      current-prefix-arg))
   (bmkp-jump-1 bookmark 'bmkp-select-buffer-other-window flip-use-region-p))
@@ -2799,7 +2799,7 @@ See `bookmark-jump', in particular for info about using a prefix arg."
 (defun bookmark-jump-other-frame (bookmark &optional flip-use-region-p) ; Bound to `C-x 5 B'
   "Jump to bookmark BOOKMARK in another frame.
 See `bookmark-jump', in particular for info about using a prefix arg."
-  (interactive (list (bookmark-completing-read "Jump to bookmark (in another frame)"
+  (interactive (list (bmkp-completing-read "Jump to bookmark (in another frame)"
                                                (bmkp-default-bookmark-name))
                      current-prefix-arg))
   (let ((pop-up-frames  t)) (bookmark-jump-other-window bookmark flip-use-region-p)))
@@ -2975,7 +2975,7 @@ bookmark-list display.
 
 Changes the file associated with the bookmark.
 Useful when a file has been renamed after a bookmark was set in it."
-  (interactive (list (bookmark-completing-read "Bookmark to relocate" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Bookmark to relocate" (bmkp-default-bookmark-name))))
   (bookmark-maybe-historicize-string bookmark-name)
   (bookmark-maybe-load-default-file)
   (let* ((bookmark-filename  (bookmark-get-filename bookmark-name))
@@ -3027,7 +3027,7 @@ If a non-file buffer is bookmarked, insert the recorded buffer name.
 Optional arg NO-HISTORY means do not record BOOKMARK-NAME in
 `bookmark-history'."
   (interactive
-   (let ((bmk  (bookmark-completing-read "Insert bookmark location" (bmkp-default-bookmark-name))))
+   (let ((bmk  (bmkp-completing-read "Insert bookmark location" (bmkp-default-bookmark-name))))
      (if (> emacs-major-version 21) (list bmk) bmk)))
   (unless no-history (bookmark-maybe-historicize-string bookmark-name))
   (insert (bookmark-location bookmark-name))) ; Return the line inserted.
@@ -3098,7 +3098,7 @@ during this input.
 
 If BATCHP is non-nil, then do not rebuild the bookmark list.  (NEW
 should be non-nil if BATCH is non-nil.)"
-  (interactive (list (bookmark-completing-read "Old bookmark name" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Old bookmark name" (bmkp-default-bookmark-name))))
   (bookmark-maybe-historicize-string old)
   (bookmark-maybe-load-default-file)
   (setq bookmark-current-point  (point)) ; `bookmark-current-point' is a free var here.
@@ -3140,7 +3140,7 @@ BOOKMARK-NAME is the name of the bookmark.
 You may have a problem using this function if the value of variable
 `bookmark-alist' is nil.  If that happens, you need to load in some
 bookmarks.  See function `bookmark-load' for more about this."
-  (interactive (list (bookmark-completing-read "Insert bookmark contents" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Insert bookmark contents" (bmkp-default-bookmark-name))))
   (bmkp-ORIG-bookmark-insert bookmark-name))
 
 
@@ -3170,7 +3170,7 @@ delete (only) the first bookmark in `bookmark-alist' with that name.
 
 Optional arg BATCHP means do not update buffer `*Bookmark List*'.
 In this way, you can delete multiple bookmarks."
-  (interactive (list (bookmark-completing-read "Delete bookmark" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Delete bookmark" (bmkp-default-bookmark-name))))
 
   ;; $$$$$$ Instead of loading unconditionally, maybe we should just try to delete conditionally?
   ;; IOW, why not (when bmkp-bookmarks-already-loaded BODY) instead of `bookmark-maybe-load-default-file'?
@@ -3612,7 +3612,7 @@ If no annotation and MSG-P is non-nil, show a no-annotation message.
 Opens in read-only or edit mode, as chosen by option
 `bookmark-automatically-show-annotations'.  You can toggle between
 read-only and edit mode using `C-x C-q'."
-  (interactive (list (bookmark-completing-read "Show annotation of bookmark"
+  (interactive (list (bmkp-completing-read "Show annotation of bookmark"
                                                (bmkp-default-bookmark-name)
                                                (bmkp-annotated-alist-only)
                                                nil
@@ -4631,7 +4631,7 @@ ALIST is nil there are no bookmark candidates, so just return nil."
 
 (defun bmkp-completing-read-lax (prompt &optional default alist pred hist use-nil-alist-p)
   "Read a bookmark name, prompting with PROMPT.
-Like `bookmark-completing-read', but completion is lax (non-strict):
+Like `bmkp-completing-read', but completion is lax (non-strict):
 your input need not match any existing bookmark name.
 
 In addition:
@@ -4655,7 +4655,7 @@ In addition:
 
 (defun bmkp-completing-read-1 (prompt &optional default alist pred hist laxp use-nil-alist-p)
   "Helper for functions that read a bookmark name with completion.
-See `bookmark-completing-read' for the argument descriptions."
+See `bmkp-completing-read' for the argument descriptions."
   (bookmark-maybe-load-default-file)
   (unless (or alist  use-nil-alist-p) (setq alist  bookmark-alist))
   (if (and (not laxp)
@@ -4720,7 +4720,7 @@ convenient for editing an existing annotation, because you choose
 among only the already annotated bookmarks, not all bookmarks.
 
 Non-interactively, BOOKMARK is a bookmark name or a bookmark record."
-  (interactive (list (bookmark-completing-read "Annotate bookmark" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Annotate bookmark" (bmkp-default-bookmark-name))))
   (pop-to-buffer (generate-new-buffer-name "*Bookmark Annotation Compose*"))
   (bookmark-insert-annotation bookmark)
   (bookmark-edit-annotation-mode)
@@ -4732,7 +4732,7 @@ Non-interactively, BOOKMARK is a bookmark name or a bookmark record."
 You are prompted for the name of a bookmark here, with completion."
   (interactive
    (let ((alist  (bmkp-this-file/buffer-alist-only)))
-     (list (bookmark-completing-read (format "%s annotation for bookmark"
+     (list (bmkp-completing-read (format "%s annotation for bookmark"
                                              (if current-prefix-arg "Add or edit" "Edit"))
                                      (or (and (fboundp 'bmkp-bookmarks-lighted-at-point)
                                               (bmkp-bookmarks-lighted-at-point))
@@ -4817,7 +4817,7 @@ When called from Lisp:
  * Optional non-nil CONFIRM-OVERWRITE-P means prompt to confirm
    overwriting an existing bookmark."
   (interactive
-   (let* ((orig     (bookmark-completing-read "Clone bookmark" (bmkp-default-bookmark-name)))
+   (let* ((orig     (bmkp-completing-read "Clone bookmark" (bmkp-default-bookmark-name)))
           (default  (concat orig "<2>"))
           (new      (if current-prefix-arg
                         (bmkp-completing-read-lax "Clone name" default)
@@ -4858,7 +4858,7 @@ Without a prefix arg, you are prompted for the new bookmark name and
 With a prefix arg, edit the complete bookmark record (the
  internal, Lisp form)."
   (interactive
-   (list (bookmark-completing-read (concat "Edit " (and current-prefix-arg  "internal record for ")
+   (list (bmkp-completing-read (concat "Edit " (and current-prefix-arg  "internal record for ")
                                            "bookmark")
                                    (bmkp-default-bookmark-name))
          current-prefix-arg))
@@ -5013,7 +5013,7 @@ BOOKMARK is a bookmark name or a bookmark record.
 When you finish editing, use \\<bmkp-edit-bookmark-record-mode-map>\
 `\\[bmkp-edit-bookmark-record-send]' in the record-editing buffer.
 The current bookmark list is then updated to reflect your edits."
-  (interactive (list (bookmark-completing-read "Edit Lisp record for bookmark" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Edit Lisp record for bookmark" (bmkp-default-bookmark-name))))
   (bookmark-maybe-load-default-file)
   (setq bmkp-edit-bookmark-orig-record  (bmkp-get-bookmark-in-alist bookmark))
   (let* ((bmk-copy  (copy-sequence bmkp-edit-bookmark-orig-record)) ; Shallow copy
@@ -5082,7 +5082,7 @@ Non-interactively, optional arg MSG-P means display progress messages."
 You are prompted for the name of a bookmark here, with completion."
   (interactive
    (let ((alist  (bmkp-this-file/buffer-alist-only)))
-     (list (bookmark-completing-read (format "%s annotation for bookmark"
+     (list (bmkp-completing-read (format "%s annotation for bookmark"
                                              (if current-prefix-arg "Add or edit" "Edit"))
                                      (or (and (fboundp 'bmkp-bookmarks-lighted-at-point)
                                               (bmkp-bookmarks-lighted-at-point))
@@ -5117,7 +5117,7 @@ When you have finished composing, type \\[bmkp-edit-tags-send]."
 The edited value must be a list each of whose elements is either a
  string or a cons whose key is a string.
 BOOKMARK is a bookmark name or a bookmark record."
-  (interactive (list (bookmark-completing-read "Edit tags for bookmark" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Edit tags for bookmark" (bmkp-default-bookmark-name))))
   (setq bookmark  (bmkp-get-bookmark-in-alist bookmark))
   (let* ((btags  (bmkp-get-tags bookmark))
          (bname  (bmkp-bookmark-name-from-record bookmark))
@@ -5400,7 +5400,7 @@ If you use library `bookmark+-lit.el':
  * A prefix arg means only lighted bookmarks at point are candidates."
   (interactive (let* ((litp   (fboundp 'bmkp-bookmarks-lighted-at-point))
                       (lbmks  (and litp  (bmkp-bookmarks-lighted-at-point)))
-                      (bmk    (bookmark-completing-read (if current-prefix-arg "Lighted bookmark" "Bookmark")
+                      (bmk    (bmkp-completing-read (if current-prefix-arg "Lighted bookmark" "Bookmark")
                                                         (and litp  (if current-prefix-arg (car lbmks) lbmks))
                                                         (and current-prefix-arg  lbmks))))
                  (list bmk)))
@@ -6322,7 +6322,7 @@ Non-interactively:
    update the modification count and maybe save bookmarks, and do not
    refresh/rebuild the bookmark-list display
  - Non-nil optional arg MSG-P means show a message about the removal."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)) nil 'MSG))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)) nil 'MSG))
   (when (and msg-p  (null (bmkp-get-tags bookmark)))  (error "Bookmark has no tags to remove"))
   (let ((nb-removed  (and (called-interactively-p 'interactive)  (length (bmkp-get-tags bookmark)))))
     (bmkp-prop-set bookmark 'tags ())
@@ -6355,7 +6355,7 @@ Non-interactively:
 The absolute value of the return value is the number of tags added.
 If BOOKMARK was untagged before the operation, then the return value
 is negative."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name))
                      (bmkp-read-tags-completing nil nil current-prefix-arg)
                      nil
                      'MSG))
@@ -6402,7 +6402,7 @@ Non-interactively:
    refresh/rebuild the bookmark-list display
  - Non-nil MSG-P means display a message about the updated value."
   (interactive
-   (let* ((bmk  (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)))
+   (let* ((bmk  (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)))
           (tag  (bmkp-read-tag-completing "Tag: " (mapcar 'bmkp-full-tag (bmkp-get-tags bmk)))))
      (list bmk tag (read (read-string "Value: ")) nil 'MSG)))
   (unless (bmkp-has-tag-p bookmark tag) (bmkp-add-tags bookmark (list tag) 'NO-UPDATE-P)) ; No update yet.
@@ -6437,7 +6437,7 @@ Non-interactively:
 The absolute value of the return value is the number of tags removed.
 If BOOKMARK is untagged after the operation, then the return value
 is negative."
-  (interactive (let ((bmk  (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name))))
+  (interactive (let ((bmk  (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name))))
                  (list bmk
                        (bmkp-read-tags-completing (mapcar 'bmkp-full-tag (bmkp-get-tags bmk))
                                                   t current-prefix-arg)
@@ -6525,7 +6525,7 @@ with no tags.
 
 Non-interactively, non-nil MSG-P means display a message about the
 number of tags copied."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
   (let ((btags  (bmkp-get-tags bookmark)))
     (setq bmkp-copied-tags  (copy-alist btags))
     (when msg-p (message "%d tags now available for pasting" (length btags)))))
@@ -6540,7 +6540,7 @@ Non-interactively:
    update the modification count and maybe save bookmarks, and do not
    refresh/rebuild the bookmark-list display
  - Non-nil MSG-P means display a message about the addition."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)) nil 'MSG))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)) nil 'MSG))
   (unless (listp bmkp-copied-tags) (error "`bmkp-paste-add-tags': `bmkp-copied-tags' is not a list"))
   (bmkp-add-tags bookmark bmkp-copied-tags no-update-p msg-p))
 
@@ -6562,7 +6562,7 @@ Non-interactively:
    update the modification count and maybe save bookmarks, and do not
    refresh/rebuild the bookmark-list display
  - Non-nil MSG-P means display a message about the addition."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)) nil 'MSG))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)) nil 'MSG))
   (unless (listp bmkp-copied-tags)
     (error "`bmkp-paste-replace-tags': `bmkp-copied-tags' is not a list"))
   (let ((has-tags-p  (bmkp-get-tags bookmark)))
@@ -8835,7 +8835,7 @@ BOOKMARK is a bookmark name or a bookmark record.
 Non-interactively, if the region is inactive or empty then TEXT is the
 link text, and it is inserted at POSITION (point if POSITION is nil)."
     (interactive
-     (let* ((bmk  (bookmark-completing-read "Bookmark"))
+     (let* ((bmk  (bmkp-completing-read "Bookmark"))
             (txt  (if (and transient-mark-mode  mark-active  (> (region-end) (region-beginning)))
                       (buffer-substring-no-properties (region-end) (region-beginning))
                     (read-string "Insert text: " nil nil bmk))))
@@ -8885,7 +8885,7 @@ Starting with Emacs 22, if the file is an image file then:
   `$PATH' or `exec-path', then show EXIF data (metadata) about the
   image.  See standard Emacs library `image-dired.el' for more
   information about `exiftool'"
-  (interactive (list (bookmark-completing-read "Describe bookmark"
+  (interactive (list (bmkp-completing-read "Describe bookmark"
                                                (or (and (fboundp 'bmkp-default-lighted)
                                                         (bmkp-default-lighted))
                                                    (bmkp-default-bookmark-name)))
@@ -9164,7 +9164,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
   "Show the internal definition of the bookmark BOOKMARK.
 BOOKMARK is a bookmark name or a bookmark record.
 If it is a record then it need not belong to `bookmark-alist'."
-  (interactive (list (bookmark-completing-read "Describe bookmark" (bmkp-default-bookmark-name))))
+  (interactive (list (bmkp-completing-read "Describe bookmark" (bmkp-default-bookmark-name))))
   ;; Work with a copy of the bookmark, so we can unpropertize the name.
   (setq bookmark  (copy-sequence (bmkp-get-bookmark bookmark)))
   (help-setup-xref (list #'bmkp-describe-bookmark-internals bookmark) (called-interactively-p 'interactive))
@@ -9991,7 +9991,7 @@ BOOKMARK-NAMES is generally a list of bookmarks or bookmark names
 MSGP non-nil means possibly interact with the user, showing messages."
   (interactive (list
                 (if (< (prefix-numeric-value current-prefix-arg) 0)
-                    (bookmark-completing-read "Replace existing sequence bookmark"
+                    (bmkp-completing-read "Replace existing sequence bookmark"
                                               nil
                                               (bmkp-sequence-alist-only)
                                               nil
@@ -10765,7 +10765,7 @@ Non-nil ACTION is the action mentioned in the prompt; nil: `Jump to '.
 Non-nil PROMPT is an alternative prompt."
   (unless alist (error "No bookmarks of type %s" type))
   (bmkp-bookmark-record-from-name
-   (bookmark-completing-read (or prompt  (concat (or action  "Jump to ") type " bookmark"
+   (bmkp-completing-read (or prompt  (concat (or action  "Jump to ") type " bookmark"
                                                  (and other-win  " in another window")))
                              (bmkp-default-bookmark-name alist)
                              alist pred hist)
@@ -11404,7 +11404,7 @@ for info about using a prefix argument."
   (interactive
    (let ((alist  (bmkp-this-buffer-alist-only)))
      (unless alist  (error "No bookmarks for this buffer"))
-     (list (bookmark-completing-read "Jump to bookmark for this buffer"
+     (list (bmkp-completing-read "Jump to bookmark for this buffer"
                                      (bmkp-default-bookmark-name alist) alist)
            current-prefix-arg)))
   (when (stringp bookmark)
@@ -11417,7 +11417,7 @@ for info about using a prefix argument."
   (interactive
    (let ((alist  (bmkp-this-buffer-alist-only)))
      (unless alist  (error "No bookmarks for this buffer"))
-     (list (bookmark-completing-read "Jump to bookmark for this buffer in another window"
+     (list (bmkp-completing-read "Jump to bookmark for this buffer in another window"
                                      (bmkp-default-bookmark-name alist) alist)
            current-prefix-arg)))
   (when (stringp bookmark)
@@ -11437,7 +11437,7 @@ for info about using a prefix argument."
 ;;;             (error "This buffer is not associated with a file"))
 ;;;           (let ((alist  (bmkp-this-file-alist-only)))
 ;;;             (unless alist  (error "No bookmarks for this file"))
-;;;             (list (bookmark-completing-read "Jump to bookmark for this file"
+;;;             (list (bmkp-completing-read "Jump to bookmark for this file"
 ;;;                                             (bmkp-default-bookmark-name alist) alist)
 ;;;                   current-prefix-arg))))
 ;;;   (bmkp-jump-1 bookmark-name 'bmkp--pop-to-buffer-same-window flip-use-region-p))
@@ -11453,7 +11453,7 @@ for info about using a prefix argument."
 ;;;             (error "This buffer is not associated with a file"))
 ;;;           (let ((alist  (bmkp-this-file-alist-only)))
 ;;;             (unless alist  (error "No bookmarks for this file"))
-;;;             (list (bookmark-completing-read "Jump to bookmark for this file in another window"
+;;;             (list (bmkp-completing-read "Jump to bookmark for this file in another window"
 ;;;                                             (bmkp-default-bookmark-name alist) alist)
 ;;;                   current-prefix-arg))))
 ;;;   (bmkp-jump-1 bookmark-name 'bmkp-select-buffer-other-window flip-use-region-p))
@@ -11545,7 +11545,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-all-tags-alist-only tgs)))
      (unless alist (error "No bookmarks have all of the specified tags"))
-     (list tgs (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-all-tags-alist-only tags))
     (error "No bookmarks have all of the specified tags"))
   (bookmark-jump bookmark))
@@ -11557,7 +11557,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-all-tags-alist-only tgs)))
      (unless alist (error "No bookmarks have all of the specified tags"))
-     (list tgs (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-all-tags-alist-only tags))
     (error "No bookmarks have all of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11571,7 +11571,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for all tags: "))
           (alist  (bmkp-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No bookmarks have tags that all match `%s'" rgx))
-     (list rgx (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-all-tags-regexp-alist-only regexp))
     (error "No bookmarks have tags that all match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -11583,7 +11583,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for all tags: "))
           (alist  (bmkp-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No bookmarks have tags that all match `%s'" rgx))
-     (list rgx (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-all-tags-regexp-alist-only regexp))
     (error "No bookmarks have tags that all match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -11601,7 +11601,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No bookmarks have any of the specified tags"))
-     (list tgs (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-some-tags-alist-only tags))
     (error "No bookmarks have any of the specified tags"))
   (bookmark-jump bookmark))
@@ -11614,7 +11614,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No bookmarks have any of the specified tags"))
-     (list tgs (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-some-tags-alist-only tags))
     (error "No bookmarks have any of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11628,7 +11628,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No bookmarks have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-some-tags-regexp-alist-only regexp))
     (error "No bookmarks have any tags that match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -11640,7 +11640,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No bookmarks have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-some-tags-regexp-alist-only regexp))
     (error "No bookmarks have any tags that match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -11659,7 +11659,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-file-all-tags-alist-only tgs)))
      (unless alist (error "No file or dir bookmarks have all of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-all-tags-alist-only tags))
     (error "No file or dir bookmarks have all of the specified tags"))
   (bookmark-jump bookmark))
@@ -11671,7 +11671,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-file-all-tags-alist-only tgs)))
      (unless alist (error "No file or dir bookmarks have all of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-all-tags-alist-only tags))
     (error "No file or dir bookmarks have all of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11685,7 +11685,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks have tags that all match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-all-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks have tags that all match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -11697,7 +11697,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks have tags that all match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-all-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks have tags that all match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -11715,7 +11715,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-file-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No file or dir bookmarks have any of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-some-tags-alist-only tags))
     (error "No file or dir bookmarks have any of the specified tags"))
   (bookmark-jump bookmark))
@@ -11728,7 +11728,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-file-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No file or dir bookmarks have any of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-some-tags-alist-only tags))
     (error "No file or dir bookmarks have any of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11742,7 +11742,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-some-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks have any tags that match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -11754,7 +11754,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-some-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks have any tags that match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -11773,7 +11773,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-file-this-dir-all-tags-alist-only tgs)))
      (unless alist (error "No file or dir bookmarks in this dir have all of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-all-tags-alist-only tags))
     (error "No file or dir bookmarks in this dir have all of the specified tags"))
   (bookmark-jump bookmark))
@@ -11785,7 +11785,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-file-this-dir-all-tags-alist-only tgs)))
      (unless alist (error "No file or dir bookmarks in this dir have all of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-all-tags-alist-only tags))
     (error "No file or dir bookmarks in this dir have all of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11799,7 +11799,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-this-dir-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks in this dir have all tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-all-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks in this dir have all tags that match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -11812,7 +11812,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-this-dir-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks in this dir have all tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-all-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks in this dir have all tags that match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -11830,7 +11830,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-file-this-dir-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No file or dir bookmarks in this dir have any of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-some-tags-alist-only tags))
     (error "No file or dir bookmarks in this dir have any of the specified tags"))
   (bookmark-jump bookmark))
@@ -11843,7 +11843,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-file-this-dir-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No file or dir bookmarks in this dir have any of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-some-tags-alist-only tags))
     (error "No file or dir bookmarks in this dir have any of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11857,7 +11857,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-this-dir-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks in this dir have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-some-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks in this dir have any tags that match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -11870,7 +11870,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-file-this-dir-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No file or dir bookmarks in this dir have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-file-this-dir-some-tags-regexp-alist-only regexp))
     (error "No file or dir bookmarks in this dir have any tags that match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -11910,7 +11910,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-autofile-all-tags-alist-only tgs)))
      (unless alist (error "No autofile bookmarks have all of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-autofile-all-tags-alist-only tags))
     (error "No autofile bookmarks have all of the specified tags"))
   (bookmark-jump bookmark))
@@ -11922,7 +11922,7 @@ time.  Use a prefix argument if you want to refresh them."
    (let* ((tgs    (bmkp-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkp-autofile-all-tags-alist-only tgs)))
      (unless alist (error "No autofile bookmarks have all of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-autofile-all-tags-alist-only tags))
     (error "No autofile bookmarks have all of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11936,7 +11936,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-autofile-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No autofile bookmarks have tags that all match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-autofile-all-tags-regexp-alist-only regexp))
     (error "No autofile bookmarks have tags that all match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -11949,7 +11949,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-autofile-all-tags-regexp-alist-only rgx)))
      (unless alist (error "No autofile bookmarks have tags that all match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-autofile-all-tags-regexp-alist-only regexp))
     (error "No autofile bookmarks have tags that all match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -11967,7 +11967,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-autofile-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No autofile bookmarks have any of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-autofile-some-tags-alist-only tags))
     (error "No autofile bookmarks have any of the specified tags"))
   (bookmark-jump bookmark))
@@ -11980,7 +11980,7 @@ time.  Use a prefix argument if you want to refresh them."
           (alist  (bmkp-autofile-some-tags-alist-only tgs)))
      (unless tgs (error "You did not specify any tags"))
      (unless alist (error "No autofile bookmarks have any of the specified tags"))
-     (list tgs (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list tgs (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkp-autofile-some-tags-alist-only tags))
     (error "No autofile bookmarks have any of the specified tags"))
   (bookmark-jump-other-window bookmark))
@@ -11994,7 +11994,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-autofile-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No autofile bookmarks have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (error "No autofile bookmarks have any tags that match `%s'" regexp))
     (error "No autofile bookmarks have any tags that match `%s'" regexp))
   (bookmark-jump bookmark))
@@ -12007,7 +12007,7 @@ Then you are prompted for the BOOKMARK (with completion)."
    (let* ((rgx    (bmkp-read-regexp "Regexp for tags: "))
           (alist  (bmkp-autofile-some-tags-regexp-alist-only rgx)))
      (unless alist (error "No autofile bookmarks have any tags that match `%s'" rgx))
-     (list rgx (bookmark-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
+     (list rgx (bmkp-completing-read "File bookmark" (bmkp-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (error "No autofile bookmarks have any tags that match `%s'" regexp))
     (error "No autofile bookmarks have any tags that match `%s'" regexp))
   (bookmark-jump-other-window bookmark))
@@ -12258,7 +12258,7 @@ You are prompted for the REGEXP."
             (setq bmkp-current-nav-bookmark  (car bmkp-nav-alist))
             (message "Bookmark navigation list is now the global bookmark list") (sit-for 2))
           (let ((bookmark-alist  bmkp-nav-alist))
-            (list (bookmark-completing-read "Jump to bookmark" (bmkp-default-bookmark-name))
+            (list (bmkp-completing-read "Jump to bookmark" (bmkp-default-bookmark-name))
                   current-prefix-arg))))
   (bmkp-jump-1 bookmark-name 'bmkp--pop-to-buffer-same-window flip-use-region-p))
 
@@ -12273,7 +12273,7 @@ You are prompted for the REGEXP."
             (setq bmkp-current-nav-bookmark  (car bmkp-nav-alist))
             (message "Bookmark navigation list is now the global bookmark list") (sit-for 2))
           (let ((bookmark-alist  bmkp-nav-alist))
-            (list (bookmark-completing-read "Jump to bookmark (in another window)"
+            (list (bmkp-completing-read "Jump to bookmark (in another window)"
                                             (bmkp-default-bookmark-name))
                   current-prefix-arg))))
   (bmkp-jump-1 bookmark-name 'bmkp-select-buffer-other-window flip-use-region-p))
@@ -13409,7 +13409,7 @@ Non-interactively, non-nil MSG-P means display a status message."
 Return the full updated bookmark.
 BOOKMARK is a bookmark name or a bookmark record.
 Non-interactively, non-nil MSG-P means display a status message."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
   (let ((was-temp  (bmkp-temporary-bookmark-p bookmark)))
     (bmkp-prop-set bookmark 'bmkp-temp (not was-temp))
     (when msg-p (message "Bookmark `%s' is now %s"
@@ -13423,7 +13423,7 @@ Non-interactively, non-nil MSG-P means display a status message."
 Return the full updated bookmark.
 BOOKMARK is a bookmark name or a bookmark record.
 Non-interactively, non-nil MSG-P means display a status message."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
   (bmkp-prop-set bookmark 'bmkp-temp t)
   (when msg-p (message "Bookmark `%s' is now TEMPORARY"
                        (if (stringp bookmark) bookmark (bmkp-bookmark-name-from-record bookmark))))
@@ -13435,7 +13435,7 @@ Non-interactively, non-nil MSG-P means display a status message."
 Return the full updated bookmark.
 BOOKMARK is a bookmark name or a bookmark record.
 Non-interactively, non-nil MSG-P means display a status message."
-  (interactive (list (bookmark-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
+  (interactive (list (bmkp-completing-read "Bookmark" (bmkp-default-bookmark-name)) 'MSG))
   (bmkp-prop-set bookmark 'bmkp-temp nil)
   (when msg-p (message "Bookmark `%s' is now SAVABLE"
                        (if (stringp bookmark) bookmark (bmkp-bookmark-name-from-record bookmark))))

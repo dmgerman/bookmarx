@@ -188,7 +188,7 @@
                      (defalias 'cl-case 'case)))
 
 (require 'bookmark)
-;; bookmark-alist, bookmark-bmenu-bookmark, bookmark-completing-read, bmkp-get-bookmark,
+;; bookmark-alist, bookmark-bmenu-bookmark, bmkp-completing-read, bmkp-get-bookmark,
 ;; bookmark-get-position, bookmark-handle-bookmark, bookmark-maybe-load-default-file,
 ;; bookmark-name-from-full-record, bookmark-name-from-record, bookmark-prop-get, bmkp-prop-set
 ;; (Note: bmkp-prop-set is provided by bookmark+-1.el.)
@@ -609,7 +609,7 @@ for info about using a prefix argument."
   (interactive
    (let ((alist  (bmkp-lighted-alist-only)))
      (unless alist  (error "No highlighted bookmarks"))
-     (list (bookmark-completing-read "Jump to highlighted bookmark" nil alist) current-prefix-arg)))
+     (list (bmkp-completing-read "Jump to highlighted bookmark" nil alist) current-prefix-arg)))
   (bmkp-jump-1 bookmark-name 'bmkp--pop-to-buffer-same-window flip-use-region-p))
 
 ;;;###autoload (autoload 'bmkp-lighted-jump-other-window "bookmark+")
@@ -619,7 +619,7 @@ See `bmkp-lighted-jump'."
   (interactive
    (let ((alist  (bmkp-lighted-alist-only)))
      (unless alist  (error "No highlighted bookmarks"))
-     (list (bookmark-completing-read "Jump to highlighted bookmark in another window" nil alist)
+     (list (bmkp-completing-read "Jump to highlighted bookmark in another window" nil alist)
            current-prefix-arg)))
   (bmkp-jump-1 bookmark-name 'bmkp-select-buffer-other-window flip-use-region-p))
 
@@ -648,7 +648,7 @@ optional arg NOERRORP is non-nil, in which case return nil."
   (let ((lbmks  (bmkp-bookmarks-lighted-at-point position)))
     (unless (or lbmks  noerrorp) (error "No highlighted bookmark %s" (if position "" "at point")))
     (if (cdr lbmks)
-        (bookmark-completing-read "Bookmark" (car lbmks) lbmks)
+        (bmkp-completing-read "Bookmark" (car lbmks) lbmks)
       (car lbmks))))
 
 ;;;###autoload (autoload 'bmkp-unlight-bookmark "bookmark+")
@@ -661,7 +661,7 @@ When called from Lisp:
   (interactive
    (let ((lighted-bmks  (bmkp-lighted-alist-only)))
      (unless lighted-bmks (error "No highlighted bookmarks"))
-     (list (bookmark-completing-read "UNhighlight bookmark" (bmkp-default-lighted) lighted-bmks)
+     (list (bmkp-completing-read "UNhighlight bookmark" (bmkp-default-lighted) lighted-bmks)
            nil
            'MSG)))
   (let* ((bmk         (bmkp-get-bookmark bookmark 'NOERROR))
@@ -710,7 +710,7 @@ When called from Lisp:
                           (bmkp-this-buffer-lighted-alist-only)))
          (msg-suffix    (if current-prefix-arg "" " in this buffer")))
      (unless lighted-bmks (error "No highlighted bookmarks%s" msg-suffix))
-     (list (bookmark-completing-read (format "UNhighlight bookmark%s in this buffer" msg-suffix)
+     (list (bmkp-completing-read (format "UNhighlight bookmark%s in this buffer" msg-suffix)
                                      (bmkp-default-lighted)
                                      lighted-bmks
                                      nil
@@ -823,7 +823,7 @@ Non-interactively:
  Non-nil MSGP means display a highlighting progress message.
  Non-nil LIGHT-NOW-P means apply the highlighting now."
   (interactive
-   (let* ((bmk        (bookmark-completing-read "Highlight bookmark"
+   (let* ((bmk        (bmkp-completing-read "Highlight bookmark"
                                                 (or (bmkp-default-lighted)  (bmkp-default-bookmark-name))))
           (bmk-style  (bmkp-lighting-style bmk))
           (bmk-face   (bmkp-lighting-face bmk))
@@ -902,7 +902,7 @@ Non-interactively:
  POINT-P non-nil means highlight point rather than the recorded
   bookmark position."
   (interactive
-   (let* ((bmk  (bookmark-completing-read "Highlight bookmark" (bmkp-default-bookmark-name)))
+   (let* ((bmk  (bmkp-completing-read "Highlight bookmark" (bmkp-default-bookmark-name)))
           (sty  (and current-prefix-arg  (or (consp current-prefix-arg)
                                              (<= (prefix-numeric-value current-prefix-arg) 0))
                      (cdr (assoc (let ((completion-ignore-case  t))
@@ -989,7 +989,7 @@ With a prefix arg you are prompted for the style and/or face to use:
  Numeric negative arg: prompt for style.
 See `bmkp-light-bookmark' for arguments when called from Lisp."
   (interactive
-   (let* ((bmk  (bookmark-completing-read "Highlight bookmark"
+   (let* ((bmk  (bmkp-completing-read "Highlight bookmark"
                                           nil
                                           (bmkp-this-buffer-alist-only)
                                           nil
