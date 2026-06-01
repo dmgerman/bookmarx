@@ -984,6 +984,8 @@ Returns nil if neither is available."
 (declare-function bmkp-toggle-auto-light-when-jump "bookmark+-lit")
 (declare-function bmkp-toggle-auto-light-when-set  "bookmark+-lit")
 
+(declare-function bmkp-read-bookmark-for-jump      "bookmark+-preview")
+
 ;; In bookmark+-bmu.el.
 (declare-function bmkp-fit-bmenu-frame                    "bookmark+-bmu")
 
@@ -2767,7 +2769,7 @@ BOOKMARK is a bookmark name or a bookmark record.
 Non-nil DISPLAY-FUNCTION is a function to display the bookmark.  By
  default, use `pop-to-buffer-same-window'.
 Non-nil FLIP-USE-REGION-P flips the value of `bmkp-use-region'."
-  (interactive (list (bmkp-completing-read "Jump to bookmark" (bmkp-default-bookmark-name))
+  (interactive (list (bmkp-read-bookmark-for-jump "Jump to bookmark" (bmkp-default-bookmark-name))
                      nil
                      current-prefix-arg))
   (bmkp-jump-1 bookmark (or display-function  'bmkp--pop-to-buffer-same-window) flip-use-region-p))
@@ -2784,8 +2786,8 @@ Non-nil FLIP-USE-REGION-P flips the value of `bmkp-use-region'."
                                         ; Bound to `C-x 4 j j', `C-x x j', `C-x x o', `C-x x q'
   "Jump to bookmark BOOKMARK in another window.
 See `bmkp-jump', in particular for info about using a prefix arg."
-  (interactive (list (bmkp-completing-read "Jump to bookmark (in another window)"
-                                               (bmkp-default-bookmark-name))
+  (interactive (list (bmkp-read-bookmark-for-jump "Jump to bookmark (in another window)"
+                                                  (bmkp-default-bookmark-name))
                      current-prefix-arg))
   (bmkp-jump-1 bookmark 'bmkp-select-buffer-other-window flip-use-region-p))
 
@@ -2800,8 +2802,8 @@ See `bmkp-jump', in particular for info about using a prefix arg."
 (defun bmkp-jump-other-frame (bookmark &optional flip-use-region-p) ; Bound to `C-x 5 B'
   "Jump to bookmark BOOKMARK in another frame.
 See `bmkp-jump', in particular for info about using a prefix arg."
-  (interactive (list (bmkp-completing-read "Jump to bookmark (in another frame)"
-                                               (bmkp-default-bookmark-name))
+  (interactive (list (bmkp-read-bookmark-for-jump "Jump to bookmark (in another frame)"
+                                                  (bmkp-default-bookmark-name))
                      current-prefix-arg))
   (let ((pop-up-frames  t)) (bmkp-jump-other-window bookmark flip-use-region-p)))
 

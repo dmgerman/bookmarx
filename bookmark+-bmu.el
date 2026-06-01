@@ -5537,6 +5537,7 @@ are marked or ALLP is non-nil."
 (define-key bmkp-list-mode-map "o"                    'bmkp-list-other-window)
 (define-key bmkp-list-mode-map "m"                    'bmkp-list-mark)
 (define-key bmkp-list-mode-map "u"                    'bmkp-list-unmark)
+(define-key bmkp-list-mode-map "\M-p"                 'bmkp-list-preview-mode)
 (define-key bmkp-list-mode-map "\M-~"                 'bmkp-toggle-saving-bookmark-file)
 (define-key bmkp-list-mode-map (kbd "C-M-~")          'bmkp-toggle-saving-menu-list-state)
 (define-key bmkp-list-mode-map "."                    'bmkp-bmenu-show-all)

@@ -241,6 +241,7 @@ The default value is that of vanilla Emacs constant `bookmark-bmenu-buffer'."
 (require 'bookmark+-bmu)                ; `*Bmkp List*' (aka "menu list") stuff.
 (require 'bookmark+-1)                  ; Rest of Bookmark+, except keys & menus.
 (require 'bookmark+-key)                ; Keys & menus.
+(require 'bookmark+-preview)            ; Live preview for jump and `*Bmkp List*'.
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 
