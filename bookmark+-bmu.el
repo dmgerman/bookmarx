@@ -3201,7 +3201,7 @@ Non-interactively:
           (delete-region (point-min) (point-max)) ; In case a find-file hook inserted a header etc.
           (bookmark-insert-file-format-version-stamp coding-system-for-write)
           (insert "(\n)"))
-        (let ((blist  (bookmark-alist-from-buffer)))
+        (let ((blist  (bmkp-alist-from-buffer)))
           (unless (listp blist) (error "Invalid bookmark list in file `%s'" file))
           (setq bookmark-alist  blist)  ; Bookmarks in FILE
           (setq imported  (bookmark-import-new-list marked-bmks duplicates-ok 'RETURN-BMKS))
