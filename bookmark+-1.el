@@ -725,7 +725,7 @@
 ;;    `bookmark-jump-other-window', `bookmark-load',
 ;;    `bookmark-relocate', `bookmark-rename', `bookmark-save',
 ;;    `bookmark-send-edited-annotation', `bookmark-set',
-;;    `bookmark-set-name', `bookmark-yank-word'.
+;;    `bookmark-set-name', `bmkp-yank-word'.
 ;;
 ;;
 ;;  ***** NOTE: The following user options defined in `bookmark.el'
@@ -2646,23 +2646,19 @@ looked up in `bookmark-alist'."
     (setq bmkp-modified-bookmarks  (cons bookmark bmkp-modified-bookmarks))))
 
 
-;; REPLACES ORIGINAL in `bookmark.el'.
-;;
-;; Prevent adding a newline in a bookmark name when yanking.
-;;
-;;;###autoload (autoload 'bookmark-yank-word "bookmark+")
-(defun bookmark-yank-word ()            ; Bound to `C-M-w' in minibuffer when setting bookmark.
+;;;###autoload (autoload 'bmkp-yank-word "bookmark+")
+(defun bmkp-yank-word ()                ; Bound to `C-M-w' in minibuffer when setting a bookmark.
   "Yank the word at point in `bookmark-current-buffer'.
 Repeat to yank consecutive words from the current buffer, appending
-them to the minibuffer.  However, newline characters between yanked
-words are stripped out."
+them to the minibuffer.  Newline characters between yanked words are
+stripped out."
   (interactive)
   (let ((string  (with-current-buffer bookmark-current-buffer
                    (goto-char bookmark-yank-point)
                    (buffer-substring-no-properties (point)
                                                    (progn (forward-word 1)
                                                           (setq bookmark-yank-point  (point)))))))
-    (setq string  (bmkp-replace-regexp-in-string "\n" "" string))
+    (setq string  (replace-regexp-in-string "\n" "" string))
     (insert string)))
 
 
@@ -3140,7 +3136,7 @@ should be non-nil if BATCH is non-nil.)"
   (let ((newname  (or new  (and (not batchp)  (bmkp-completing-read-lax "New name" old)))))
 ;;; $$$$$$  (read-from-minibuffer "New name: " nil
 ;;;           (let ((now-map  (copy-keymap minibuffer-local-map)))
-;;;             (define-key now-map  "\C-w" 'bookmark-yank-word)
+;;;             (define-key now-map  "\C-w" 'bmkp-yank-word)
 ;;;             now-map)
 ;;;           nil 'bookmark-history))))
     (when newname
@@ -4670,13 +4666,13 @@ your input need not match any existing bookmark name.
 In addition:
  * You can use `SPC' and `?' freely when typing the name.
  * You can use `C-M-w' repeatedly to yank consecutive words from the
-   current buffer (see `bookmark-yank-word')."
+   current buffer (see `bmkp-yank-word')."
   (let ((orig-C-M-w  (lookup-key minibuffer-local-completion-map (kbd "C-M-w")))
         (orig-C-M-u  (lookup-key minibuffer-local-completion-map (kbd "C-M-u")))
         (orig-SPC    (lookup-key minibuffer-local-completion-map (kbd "SPC")))
         (orig-qmark  (lookup-key minibuffer-local-completion-map (kbd "?"))))
     (unwind-protect
-        (progn (define-key minibuffer-local-completion-map (kbd "C-M-w") 'bookmark-yank-word)
+        (progn (define-key minibuffer-local-completion-map (kbd "C-M-w") 'bmkp-yank-word)
                (define-key minibuffer-local-completion-map (kbd "C-M-u") 'bmkp-insert-current-bookmark)
                (define-key minibuffer-local-completion-map (kbd "SPC")   'self-insert-command)
                (define-key minibuffer-local-completion-map (kbd "?")     'self-insert-command)
