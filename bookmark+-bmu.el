@@ -405,11 +405,25 @@
 
 (defvar bmkp-bmenu-buffer) ; In `bookmark+.el' (declared again below for clarity).
 
+;;;###autoload (autoload 'bmkp-fit-frame-flag "bookmark+")
+(defcustom bmkp-fit-frame-flag nil
+  "Non-nil means shrink the frame to fit Bookmark+ pop-up buffers.
+Affects `*Bmkp List*' rendering (refresh, sort, filter) and the
+annotation show/edit buffers.  In each case, when the buffer is the
+only window in its frame, Bookmark+ calls `fit-frame-to-buffer' to
+resize the whole frame to the buffer's content.
+
+Default nil — frames are left alone, which matches expectations under
+tiling window managers and multi-frame setups."
+  :type 'boolean :group 'bookmark-plus)
+
 (defun bmkp-fit-bmenu-frame ()
-  "Fit the current frame to its buffer, if the *Bmkp List* owns it.
-Does nothing unless the selected window is the only one in its frame
-and shows the `*Bmkp List*' buffer."
-  (when (and (one-window-p t)
+  "Fit the current frame to its buffer, if `*Bmkp List*' owns it.
+Does nothing unless `bmkp-fit-frame-flag' is non-nil, the selected
+window is the only one in its frame, and that window shows the
+`*Bmkp List*' buffer."
+  (when (and bmkp-fit-frame-flag
+             (one-window-p t)
              (eq (selected-window)
                  (get-buffer-window (get-buffer-create bmkp-bmenu-buffer) 0)))
     (fit-frame-to-buffer)))

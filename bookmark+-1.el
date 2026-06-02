@@ -978,6 +978,8 @@ Returns nil if neither is available."
 
 (declare-function bmkp-read-bookmark-for-jump      "bookmark+-preview")
 
+(defvar bmkp-fit-frame-flag)            ; Defined in `bookmark+-bmu.el'.
+
 ;; In bookmark+-bmu.el.
 (declare-function bmkp-fit-bmenu-frame                    "bookmark+-bmu")
 
@@ -3584,7 +3586,7 @@ read-only and edit mode using `C-x C-q'."
                 (set-buffer-modified-p buf-modified-p))
               (goto-char (point-min))
               (bmkp-show-annotation-mode)
-              (when (one-window-p t) (fit-frame-to-buffer))
+              (when (and bmkp-fit-frame-flag (one-window-p t)) (fit-frame-to-buffer))
               (setq bookmark-annotation-name  bmk))
             (select-frame-set-input-focus oframe)))))))
 
@@ -3627,7 +3629,7 @@ in the current sort order."
               (insert ann) (unless (bolp) (insert "\n\n")))))
         (goto-char (point-min))
         (view-mode-enter)
-        (when (one-window-p t) (fit-frame-to-buffer))))
+        (when (and bmkp-fit-frame-flag (one-window-p t)) (fit-frame-to-buffer))))
     (select-frame-set-input-focus oframe)))
 
 
@@ -4617,7 +4619,7 @@ That is, switch from edit mode to read-only mode."
         (set-buffer-modified-p buf-modified-p))
       (goto-char (point-min))
       (bmkp-show-annotation-mode)
-      (when (one-window-p t) (fit-frame-to-buffer))
+      (when (and bmkp-fit-frame-flag (one-window-p t)) (fit-frame-to-buffer))
       (setq bookmark-annotation-name  bmk)
       (kill-buffer obuf))))
 
@@ -4637,7 +4639,7 @@ That is, switch from read-only mode to edit mode."
       (bmkp-insert-annotation bname)
       (set-buffer-modified-p buf-modified-p))
     (bmkp-edit-annotation-mode)
-    (when (one-window-p t) (fit-frame-to-buffer))
+    (when (and bmkp-fit-frame-flag (one-window-p t)) (fit-frame-to-buffer))
     (setq bookmark-annotation-name  bmk)
     (kill-buffer obuf)))
 
