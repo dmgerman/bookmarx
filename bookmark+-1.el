@@ -788,7 +788,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 
-(unless (fboundp 'file-remote-p) (require 'ffap)) ;; ffap-file-remote-p
+ ;; ffap-file-remote-p
 (eval-when-compile (require 'gnus)) ;; mail-header-id (really in `nnheader.el')
 (eval-when-compile (require 'gnus-sum)) ;; gnus-summary-article-header
 
@@ -1066,7 +1066,7 @@ The possible values:
 
 ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
 ;; works for newer Emacs too.
-(when (fboundp 'defvaralias)            ; Emacs 22+
+(progn ; Emacs 22+
   (defvaralias 'bmkp-auto-idle-bookmark-min-distance 'bmkp-automatic-bookmark-min-distance)
   (bmkp-make-obsolete-variable 'bmkp-auto-idle-bookmark-min-distance 'bmkp-automatic-bookmark-min-distance
                                "2021-08-18"))
@@ -1085,19 +1085,11 @@ Automatic bookmarking is done by `bmkp-automatic-bookmark-mode'."
 ;; (Don't bother aliasing the old name, for Emacs 20.)
 ;;
 ;;;###autoload (autoload 'bmkp-automatic-bookmark-mode "bookmark+")
-(unless (fboundp 'define-minor-mode)
-  (defcustom bmkp-automatic-bookmark-mode nil
-    "*Non-nil means that bookmarks are created periodically automatically.
-Setting this variable directly does not take effect;
-use either \\[customize] or command `bmkp-automatic-bookmark-mode'."
-    :set        (lambda (_symbol value) (bmkp-automatic-bookmark-mode (if value 1 -1)))
-    :initialize 'custom-initialize-default
-    :type 'boolean :group 'bookmark-plus :require 'bookmark+))
 
 
 ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
 ;; works for newer Emacs too.
-(when (fboundp 'defvaralias)            ; Emacs 22+
+(progn ; Emacs 22+
   (defvaralias 'bmkp-auto-idle-bookmark-mode-delay 'bmkp-automatic-bookmark-mode-delay)
   (bmkp-make-obsolete-variable 'bmkp-auto-idle-bookmark-mode-delay 'bmkp-automatic-bookmark-mode-delay
                                "2021-08-18"))
@@ -1111,7 +1103,7 @@ Automatic bookmarking is done by `bmkp-automatic-bookmark-mode'."
 
 ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
 ;; works for newer Emacs too.
-(when (fboundp 'defvaralias)            ; Emacs 22+
+(progn ; Emacs 22+
   (defvaralias 'bmkp-auto-idle-bookmark-mode-lighter 'bmkp-automatic-bookmark-mode-lighter)
   (bmkp-make-obsolete-variable 'bmkp-auto-idle-bookmark-mode-lighter 'bmkp-automatic-bookmark-mode-lighter
                                "2021-08-18"))
@@ -1126,7 +1118,7 @@ is enabled.  Set this to nil or \"\" if you do not want any lighter."
 
 ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
 ;; works for newer Emacs too.
-(when (fboundp 'defvaralias)            ; Emacs 22+
+(progn ; Emacs 22+
   (defvaralias 'bmkp-auto-idle-bookmark-mode-set-function 'bmkp-automatic-bookmark-set-function)
   (bmkp-make-obsolete-variable 'bmkp-auto-idle-bookmark-mode-set-function
                                'bmkp-automatic-bookmark-set-function
@@ -1255,7 +1247,7 @@ of the following, if available:
 
 ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
 ;; works for newer Emacs too.
-(when (fboundp 'defvaralias)            ; Emacs 22+
+(progn ; Emacs 22+
   (defvaralias 'bmkp-default-handler-associations 'bmkp-default-handlers-for-file-types)
   (bmkp-make-obsolete-variable 'bmkp-default-handler-associations 'bmkp-default-handlers-for-file-types
                                "2012-02-27"))
@@ -1661,14 +1653,6 @@ current value of `default-directory' is used to find the file."
   :group 'bookmark-plus)
 
 ;; Emacs 20 only.
-(unless (fboundp 'define-minor-mode)
-  (defcustom bmkp-temporary-bookmarking-mode nil
-    "*Non-nil means that bookmarks are temporary (not recorded on disk).
-Setting this variable directly does not take effect;
-use either \\[customize] or command `bmkp-temporary-bookmarking-mode'."
-    :set (lambda (_symbol value) (bmkp-temporary-bookmarking-mode (if value 1 -1)))
-    :initialize 'custom-initialize-default
-    :type 'boolean :group 'bookmark-plus :require 'bookmark+))
 
 ;;;###autoload (autoload 'bmkp-temporary-bookmarking-mode-hook "bookmark+")
 (defcustom bmkp-temporary-bookmarking-mode-hook ()
@@ -1766,7 +1750,7 @@ different Emacs version from that of the current session."
 
 ;; We do not use `define-obsolete-variable-alias' so that byte-compilation in older Emacs
 ;; works for newer Emacs too.
-(when (fboundp 'defvaralias)            ; Emacs 22+
+(progn ; Emacs 22+
   (defvaralias 'bmkp-automatic-bookmark-mode-timer 'bmkp-auto-idle-bookmark-mode-timer)
   (bmkp-make-obsolete-variable 'bmkp-auto-idle-bookmark-mode-timer 'bmkp-automatic-bookmark-mode-timer
                                "2021-08-18"))
@@ -2149,9 +2133,7 @@ bookmark file.  Saving the file depends on `bookmark-save-flag'."
   (bmkp-maybe-load-default-file)
   (let ((bname  (copy-sequence bookmark-name))
         bmk)
-    (unless (featurep 'xemacs)
-      ;; XEmacs's `set-text-properties' does not work on free-standing strings, apparently.
-      (set-text-properties 0 (length bname) () bname))
+    (set-text-properties 0 (length bname) () bname)
     (cond ((and no-overwrite  (bmkp-get-bookmark-in-alist bname 'NOERROR))
            ;; Phase 2: enforce unique names.  When the caller does not want to
            ;; overwrite and BNAME already exists, auto-disambiguate the new one
@@ -3354,10 +3336,7 @@ contain a `%s' construct, so that it can be passed along with FILE to
           (file-error (setq errorp  t)
                       ;; Do NOT raise error.  (Need to be able to exit.)
                       (let ((msg  (format "CANNOT WRITE FILE `%s'" file)))
-                        (if (fboundp 'display-warning)
-                            (display-warning 'bookmark-plus msg)
-                          (message msg)
-                          (sit-for 4)))))
+                        (display-warning 'bookmark-plus msg))))
         (when (boundp 'bookmark-file-coding-system) ; Emacs 25.2+
           (setq bookmark-file-coding-system  coding-system-for-write))
         (unless existing-buf (kill-buffer (current-buffer)))
@@ -3682,10 +3661,7 @@ that option is non-nil."
   (when (bookmark-time-to-save-p t)
     (condition-case err                 ; Do NOT raise error.  (Need to be able to exit.)
         (bmkp-save)
-      (error (if (fboundp 'display-warning)
-                 (display-warning 'bookmark-plus (error-message-string err))
-               (message (error-message-string err))
-               (sit-for 4))
+      (error (display-warning 'bookmark-plus (error-message-string err))
              nil)))
   (bmkp-save-menu-list-state))
  
@@ -4286,72 +4262,11 @@ A new list is returned (no side effects)."
 ;;(@* "Miscellaneous Bookmark+ Functions")
 ;;  *** Miscellaneous Bookmark+ Functions ***
 
-(if (fboundp 'find-tag-default-as-regexp)
-    (defun bmkp-read-regexp (&optional prompt defaults history)
+(defun bmkp-read-regexp (&optional prompt defaults history)
       "Same as `read-regexp', except argument PROMPT is optional.
 PROMPT defaults to \"Regexp: \"."
       (unless prompt (setq prompt  "Regexp: "))
       (read-regexp prompt defaults history))
-
-  ;; Same as `icicle-find-tag-default-as-regexp' in `icicles-fn.el'.
-  (defun bmkp-find-tag-default-as-regexp () ; Emacs < 24.3
-    "Return a regexp that matches the default tag at point.
-If there is no tag at point, return nil.
-
-When in a major mode that does not provide its own
-`find-tag-default-function', return a regexp that matches the
-symbol at point exactly."
-    (let* ((tagf  (or find-tag-default-function
-                      (get major-mode 'find-tag-default-function)
-                      'find-tag-default))
-           (tag   (funcall tagf)))
-      (and tag  (if (eq tagf 'find-tag-default)
-                    (format "\\_<%s\\_>" (regexp-quote tag))
-                  (regexp-quote tag)))))
-
-  (defun bmkp-read-regexp (&optional prompt default history)
-    "Read and return a regular expression as a string.
-If PROMPT does not end with a colon and possibly whitespace then
-append \": \" to it.
-
-PROMPT defaults to \"Regexp: \".
-
-Optional argument DEFAULT is a string or a list of the form
-\(DEFLT . SUGGESTIONS), where DEFLT is a string or nil.
-
-The string DEFAULT or DEFLT is added to the prompt and is returned as
-the default value if the user enters empty input.  The empty string is
-returned if DEFAULT or DEFLT is nil and the user enters empty input.
-
-SUGGESTIONS is a list of strings that can be inserted into the
-minibuffer using `\\<minibuffer-local-map>\\[next-history-element]'.
-The values supplied in SUGGESTIONS are prepended to the list of
-standard suggestions, which include the tag at point, the last isearch
-regexp, the last isearch string, and the last replacement regexp.
-
-Optional argument HISTORY is a symbol to use for the history list.
-If nil then use `regexp-history'."
-    (unless prompt (setq prompt  "Regexp: "))
-    (let* ((deflt                  (if (consp default) (car default) default))
-           (suggestions            (if (listp default) default (list default)))
-           (suggestions            (append
-                                    suggestions
-                                    (list (bmkp-find-tag-default-as-regexp)
-                                          (car regexp-search-ring)
-                                          (regexp-quote (or (car search-ring)  ""))
-                                          (car (symbol-value query-replace-from-history-variable)))))
-           (suggestions            (delete-dups (delq nil (delete "" suggestions))))
-           (history-add-new-input  nil) ; Do not automatically add default to history for empty input.
-           (input                  (read-from-minibuffer
-                                    (cond ((bmkp-string-match-p ":[ \t]*\\'" prompt) prompt)
-                                          (deflt (format "%s (default %s): " prompt
-                                                         (query-replace-descr deflt)))
-                                          (t (format "%s: " prompt)))
-                                    nil nil nil (or history  'regexp-history) suggestions t)))
-      (if (equal input "")
-          (or deflt  input)         ; Return the default value when the user enters empty input.
-        (prog1 input                ; Add non-empty input to the history and return input.
-          (add-to-history (or history  'regexp-history) input))))))
 
 ;; Same as `icicle-propertize'.  (Not used yet.)
 ;;
@@ -5294,10 +5209,7 @@ Non-interactively, optional arg MSG-P means display progress messages."
              (setq errorp  t)
              ;; Do NOT raise error - used in `bmkp-exit-hook-internal'.  (Need to be able to exit.)
              (let ((msg  (format "CANNOT WRITE FILE `%s'" bmkp-bmenu-state-file)))
-               (if (fboundp 'display-warning)
-                   (display-warning 'bookmark-plus msg)
-                 (message msg)
-                 (sit-for 4)))))
+               (display-warning 'bookmark-plus msg))))
           (kill-buffer (current-buffer))
           (when (and msg-p  (not errorp)) (message "Saving bookmark-list display state...done")))))))
 
@@ -6955,31 +6867,16 @@ If it is a record then it need not belong to `bookmark-alist'."
 ;;(@* "General Utility Functions")
 ;;  *** General Utility Functions ***
 
-(when (and (fboundp 'cl-puthash)  (not (fboundp 'puthash))) ; Emacs 20 with `cl-extra.el' loaded.
-  (defalias 'puthash 'cl-puthash))
-
-(if (fboundp 'puthash) ; Emacs 21+, or Emacs 20 with `cl-extra.el' loaded.
-    (defun bmkp-remove-dups (sequence &optional test)
-      "Copy of SEQUENCE with duplicate elements removed.
+(defun bmkp-remove-dups (sequence &optional test)
+  "Copy of SEQUENCE with duplicate elements removed.
 Optional arg TEST is the test function.  If nil, test with `equal'.
 See `make-hash-table' for possible values of TEST."
-      (setq test  (or test  #'equal))
-      (let ((htable  (make-hash-table :test test)))
-        (cl-loop for elt in sequence
-                 unless (gethash elt htable)
-                 do     (puthash elt elt htable)
-                 finally return (cl-loop for i being the hash-values in htable collect i))))
-
-  (defun bmkp-remove-dups (list &optional use-eq)
-    "Copy of LIST with duplicate elements removed.
-Test using `equal' by default, or `eq' if optional USE-EQ is non-nil."
-    (let ((tail  list)
-          new)
-      (while tail
-        (unless (if use-eq (memq (car tail) new) (member (car tail) new))
-          (push (car tail) new))
-        (pop tail))
-      (nreverse new))))
+  (setq test  (or test  #'equal))
+  (let ((htable  (make-hash-table :test test)))
+    (cl-loop for elt in sequence
+             unless (gethash elt htable)
+             do     (puthash elt elt htable)
+             finally return (cl-loop for i being the hash-values in htable collect i))))
 
 (defun bmkp-unpropertized-string (string)
   "Return a copy of STRING, but with properties removed.
@@ -7089,21 +6986,10 @@ binary data (weird chars)."
   "Return non-nil if FILE1 and FILE2 name the same file.
 If either name is not absolute, then it is expanded relative to
 `default-directory' for the test."
-  (let* ((remote1        (bmkp-file-remote-p file1))
-         (remote2        (bmkp-file-remote-p file2))
-         (ignore-case-p  (and (not remote1)  (not remote2) ; Assume case-sensitive if remote.
-                              (if (boundp 'read-file-name-completion-ignore-case)
-                                  (eval (car (get 'read-file-name-completion-ignore-case
-                                                  'standard-value)))
-                                ;; From the Emacs 24 definition of `read-file-name-completion-ignore-case'.
-                                (memq system-type '(ms-dos windows-nt darwin cygwin))))))
+  (let ((remote1  (bmkp-file-remote-p file1))
+        (remote2  (bmkp-file-remote-p file2)))
     (and (equal remote1 remote2)
-         (if (fboundp 'file-equal-p)
-             (file-equal-p file1 file2)
-           ;; Need to use `expand-file-name' because prior to Emacs 24 `file-true-name' doesn't expand name.
-           (let ((ft1  (file-truename (expand-file-name file1)))
-                 (ft2  (file-truename (expand-file-name file2))))
-             (eq t (compare-strings ft1 0 (length ft1) ft2 0 (length ft2) ignore-case-p)))))))
+         (file-equal-p file1 file2))))
 
 ;;; $$$$$$
 ;;; (defun bmkp-same-file-p (file1 file2)
@@ -7114,37 +7000,8 @@ If either name is not absolute, then it is expanded relative to
 ;;;        (string= (file-truename (expand-file-name file1))
 ;;;                 (file-truename (expand-file-name file2)))))
 
-;;; $$$$$$
-;;; (defun bmkp-file-remote-p (file-name)
-;;;   "Returns non-nil if string FILE-NAME is likely to name a remote file."
-;;;   (if (fboundp 'file-remote-p)
-;;;       (file-remote-p file-name)
-;;;     (and (fboundp 'ffap-file-remote-p)  (ffap-file-remote-p file-name))))
-
-(defun bmkp-file-remote-p (file)
-  "Test whether FILE specifies a location on a remote system.
-Return nil or a string identifying the remote connection (ideally a
-prefix of FILE).
-
-A file is considered remote if accessing it is likely to be slower or
-less reliable than accessing local files.
-
-This is `file-remote-p', if that function is available.  If not, use a
-simple match against rough remote file syntax: `/...:'.
-
-Unless `file-remote-p' is available and FILE has a `file-remote-p'
-handler that opens a remote connection, `bmkp-file-remote-p' does not
-open a remote connection."
-  (if (fboundp 'file-remote-p)
-      (file-remote-p file)
-    (and (stringp file)  (string-match "\\`/[^/]+:" file)  (match-string 0 file))))
-
-(defun bmkp-float-time (&optional specified-time)
-  "Same as `float-time'.  (Needed for Emacs 20.)"
-  (if (fboundp 'float-time)
-      (float-time specified-time)
-    (unless specified-time (setq specified-time  (current-time)))
-    (+ (* (float (nth 0 specified-time)) (expt 2 16))  (nth 1 specified-time))))
+(defalias 'bmkp-file-remote-p #'file-remote-p)
+(defalias 'bmkp-float-time    #'float-time)
 
 (defun bmkp-string-less-case-fold-p (s1 s2)
   "Like `string-lessp', but respect `case-fold-search'."
@@ -8985,7 +8842,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
                   file
                   (fboundp 'image-file-name-regexp) ; In `image-file.el' (Emacs 22+).
                   (bmkp-string-match-p (image-file-name-regexp) file)
-                  (if (fboundp 'display-graphic-p) (display-graphic-p) window-system)
+                  (display-graphic-p)
                   (require 'image-dired nil t)
                   (image-dired-get-thumbnail-image file)
                   (concat "\n@#%&()_IMAGE-HERE_()&%#@" file "\n"))
@@ -9031,8 +8888,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
   (with-current-buffer "*Help*"
     (let ((buffer-read-only  nil))
       ;; Add button to go to the bookmark entry in `*Bmkp List*'.
-      (when (and (condition-case nil (require 'help-mode nil t) (error nil))
-                 (fboundp 'help-insert-xref-button))
+      (when (condition-case nil (require 'help-mode nil t) (error nil))
         (goto-char (point-min)) (forward-line 2)
         (help-insert-xref-button "[Show in `*Bmkp List*']"
                                  #'bmkp-jump-to-list-button
@@ -9044,8 +8900,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
   (with-current-buffer "*Help*"
     (let ((buffer-read-only  nil))
       ;; Add button to go to the bookmark entry in `*Bmkp List*'.
-      (when (and (condition-case nil (require 'help-mode nil t) (error nil))
-                 (fboundp 'help-insert-xref-button))
+      (when (condition-case nil (require 'help-mode nil t) (error nil))
         (goto-char (point-max))
         (insert "\n")
         (help-insert-xref-button "[External Form]"
@@ -9058,8 +8913,7 @@ Inserted subdirs:\t%s\nHidden subdirs:\t\t%s\n%s"
   (with-current-buffer "*Help*"
     (let ((buffer-read-only  nil))
       ;; Add button to go to the bookmark entry in `*Bmkp List*'.
-      (when (and (condition-case nil (require 'help-mode nil t) (error nil))
-                 (fboundp 'help-insert-xref-button))
+      (when (condition-case nil (require 'help-mode nil t) (error nil))
         (goto-char (point-max))
         (insert "\n")
         (help-insert-xref-button "[Internal Form]"
@@ -9133,7 +8987,7 @@ Typically, these are all commands."
        (terpri)
        (let ((non-dups  (bmkp-remove-dups fns)))
          (dolist (fn  non-dups)
-           (if (and (fboundp (intern fn))  (fboundp 'help-insert-xref-button))
+           (if (fboundp (intern fn))
                (with-current-buffer "*Help*"
                  (goto-char (point-max))
                  (help-insert-xref-button fn 'help-function (intern fn) (commandp (intern fn))))
@@ -10108,10 +9962,8 @@ VARIABLES is the list of variables.  Each entry in VARIABLES is either
   (cond ((numberp value))
         ((symbolp value))
         ((and (stringp value)           ; String with no text properties.
-              (if (fboundp 'equal-including-properties) ; Emacs 22+.
-                  (equal-including-properties value (substring-no-properties value))
-                (and (null (text-properties-at 0 value))
-                     (= 0 (next-property-change 0 value))))))
+              ; Emacs 22+.
+                  (equal-including-properties value (substring-no-properties value))))
         (t (with-temp-buffer
              (condition-case nil
                  (let ((cl-print-readably  t) ; In `cl-print.el'.
@@ -10437,9 +10289,7 @@ Current buffer can be the article buffer or the summary buffer."
         buf)
     ;; If in article buffer, record point and buffer, then go to summary buffer
     ;; and record bookmark there.
-    (unless (and (if (fboundp 'derived-mode-p)
-                     (derived-mode-p 'gnus-summary-mode)
-                   (eq major-mode 'gnus-summary-mode))
+    (unless (and (derived-mode-p 'gnus-summary-mode)
                  gnus-article-current)
       (setq buf                      "art"
             bookmark-yank-point      (point)
@@ -12956,10 +12806,9 @@ bookmark-list."
           (bmkp-delete-autonamed-this-buffer-no-confirm 'NO-REFRESH-P)))) ; No refresh yet.
     (bmkp-refresh/rebuild-menu-list nil 'BATCHP))) ; Now refresh, after iterate.
 
-(cond ((fboundp 'define-minor-mode)
-       ;; Emacs 21 and later.  Eval this so that even if the library is byte-compiled with Emacs 20,
-       ;; loading it into Emacs 21+ will define variable `bmkp-automatic-bookmark-mode'.
-       (eval '(define-minor-mode bmkp-automatic-bookmark-mode
+(progn
+  ;; `bmkp-automatic-bookmark-mode'.  The old Emacs-20 fallback branch is gone.
+  (eval '(define-minor-mode bmkp-automatic-bookmark-mode
                "Toggle automatic setting of a bookmark when Emacs is idle.
 Non-interactively, turn automatic bookmarking on for the current
 buffer if and only if ARG is positive.
@@ -13021,64 +12870,11 @@ Don't forget to mention your Emacs and library versions."))
                "Turn on `bmkp-automatic-bookmark-mode'."
                (bmkp-automatic-bookmark-mode 1)))
 
-       (when (fboundp 'define-globalized-minor-mode) ; Emacs 22+, not 21.
+       (progn ; Emacs 22+, not 21.
          (eval '(define-globalized-minor-mode bmkp-global-automatic-bookmark-mode
                  bmkp-automatic-bookmark-mode
                  bmkp-turn-on-automatic-bookmark-mode
                  :group 'bookmark-plus :require 'bookmark+))))
-      (t                                ; Emacs 20.
-       (defun bmkp-automatic-bookmark-mode (&optional arg)
-         "Toggle automatic setting of a bookmark when Emacs is idle.
-Non-interactively, turn automatic bookmarking on if and only if ARG is
-positive.
-
-When the mode is enabled, a bookmark is automatically set every
-`bmkp-automatic-bookmark-mode-delay' seconds, using the setting
-function that is the value of option
-`bmkp-automatic-bookmark-set-function'.  Note that a buffer must be
-current (selected) for an automatic bookmark to be created there - it
-is not enough that the mode be enabled in the buffer.
-
-If you want these bookmarks to be temporary (not saved to your
-bookmark file), then customize option
-`bmkp-autotemp-bookmark-predicates' so that it includes the kind of
-bookmarks that are set by `bmkp-automatic-bookmark-set-function'.  For
-example, if automatic bookmarking sets autonamed bookmarks, then
-`bmkp-autotemp-bookmark-predicates' should include
-`bmkp-autonamed-bookmark-p'.
-
-If you want the automatically created bookmarks to be highlighted,
-then customize option `bmkp-auto-light-when-set' to highlight
-bookmarks of the appropriate kind.  For example, to highlight
-autonamed bookmarks set it to `autonamed-bookmark'.
-
-NOTE: This is the Emacs 20 version of `bmkp-automatic-bookmark-mode',
-which is global only, that is, all buffers are affected.  If you
-instead want it to be local only, then do both of the following in
-your init file:
-  (make-variable-buffer-local \\='bmkp-automatic-bookmark-mode)
-  (make-variable-buffer-local \\='bmkp-automatic-bookmark-mode-timer)"
-         (interactive (list (or current-prefix-arg  'toggle)))
-         (setq bmkp-automatic-bookmark-mode  (if (eq arg 'toggle)
-                                                 (not bmkp-automatic-bookmark-mode)
-                                               (> (prefix-numeric-value arg) 0)))
-         (when bmkp-automatic-bookmark-mode-timer
-           (cancel-timer bmkp-automatic-bookmark-mode-timer)
-           (setq bmkp-automatic-bookmark-mode-timer  nil))
-         (when bmkp-automatic-bookmark-mode
-           (setq bmkp-automatic-bookmark-mode-timer
-                 (run-with-idle-timer bmkp-automatic-bookmark-mode-delay 'REPEAT
-                                      (lambda () ; This allows use as a local mode.
-                                        (when bmkp-automatic-bookmark-mode (bmkp-set-automatic-bookmark))))))
-         (when (called-interactively-p 'interactive)
-           (message "Automatic bookmarking is now %s%s"
-                    (if bmkp-automatic-bookmark-mode "ON" "OFF")
-                    (if (local-variable-if-set-p 'bmkp-automatic-bookmark-mode)
-                        (format " in buffer `%s'" (current-buffer))
-                      ""))))
-
-       (let ((m+l  `(bmkp-automatic-bookmark-mode ,bmkp-automatic-bookmark-mode-lighter)))
-         (unless (member m+l minor-mode-alist) (setq minor-mode-alist  (cons m+l minor-mode-alist))))))
 
 (defun bmkp-not-near-other-automatic-bmks (&optional position)
   "Is POSITION far enough from automatic bookmarks to create a new one?
@@ -13179,8 +12975,7 @@ the node was bookmarked."
 
   )
 
-(if (fboundp 'define-minor-mode)
-    ;; Emacs 21 and later.  Eval this so that even if the library is byte-compiled with Emacs 20,
+;; Emacs 21 and later.  Eval this so that even if the library is byte-compiled with Emacs 20,
     ;; loading it into Emacs 21+ will define variable `bmkp-temporary-bookmarking-mode'.
     (eval '(define-minor-mode bmkp-temporary-bookmarking-mode ; `M-L' in `*Bmkp List*'.
              "Toggle temporary bookmarking.
@@ -13235,59 +13030,6 @@ Don't forget to mention your Emacs and library versions."))
                    (t                   ; User refused to confirm.
                     (message "OK, canceled - bookmarking is NOT temporary")
                     (setq bmkp-temporary-bookmarking-mode  nil)))))
-
-  ;; Emacs 20
-  (defun bmkp-temporary-bookmarking-mode (&optional arg) ; `M-L' in `*Bmkp List*'.
-    "Toggle temporary bookmarking.
-Temporary bookmarking means that any bookmark changes (creation,
-modification, deletion) are NOT automatically saved.
-
-Interactively, you are required to confirm turning on the mode.
-
-When the mode is turned ON:
- a. `bookmark-save-flag' is set to nil.
- b. `bmkp-current-bookmark-file' is set to a new, empty bookmark file
-    in directory `temporary-file-directory' (via `make-temp-file').
- c. That file is not saved automatically.
- d. In the `*Bmkp List*' display, the major-mode mode-line
-    indicator is set to `TEMPORARY ONLY'.
-
-Non-interactively, turn temporary bookmarking on if and only if ARG is
-positive.  Non-interactively there is no prompt for confirmation."
-    (interactive "P")
-    (setq bmkp-temporary-bookmarking-mode
-          (if arg (> (prefix-numeric-value arg) 0) (not bmkp-temporary-bookmarking-mode)))
-    (cond ((not bmkp-temporary-bookmarking-mode) ; Turn off.
-           (when (fboundp 'bmkp-unlight-bookmarks) ; In `bookmark+-lit.el'.
-             (bmkp-unlight-bookmarks ; Unhighlight the temporary (current) bookmarks.
-              '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays) nil))
-           (bmkp-switch-to-last-bookmark-file)
-           (setq bmkp-last-bookmark-file  bmkp-current-bookmark-file) ; Forget last (temporary file).
-           (run-hooks 'bmkp-temporary-bookmarking-mode-hook)
-           (when (called-interactively-p 'interactive)
-             (message "Bookmarking is NOT temporary now.  Restored previous bookmarks list")))
-          ((or (not (called-interactively-p 'interactive))
-               (y-or-n-p (format "%switch to only TEMPORARY bookmarking? "
-                                 (if bookmark-save-flag "Save current bookmarks, then s" "S"))))
-           (when (and (> bookmark-alist-modification-count 0)  bookmark-save-flag)
-             (bmkp-save))
-           (let ((new-file  (make-temp-file "bmkp-temp-")))
-             (with-current-buffer (let ((enable-local-variables  ())) (find-file-noselect new-file))
-               (goto-char (point-min))
-               (delete-region (point-min) (point-max)) ; In case a find-file hook inserted a header, etc.
-               (bookmark-insert-file-format-version-stamp coding-system-for-write)
-               (insert "(\n)"))
-             (bmkp-empty-file new-file)
-             (bmkp-load new-file t 'nosave) ; Saving was done just above.
-             (when bookmark-save-flag (bmkp-toggle-saving-bookmark-file (called-interactively-p 'interactive))))
-           (run-hooks 'bmkp-temporary-bookmarking-mode-hook)
-           (when (called-interactively-p 'interactive) (message "Bookmarking is now TEMPORARY")))
-          (t                            ; User refused to confirm.
-           (message "OK, canceled - bookmarking is NOT temporary")
-           (setq bmkp-temporary-bookmarking-mode  nil))))
-
-  (let ((m+l  `(bmkp-temporary-bookmarking-mode ,bmkp-temporary-bookmarking-mode-lighter)))
-    (unless (member m+l minor-mode-alist) (setq minor-mode-alist  (cons m+l minor-mode-alist)))))
 
 ;;;###autoload (autoload 'bmkp-toggle-autotemp-on-set "bookmark+")
 (defun bmkp-toggle-autotemp-on-set (&optional msg-p) ; Bound to `C-x x x'
@@ -13427,9 +13169,7 @@ Non-interactively:
 
 ;; Because of Emacs bug #19915, we need to use `advice-add' for `org-store-link', so this feature
 ;; is available only for Emacs 24.4+.
-(when (fboundp 'advice-add)
-             
-  (defvar bmkp-store-org-link-checking-p nil
+(progn (defvar bmkp-store-org-link-checking-p nil
     "Whether `bmkp-(bmenu-)store-org-link(-1)' call is checking applicability.")
 
   (defun bmkp-store-org-link (_arg)

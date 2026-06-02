@@ -873,14 +873,14 @@ Menu for bookmarks that target this file or buffer.")
   '(menu-item "Insert Bookmark Location..." bookmark-locate ; Alias for `bmkp-insert-location'.
     :help "Insert a bookmark's file or buffer name")
   'insert)
-(when (fboundp 'advice-add)             ; Emacs 24.4+.
+(progn ; Emacs 24.4+.
   (define-key-after menu-bar-bookmark-map [bmkp-store-org-link]
     '(menu-item "Store Org Link To..." bmkp-store-org-link
       :help "Store a link to a bookmark for insertion in an Org-mode buffer")
     'locate))
 
 (define-key-after menu-bar-bookmark-map [separator-3] '("--") ;-------------------------------------
-                  (if (fboundp 'advice-add) 'bmkp-store-org-link 'locate))
+                  'bmkp-store-org-link)
 (define-key-after menu-bar-bookmark-map [save]
   '(menu-item "Save Bookmarks" bmkp-save :help "Save currently defined bookmarks")
   'separator-3)

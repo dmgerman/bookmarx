@@ -417,9 +417,8 @@
 ;;;
 (defun bmkp-replace-regexp-in-string (regexp rep string &optional fixedcase literal subexp start)
   "Replace all matches for REGEXP with REP in STRING and return STRING."
-  (if (fboundp 'replace-regexp-in-string) ; Emacs > 20.
-      (replace-regexp-in-string regexp rep string fixedcase literal subexp start)
-    (if (string-match regexp string) (replace-match rep nil nil string) string))) ; Emacs 20
+  ; Emacs > 20.
+      (replace-regexp-in-string regexp rep string fixedcase literal subexp start)) ; Emacs 20
 
 (defvar bmkp-bmenu-buffer) ; In `bookmark+.el' (declared again below for clarity).
 
@@ -535,20 +534,15 @@ Elements of ALIST that are not conses are ignored."
   "Like `looking-at', but this saves and restores the match data."
   (save-match-data (looking-at regexp)))
 
-;; Same as `icicle-remap' in `icicles-opt.el'.  Not used yet.
-(defun bmkp-remap (old new map &optional oldmap)
+(defun bmkp-remap (old new map &optional _oldmap)
   "Bind command NEW in MAP to all keys currently bound to OLD.
-If command remapping is available, use that.  Otherwise, bind NEW to
-whatever OLD is bound to in MAP, or in OLDMAP, if provided."
-  (if (fboundp 'command-remapping)
-      (define-key map (vector 'remap old) new) ; Ignore OLDMAP for Emacs 22.
-    (substitute-key-definition old new map oldmap)))
+Uses `command-remapping'.  OLDMAP is accepted for backward-compatible
+calling but ignored — modern Emacs always has command remapping."
+  (define-key map (vector 'remap old) new))
 
 ;; This is also in `bookmark+-lit.el', since it is loaded first but is optional.
 ;;
-(if (fboundp 'pop-to-buffer-same-window)
-    (defalias 'bmkp--pop-to-buffer-same-window 'pop-to-buffer-same-window)
-  (defalias 'bmkp--pop-to-buffer-same-window 'switch-to-buffer))
+(defalias 'bmkp--pop-to-buffer-same-window 'pop-to-buffer-same-window)
  
 ;;(@* "Faces (Customizable)")
 ;;; Faces (Customizable) ---------------------------------------------
@@ -774,7 +768,7 @@ was the last time you used it."
 
 ;;;###autoload (autoload 'bmkp-bmenu-image-bookmark-icon-file "bookmark+")
 (defcustom bmkp-bmenu-image-bookmark-icon-file
-  (and (fboundp 'display-images-p)  (display-images-p)
+  (and (display-images-p)
        (let ((bmk-img    (convert-standard-filename "~/.emacs-bmk-bmenu-image-file-icon.png"))
              (emacs-img  (convert-standard-filename (concat data-directory "images/gnus/exit-gnus.xpm"))))
          (or (and (file-readable-p bmk-img)    bmk-img)
@@ -1210,7 +1204,7 @@ Non-nil INTERACTIVEP means `bmkp-list' was called
          (title                   (if (and filteredp bmkp-bmenu-title  (not (equal "" bmkp-bmenu-title)))
                                       bmkp-bmenu-title
                                     "All Bookmarks"))
-         (show-image-file-icon-p  (and (fboundp 'display-images-p)  (display-images-p)
+         (show-image-file-icon-p  (and (display-images-p)
                                        bmkp-bmenu-image-bookmark-icon-file
                                        (file-readable-p bmkp-bmenu-image-bookmark-icon-file))))
     (erase-buffer)
@@ -1863,9 +1857,8 @@ Non-nil optional arg NO-MSG-P means do not show progress messages."
                   (delete-region (point) (line-end-position))
                   (insert "  ")
                   (bmkp-insert-location bmk t) ; Pass the NO-HISTORY arg.
-                  (when (if (fboundp 'display-color-p) ; Emacs 21+.
+                  (when ; Emacs 21+.
                             (and (display-color-p)  (display-mouse-p))
-                          window-system)
                     (let ((help  (get-text-property (+ bmkp-bmenu-marks-width (line-beginning-position))
                                                     'help-echo)))
                       (put-text-property (+ bmkp-bmenu-marks-width (line-beginning-position))
@@ -2519,7 +2512,7 @@ From Lisp, non-nil optional arg MSG-P means show progress messages."
                              (setq char  (read-char (concat "Pattern: " bmkp-bmenu-filter-pattern)))
                            ;; `read-char' raises an error for non-char event.
                            (error (throw 'bmkp-bmenu-read-filter-input nil)))
-                    (unless (or (not (fboundp 'characterp))  (characterp char)) ; E.g. `M-x', `M-:'
+                    (unless (characterp char) ; E.g. `M-x', `M-:'
                       (throw 'bmkp-bmenu-read-filter-input nil))
                     (cl-case char
                       ((?\e ?\r)  (throw 'bmkp-bmenu-read-filter-input nil)) ; Break and exit.
@@ -4215,8 +4208,7 @@ Unlike `bookmark-bmenu-select', this command:
            (insert "Each line in `*Bmkp List*' represents an Emacs bookmark.\n")
            (setq top  (copy-marker (point)))
            ;; Add buttons to access help and Customize.
-           (when (and (condition-case nil (require 'help-mode nil t) (error nil))
-                      (fboundp 'help-insert-xref-button))
+           (when (condition-case nil (require 'help-mode nil t) (error nil))
              (goto-char (point-min))
              (help-insert-xref-button "[Doc in Commentary]" 'bmkp-commentary-button)
              (insert "           ")
@@ -4354,7 +4346,7 @@ Autosave bookmarks:\t%s\nAutosave list display:\t%s\n\n\n"
              (put-text-property 0 (1- (length no-jump))       'face 'bmkp-no-jump       no-jump)
              (put-text-property 0 (1- (length bad))           'face 'bmkp-bad-bookmark  bad)
              (insert "Legend for Bookmark Types\n-------------------------\n\n")
-             (when (and (fboundp 'display-images-p)  (display-images-p)
+             (when (and (display-images-p)
                         bmkp-bmenu-image-bookmark-icon-file
                         (file-readable-p bmkp-bmenu-image-bookmark-icon-file))
                (let ((image  (create-image bmkp-bmenu-image-bookmark-icon-file nil nil :ascent 95)))
@@ -4701,9 +4693,7 @@ Omitted bookmarks are excluded, by default.  With a prefix arg, any
 that are marked are included.
 
 Non-interactively, non-nil MSG-P means display messages."
-  (interactive (list (funcall (if (fboundp 'read-directory-name)
-                                  #'read-directory-name
-                                #'read-file-name)
+  (interactive (list (funcall #'read-directory-name
                               "Relocate targets of marked bookmarks to directory: "
                               default-directory default-directory)
                      current-prefix-arg
@@ -5517,11 +5507,7 @@ are marked or ALLP is non-nil."
 (define-key bmkp-list-mode-map "G"                    nil) ; For Emacs 20
 (define-key bmkp-list-mode-map "GM"                   'bmkp-bmenu-mark-gnus-bookmarks)
 (define-key bmkp-list-mode-map "GS"                   'bmkp-bmenu-show-only-gnus-bookmarks)
-(if (fboundp 'command-remapping)
-    (define-key bmkp-list-mode-map [remap describe-mode] 'bmkp-bmenu-mode-status-help)
-  ;; In Emacs < 22, the `substitute-...' affects only `?', not `C-h m', so we add it separately.
-  (substitute-key-definition 'describe-mode 'bmkp-bmenu-mode-status-help bmkp-list-mode-map)
-  (define-key bmkp-list-mode-map "\C-hm"              'bmkp-bmenu-mode-status-help))
+(define-key bmkp-list-mode-map [remap describe-mode] 'bmkp-bmenu-mode-status-help)
 (define-key bmkp-list-mode-map (kbd "C-h >")          'bmkp-bmenu-describe-marked)
 (define-key bmkp-list-mode-map (kbd "C-h RET")        'bmkp-bmenu-describe-this-bookmark)
 (define-key bmkp-list-mode-map (kbd "C-h C-<return>") 'bmkp-bmenu-describe-this-bookmark)

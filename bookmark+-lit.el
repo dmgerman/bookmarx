@@ -1608,9 +1608,7 @@ AUTONAMEDP: non-nil means use face `bmkp-light-fringe-autonamed'.
 
 ;; This is also in `bookmark+-bmu.el', since `bookmark+-lit.el' is loaded first but is optional.
 ;;
-(if (fboundp 'pop-to-buffer-same-window)
-    (defalias 'bmkp--pop-to-buffer-same-window 'pop-to-buffer-same-window)
-  (defalias 'bmkp--pop-to-buffer-same-window 'switch-to-buffer))
+(defalias 'bmkp--pop-to-buffer-same-window 'pop-to-buffer-same-window)
 
 
 ;;;;;;;;;;;;;;;;;;;
