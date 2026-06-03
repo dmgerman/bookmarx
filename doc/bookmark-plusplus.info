@@ -562,7 +562,43 @@ Mark        Meaning
 ‘X’         Temporary--will not be saved.
 ‘*’         Modified since the last save of the bookmark file.
 
-7.2 Primary Navigation
+7.2 Filename Display Style
+==========================
+
+Long file paths often get truncated at the right edge of the window,
+hiding the basename--which is usually the most informative part of the
+path.  The option ‘bmkp-bmenu-filename-style’ controls how the recorded
+path is reformatted before display.  It does not change the bookmark
+data; only the on-screen rendering.
+
+Value         Example
+--------------------------------------------------------------------------
+‘full’        ‘/Users/dmg/.emacs.d/modules/bookmark-plusplus/bookmark+-1.el’
+‘abbreviate’  ‘~/.emacs.d/modules/bookmark-plusplus/bookmark+-1.el’
+‘shrink’      ‘~/.e/m/b/bookmark+-1.el’
+‘basename’    ‘bookmark+-1.el’
+
+   The default is ‘abbreviate’.  The ‘shrink’ style collapses each
+parent directory to its first character (two characters when the
+directory name starts with a dot, so ‘.emacs.d’ becomes ‘.e’ and not
+just ‘.’) and always preserves the basename intact.
+
+   Only paths that look like absolute filenames are reformatted.  Buffer
+names, ‘location’ strings, and other non-path locations pass through
+unchanged.
+
+‘M-F’
+     ‘bmkp-bmenu-cycle-filename-style’--cycle the option through ‘full’
+     ⇒ ‘abbreviate’ ⇒ ‘shrink’ ⇒ ‘basename’ and re-render the buffer in
+     place.
+
+   You can also set the option directly with
+‘bmkp-bmenu-set-filename-style’ (which prompts with completion), or
+through the Customize interface.  The Casual menu (*note Casual
+Integration::) exposes the same cycle entry as ‘M-F’, with a label that
+displays the current value.
+
+7.3 Primary Navigation
 ======================
 
 Key         Command                       What it does
@@ -580,7 +616,7 @@ Key         Command                       What it does
                                           from file).
 ‘q’         ‘bmkp-bmenu-quit’             Quit.
 
-7.3 Marking and Flagging
+7.4 Marking and Flagging
 ========================
 
 The marking scheme follows Dired conventions:
@@ -606,7 +642,7 @@ Key         Command                       What it does
    The pair ‘d’/‘x’ flags then executes; ‘D’ deletes the ‘>’-marked
 bookmarks in one step (after confirmation).
 
-7.4 Filtering and Showing
+7.5 Filtering and Showing
 =========================
 
 ‘.’
@@ -618,7 +654,7 @@ bookmarks in one step (after confirmation).
 ‘M-t’
      Toggle the file/buffer location column.
 
-7.4.1 Filter by Type
+7.5.1 Filter by Type
 --------------------
 
 Keys ending in ‘S’ show only bookmarks of one type; the matching ‘M’
@@ -636,7 +672,7 @@ keys mark them instead.  Examples:
      T S    tagged bookmarks         T U    untagged bookmarks
      H S    highlighted bookmarks    - S    omitted bookmarks
 
-7.4.2 Incremental Pattern Matching
+7.5.2 Incremental Pattern Matching
 ----------------------------------
 
 Type ‘P PREFIX REGEXP’ and the display narrows as you type.  Press a
@@ -651,7 +687,7 @@ non-self-inserting key (e.g. <RET>) to commit.
 ‘P T’
      Filter by tag.
 
-7.5 Omitting (vs. Filtering)
+7.6 Omitting (vs. Filtering)
 ============================
 
 Omitting is a stronger form of hiding: omitted bookmarks are hidden from
@@ -664,7 +700,7 @@ every view except the dedicated omit view.
 ‘- U’
      ‘bmkp-unomit-all’--can also be invoked outside ‘*Bmkp List*’.
 
-7.6 Sorting
+7.7 Sorting
 ===========
 
 Repeat ‘s s’ (‘bmkp-bmenu-change-sort-order-repeat’) to cycle through
@@ -686,7 +722,7 @@ Command                        Key         Sort by
    Sorting is governed by option ‘bmkp-sort-comparer’; the built-in
 ‘bookmark-sort-flag’ is ignored.
 
-7.7 Editing
+7.8 Editing
 ===========
 
 Command                        Key         Edits
@@ -699,7 +735,7 @@ Command                        Key         Edits
                                            in ‘<2>’.
 ‘bmkp-bmenu-edit-tags’         ‘T e’       This bookmark's tags.
 
-7.8 Acting on Marked Bookmarks
+7.9 Acting on Marked Bookmarks
 ==============================
 
    • ‘bmkp-bmenu-delete-marked’ (‘D’) deletes them.
@@ -723,8 +759,8 @@ Command                        Key         Edits
      bookmark file from marked bookmarks (*note Multiple Bookmark
      Files::).
 
-7.9 Describe / Inspect
-======================
+7.10 Describe / Inspect
+=======================
 
 Command                        Key              Shows
 ---------------------------------------------------------------------------
@@ -738,7 +774,7 @@ with ‘C-u’                     ‘C-u C-h         Internal Lisp form.
 ‘bmkp-bmenu-describe-this+move-down’‘C-<down>’  Move + describe.
 ‘bmkp-bmenu-describe-this+move-up’‘C-<up>’      Same, going up.
 
-7.10 Defining Commands From the View
+7.11 Defining Commands From the View
 ====================================
 
 ‘C-c C-c’
@@ -754,13 +790,13 @@ with ‘C-u’                     ‘C-u C-h         Internal Lisp form.
    Defined commands are appended to ‘bmkp-bmenu-commands-file’, which is
 loaded automatically on first opening ‘*Bmkp List*’.
 
-7.11 Preview Mode
+7.12 Preview Mode
 =================
 
 ‘M-p’ (‘bmkp-list-preview-mode’) toggles live preview of the bookmark on
 point.  *Note Live Preview::, for details.
 
-7.12 Casual Menu
+7.13 Casual Menu
 ================
 
 ‘c’ (‘casual-bmkp-tmenu’) opens a Transient-based menu UI if the
@@ -2007,12 +2043,14 @@ Concept Index
 * *Bmkp List*:                           The Bmkp List Buffer.
                                                               (line   6)
 * acting on marked bookmarks:            The Bmkp List Buffer.
-                                                              (line 173)
+                                                              (line 209)
 * annotations:                           Annotations.         (line   6)
 * autofile:                              Bookmark Types.      (line  31)
 * automatic bookmarking:                 Automatic Bookmarking.
                                                               (line   6)
 * autonamed bookmarks:                   Autonamed Bookmarks. (line   6)
+* bmkp-bmenu-filename-style:             The Bmkp List Buffer.
+                                                              (line  36)
 * bmkp-full-record (upstream):           Migration.           (line  28)
 * bmkp-list-mode:                        The Bmkp List Buffer.
                                                               (line   6)
@@ -2038,7 +2076,7 @@ Concept Index
 * C-x r b:                               Standard Keys.       (line   6)
 * Casual:                                Casual Integration.  (line   6)
 * Casual menu, in *Bmkp List*:           The Bmkp List Buffer.
-                                                              (line 234)
+                                                              (line 270)
 * composite bookmarks:                   Bookmark Types.      (line 102)
 * concepts:                              Concepts.            (line   6)
 * consult integration:                   Live Preview.        (line  38)
@@ -2048,26 +2086,28 @@ Concept Index
 * customization:                         Customization.       (line   6)
 * cycling:                               Cycling.             (line   6)
 * defining commands from view:           The Bmkp List Buffer.
-                                                              (line 212)
+                                                              (line 248)
 * describing bookmarks:                  The Bmkp List Buffer.
-                                                              (line 197)
+                                                              (line 233)
 * desktop bookmarks:                     Bookmark Types.      (line  89)
 * differences from upstream:             Migration.           (line   6)
 * Dired bookmarks:                       Bookmark Types.      (line  41)
 * dropped dependencies:                  Migration.           (line 185)
 * editing bookmarks:                     The Bmkp List Buffer.
-                                                              (line 160)
+                                                              (line 196)
 * Emacs 30 requirement:                  Migration.           (line 178)
 * file format:                           Migration.           (line 211)
+* filename style:                        The Bmkp List Buffer.
+                                                              (line  36)
 * filter by type:                        The Bmkp List Buffer.
-                                                              (line  92)
+                                                              (line 128)
 * filtering:                             The Bmkp List Buffer.
-                                                              (line  80)
+                                                              (line 116)
 * filtering, tutorial:                   Tutorial.            (line  72)
 * find-file-style jumping:               Jumping.             (line  44)
 * first session:                         Tutorial.            (line   6)
 * flagging for deletion:                 The Bmkp List Buffer.
-                                                              (line  54)
+                                                              (line  90)
 * flags:                                 The Bmkp List Buffer.
                                                               (line  15)
 * fork of Bookmark+:                     Preface.             (line   6)
@@ -2079,7 +2119,7 @@ Concept Index
 * id property:                           Bookmark Records.    (line  19)
 * image bookmarks:                       Bookmark Types.      (line  75)
 * incremental filtering:                 The Bmkp List Buffer.
-                                                              (line 110)
+                                                              (line 146)
 * interop warning:                       Bookmark Records.    (line  67)
 * introduction:                          Introduction.        (line   6)
 * jumping:                               Jumping.             (line   6)
@@ -2088,7 +2128,7 @@ Concept Index
 * live preview:                          Live Preview.        (line   6)
 * marked bookmarks, tutorial:            Tutorial.            (line  93)
 * marking bookmarks:                     The Bmkp List Buffer.
-                                                              (line  54)
+                                                              (line  90)
 * marks:                                 The Bmkp List Buffer.
                                                               (line  15)
 * metadata loss:                         Bookmark Records.    (line  67)
@@ -2098,30 +2138,32 @@ Concept Index
                                                               (line   6)
 * name uniqueness:                       Bookmark Records.    (line  40)
 * navigation in *Bmkp List*:             The Bmkp List Buffer.
-                                                              (line  36)
+                                                              (line  72)
 * navigation list:                       Cycling.             (line   6)
 * navlist:                               Cycling.             (line   6)
 * new capabilities:                      Migration.           (line 218)
 * no compat aliases:                     Migration.           (line 166)
 * omitting:                              The Bmkp List Buffer.
-                                                              (line 125)
+                                                              (line 161)
 * opening *Bmkp List*, tutorial:         Tutorial.            (line  25)
 * preface:                               Preface.             (line   6)
 * prefix keys:                           Prefix Keys.         (line   6)
 * preview:                               Live Preview.        (line   6)
 * preview mode:                          Live Preview.        (line  12)
 * preview mode, in *Bmkp List*:          The Bmkp List Buffer.
-                                                              (line 228)
+                                                              (line 264)
 * preview mode, tutorial:                Tutorial.            (line 107)
 * relationship to bookmark.el:           Introduction.        (line  33)
 * round-trip:                            Bookmark Records.    (line  67)
 * sequence bookmarks:                    Bookmark Types.      (line 102)
 * setting bookmarks:                     Setting Bookmarks.   (line   6)
+* shrinking paths:                       The Bmkp List Buffer.
+                                                              (line  36)
 * sibling design:                        Introduction.        (line  33)
 * sibling design <1>:                    Migration.           (line  12)
 * snippet bookmarks:                     Bookmark Types.      (line 128)
 * sorting:                               The Bmkp List Buffer.
-                                                              (line 138)
+                                                              (line 174)
 * sorting, tutorial:                     Tutorial.            (line  72)
 * standard keys:                         Standard Keys.       (line   6)
 * tag values:                            Tags.                (line  70)
@@ -2135,7 +2177,7 @@ Concept Index
 * types of bookmark:                     Bookmark Types.      (line   6)
 * visiting bookmarks:                    Jumping.             (line   6)
 * x versus D:                            The Bmkp List Buffer.
-                                                              (line  74)
+                                                              (line 110)
 
 
 Tag Table:
@@ -2149,26 +2191,26 @@ Node: Standard Keys14376
 Node: Setting Bookmarks15284
 Node: Jumping18384
 Node: The Bmkp List Buffer22765
-Node: Bookmark Types32918
-Node: Tags39456
-Node: Annotations44009
-Node: Multiple Bookmark Files46578
-Node: Highlighting49279
-Node: Live Preview52488
-Node: Casual Integration54363
-Node: Cycling55507
-Node: Automatic Bookmarking57235
-Node: Autonamed Bookmarks58847
-Node: Temporary Bookmarks60512
-Node: Bookmark Records62449
-Ref: Round Trip Caveat64795
-Node: Customization66672
-Node: Migration70413
-Node: GNU GPL80459
-Node: Key Index81301
-Node: Command Index81420
-Node: Variable Index82361
-Node: Concept Index85290
+Node: Bookmark Types34554
+Node: Tags41092
+Node: Annotations45645
+Node: Multiple Bookmark Files48214
+Node: Highlighting50915
+Node: Live Preview54124
+Node: Casual Integration55999
+Node: Cycling57143
+Node: Automatic Bookmarking58871
+Node: Autonamed Bookmarks60483
+Node: Temporary Bookmarks62148
+Node: Bookmark Records64085
+Ref: Round Trip Caveat66431
+Node: Customization68308
+Node: Migration72049
+Node: GNU GPL82095
+Node: Key Index82937
+Node: Command Index83056
+Node: Variable Index83997
+Node: Concept Index86926
 
 End Tag Table
 

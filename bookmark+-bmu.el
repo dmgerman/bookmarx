@@ -801,6 +801,92 @@ and it records both a buffer name and a file name.  If it records
 or only a buffer name then that is shown."
   :type 'boolean :group 'bookmark-plus)
 
+(defcustom bmkp-bmenu-filename-style 'abbreviate
+  "How to render file paths in the `*Bookmark List*' buffer.
+
+Long paths often get truncated at the right edge of the window,
+hiding the basename — which is usually the most informative part.
+This option controls how the path is shortened before display.
+
+Values:
+
+  `full'        Show the recorded path unchanged.
+  `abbreviate'  Replace the home directory with `~' via
+                `abbreviate-file-name'.  Standard Emacs convention.
+  `shrink'      Collapse each parent directory to its first
+                character: `~/.e/m/b/file.el'.  Keeps the basename
+                intact and shows hierarchy depth.
+  `basename'    Show only the basename.
+
+Only paths that look like absolute filenames are reformatted.
+Buffer names, `location' strings, and other non-path locations
+pass through unchanged.
+
+Toggle interactively with `\\<bookmark-bmenu-mode-map>\
+\\[bmkp-bmenu-cycle-filename-style]' in the bookmark list."
+  :type '(choice (const :tag "Full path"                    full)
+                 (const :tag "Abbreviate home as ~"         abbreviate)
+                 (const :tag "Shrink parents to first char" shrink)
+                 (const :tag "Basename only"                basename))
+  :group 'bookmark-plus)
+
+(defun bmkp-bmenu--shrink-path (path)
+  "Return PATH with each parent directory collapsed to its first character.
+PATH is first passed through `abbreviate-file-name'.  The basename is
+left intact, and a leading `~' or `/' is preserved.
+
+Examples:
+  /Users/dmg/.emacs.d/modules/bookmark-plusplus/bookmark+-1.el
+    => ~/.e/m/b/bookmark+-1.el
+  /etc/init.d/cron => /e/i/cron
+  /root => /root"
+  (let* ((abbrev    (abbreviate-file-name path))
+         (basename  (file-name-nondirectory abbrev))
+         (dir       (file-name-directory abbrev)))
+    (cond
+     ((or (null dir) (string-empty-p dir))
+      abbrev)
+     (t
+      (let* ((leading  (cond ((string-prefix-p "~/" dir) "~/")
+                             ((string-prefix-p "/"  dir) "/")
+                             (t                          "")))
+             (body     (substring dir (length leading)))
+             ;; Drop the trailing slash so `split-string' does not give a "".
+             (body     (if (string-suffix-p "/" body)
+                           (substring body 0 -1)
+                         body))
+             (parts    (if (string-empty-p body) () (split-string body "/")))
+             (shrunk   (mapconcat (lambda (p)
+                                    (cond ((string-empty-p p) "")
+                                          ((string-prefix-p "." p) (substring p 0 (min 2 (length p))))
+                                          (t (substring p 0 1))))
+                                  parts
+                                  "/")))
+        (concat leading
+                shrunk
+                (if (string-empty-p shrunk) "" "/")
+                basename))))))
+
+(defun bmkp-bmenu-format-filename (location)
+  "Format LOCATION for display in the bookmark list buffer.
+Dispatch on `bmkp-bmenu-filename-style'.  Non-path LOCATION strings
+\(buffer names, `--Unknown location--', etc.) pass through unchanged."
+  (cond
+   ((not (stringp location))
+    (format "%s" location))
+   ;; Only reformat absolute paths.  Buffer names and other
+   ;; non-path locations are returned as-is.
+   ((not (or (string-prefix-p "/"  location)
+             (string-prefix-p "~/" location)))
+    location)
+   (t
+    (pcase bmkp-bmenu-filename-style
+      ('full       location)
+      ('abbreviate (abbreviate-file-name location))
+      ('basename   (file-name-nondirectory (directory-file-name location)))
+      ('shrink     (bmkp-bmenu--shrink-path location))
+      (_           location)))))
+
 ;; This is a general option.  It is in this file because it is used mainly by the bmenu code.
 (defcustom bmkp-sort-orders-alist ()
   "*Alist of all available sort functions.
@@ -1306,6 +1392,8 @@ Help - Bookmark Info
 
 \\<bmkp-list-mode-map>\
 `\\[bookmark-bmenu-toggle-filenames]'\t- Toggle showing filenames next to bookmarks
+`\\[bmkp-bmenu-cycle-filename-style]'\t- Cycle filename display style: full -> ~/path -> ~/.e/m/b -> basename
+\t  (see option `bmkp-bmenu-filename-style')
 `\\[bmkp-bmenu-describe-this-bookmark]'
 \t- Show information about bookmark       (`C-u': internal form)
 `\\[bmkp-bmenu-describe-this+move-down]'
@@ -1827,6 +1915,41 @@ Non-nil optional arg NO-MSG-P means do not show progress messages."
         (bmkp-list-show-filenames nil no-msg-p)
       (bmkp-list-hide-filenames nil no-msg-p))))
 
+(defconst bmkp-bmenu-filename-style-order
+  '(full abbreviate shrink basename)
+  "Cycle order used by `bmkp-bmenu-cycle-filename-style'.")
+
+(defun bmkp-bmenu-set-filename-style (style)
+  "Set `bmkp-bmenu-filename-style' to STYLE and refresh the bookmark list.
+If the current buffer is the bookmark list, redisplay filenames in
+place; otherwise just set the option."
+  (interactive
+   (list (intern (completing-read
+                  "Filename style: "
+                  (mapcar #'symbol-name bmkp-bmenu-filename-style-order)
+                  nil t nil nil
+                  (symbol-name bmkp-bmenu-filename-style)))))
+  (unless (memq style bmkp-bmenu-filename-style-order)
+    (user-error "Unknown filename style: %s" style))
+  (setq bmkp-bmenu-filename-style style)
+  (let ((buf (or (and (derived-mode-p 'bmkp-list-mode) (current-buffer))
+                 (get-buffer "*Bmkp List*"))))
+    (when (and buf bookmark-bmenu-toggle-filenames)
+      (with-current-buffer buf
+        (bmkp-list-hide-filenames nil 'no-msg-p)
+        (bmkp-list-show-filenames nil 'no-msg-p))))
+  (message "Bookmark filename style: %s" style)
+  style)
+
+(defun bmkp-bmenu-cycle-filename-style ()
+  "Cycle `bmkp-bmenu-filename-style' through its supported values.
+Order: full -> abbreviate -> shrink -> basename -> full.
+Refresh the *Bookmark List* in place if filenames are shown."
+  (interactive)
+  (let* ((rest (cdr (memq bmkp-bmenu-filename-style bmkp-bmenu-filename-style-order)))
+         (next (or (car rest) (car bmkp-bmenu-filename-style-order))))
+    (bmkp-bmenu-set-filename-style next)))
+
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
 ;;
@@ -1856,7 +1979,7 @@ Non-nil optional arg NO-MSG-P means do not show progress messages."
                   (move-to-column bookmark-bmenu-file-column t)
                   (delete-region (point) (line-end-position))
                   (insert "  ")
-                  (bmkp-insert-location bmk t) ; Pass the NO-HISTORY arg.
+                  (insert (bmkp-bmenu-format-filename (bmkp-location bmk)))
                   (when ; Emacs 21+.
                             (and (display-color-p)  (display-mouse-p))
                     (let ((help  (get-text-property (+ bmkp-bmenu-marks-width (line-beginning-position))
@@ -5429,6 +5552,7 @@ are marked or ALLP is non-nil."
 (define-key bmkp-list-mode-map (kbd "TAB")            'bmkp-list-switch-other-window)
 (define-key bmkp-list-mode-map (kbd "<tab>")          'bmkp-list-switch-other-window)
 (define-key bmkp-list-mode-map "\M-p"                 'bmkp-list-preview-mode)
+(define-key bmkp-list-mode-map "\M-F"                 'bmkp-bmenu-cycle-filename-style)
 (define-key bmkp-list-mode-map "\M-~"                 'bmkp-toggle-saving-bookmark-file)
 (define-key bmkp-list-mode-map (kbd "C-M-~")          'bmkp-toggle-saving-menu-list-state)
 (define-key bmkp-list-mode-map "."                    'bmkp-bmenu-show-all)

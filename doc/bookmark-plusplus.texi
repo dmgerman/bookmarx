@@ -620,6 +620,48 @@ Per-line flags:
 @item @kbd{*}   @tab Modified since the last save of the bookmark file.
 @end multitable
 
+@section Filename Display Style
+@cindex filename style
+@cindex shrinking paths
+@cindex @code{bmkp-bmenu-filename-style}
+
+Long file paths often get truncated at the right edge of the window,
+hiding the basename---which is usually the most informative part of
+the path.  The option @code{bmkp-bmenu-filename-style} controls how
+the recorded path is reformatted before display.  It does not change
+the bookmark data; only the on-screen rendering.
+
+@multitable @columnfractions .18 .82
+@headitem Value @tab Example
+@item @code{full}       @tab @file{/Users/dmg/.emacs.d/modules/bookmark-plusplus/bookmark+-1.el}
+@item @code{abbreviate} @tab @file{~/.emacs.d/modules/bookmark-plusplus/bookmark+-1.el}
+@item @code{shrink}     @tab @file{~/.e/m/b/bookmark+-1.el}
+@item @code{basename}   @tab @file{bookmark+-1.el}
+@end multitable
+
+The default is @code{abbreviate}.  The @code{shrink} style collapses
+each parent directory to its first character (two characters when the
+directory name starts with a dot, so @samp{.emacs.d} becomes
+@samp{.e} and not just @samp{.}) and always preserves the basename
+intact.
+
+Only paths that look like absolute filenames are reformatted.  Buffer
+names, @code{location} strings, and other non-path locations pass
+through unchanged.
+
+@table @kbd
+@item M-F
+@code{bmkp-bmenu-cycle-filename-style}---cycle the option through
+@code{full} @result{} @code{abbreviate} @result{} @code{shrink}
+@result{} @code{basename} and re-render the buffer in place.
+@end table
+
+You can also set the option directly with
+@code{bmkp-bmenu-set-filename-style} (which prompts with completion),
+or through the Customize interface.  The Casual menu (@pxref{Casual
+Integration}) exposes the same cycle entry as @kbd{M-F}, with a label
+that displays the current value.
+
 @section Primary Navigation
 @cindex navigation in @file{*Bmkp List*}
 

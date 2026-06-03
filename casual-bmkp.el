@@ -35,6 +35,9 @@
 (declare-function bmkp-bmenu-edit-bookmark-name-and-location     "bookmark+-bmu")
 (declare-function bmkp-list-show-annotation                      "bookmark+-bmu")
 (declare-function bmkp-list-toggle-filenames                     "bookmark+-bmu")
+(declare-function bmkp-bmenu-cycle-filename-style                "bookmark+-bmu")
+(declare-function bmkp-bmenu-set-filename-style                  "bookmark+-bmu")
+(defvar bmkp-bmenu-filename-style)
 (declare-function bmkp-list-preview-mode                         "bookmark+-preview")
 (declare-function bmkp-bmenu-flag-for-deletion                   "bookmark+-bmu")
 (declare-function bmkp-bmenu-delete-marked                       "bookmark+-bmu")
@@ -169,6 +172,15 @@
    ("q" "Back"                transient-quit-one)])
 
 
+(defun casual-bmkp--filename-style-label ()
+  "Transient description for the filename-style cycle entry.
+Shows the current value of `bmkp-bmenu-filename-style' inline."
+  (format "Filename style: %s"
+          (if (boundp 'bmkp-bmenu-filename-style)
+              bmkp-bmenu-filename-style
+            'abbreviate)))
+
+
 ;;; Main menu -----------------------------------------------------------
 
 ;;;###autoload (autoload 'casual-bmkp-tmenu "casual-bmkp" nil t)
@@ -196,7 +208,9 @@
     ("."   "Show all"           bmkp-bmenu-show-all                   :transient nil)
     (">"   "Only marked"        bmkp-bmenu-toggle-show-only-marked    :transient nil)
     ("<"   "Only unmarked"      bmkp-bmenu-toggle-show-only-unmarked  :transient nil)
-    ("M-t" "Toggle file column" bmkp-list-toggle-filenames            :transient nil)]
+    ("M-t" "Toggle file column" bmkp-list-toggle-filenames            :transient nil)
+    ("M-F" "Filename style..."  bmkp-bmenu-cycle-filename-style
+     :description casual-bmkp--filename-style-label                    :transient t)]
    ["Edit"
     ("e"   "Edit record"        bmkp-bmenu-edit-bookmark-record       :transient nil)
     ("E"   "Edit marked"        bmkp-bmenu-edit-marked                :transient nil)
