@@ -887,6 +887,55 @@ Dispatch on `bmkp-bmenu-filename-style'.  Non-path LOCATION strings
       ('shrink     (bmkp-bmenu--shrink-path location))
       (_           location)))))
 
+(defcustom bmkp-bmenu-show-tags-flag t
+  "Non-nil means show a tags column in the `*Bookmark List*' buffer.
+The column appears between the bookmark name and the file/location
+column, and is `bmkp-bmenu-tags-column-width' characters wide.
+Toggle interactively with `\\<bookmark-bmenu-mode-map>\
+\\[bmkp-bmenu-toggle-tags-column]'."
+  :type 'boolean :group 'bookmark-plus)
+
+(defcustom bmkp-bmenu-tags-column-width 18
+  "Width of the tags column when `bmkp-bmenu-show-tags-flag' is non-nil.
+The joined tag names (separated by `,') are truncated with `…' if they
+exceed this width, and padded with spaces if shorter."
+  :type 'integer :group 'bookmark-plus)
+
+(defcustom bmkp-bmenu-name-column-width nil
+  "Maximum width of the bookmark-name column in `*Bookmark List*'.
+nil means use the longest name in the current display.  An integer
+truncates longer names to that width (with a trailing `…').  Use this
+with `bmkp-bmenu-show-tags-flag' to keep the layout stable when
+bookmark names vary in length."
+  :type '(choice (const :tag "Auto (longest name)" nil)
+                 (integer :tag "Maximum width"))
+  :group 'bookmark-plus)
+
+(defun bmkp-bmenu--truncate-name (name width)
+  "Return NAME truncated to WIDTH chars, with `…' if cut.
+WIDTH nil means do not truncate."
+  (cond
+   ((or (null width) (<= (string-width name) width)) name)
+   ((<= width 1) (substring name 0 width))
+   (t (concat (substring name 0 (- width 1)) "…"))))
+
+(defun bmkp-bmenu--format-tags-for-column (tags width)
+  "Return a string of exactly WIDTH chars representing TAGS.
+TAGS is the list returned by `bmkp-get-tags' (each element is a string
+or a (NAME . VALUE) cons).  The names are joined with `,' (no space),
+truncated with `…' if too long, and padded with spaces if too short."
+  (let* ((names  (mapcar (lambda (tg) (if (consp tg) (car tg) tg)) (or tags ())))
+         (joined (mapconcat #'identity names ",")))
+    (cond
+     ((<= width 0)
+      "")
+     ((<= (string-width joined) width)
+      (concat joined (make-string (- width (string-width joined)) ?\s)))
+     ((= width 1)
+      "…")
+     (t
+      (concat (substring joined 0 (- width 1)) "…")))))
+
 ;; This is a general option.  It is in this file because it is used mainly by the bmenu code.
 (defcustom bmkp-sort-orders-alist ()
   "*Alist of all available sort functions.
@@ -1297,15 +1346,26 @@ Non-nil INTERACTIVEP means `bmkp-list' was called
     (goto-char (point-min))
     (insert (format "Bookmark file:\n%s\n\n" bmkp-current-bookmark-file))
     (forward-line bmkp-bmenu-header-lines)
-    (let ((max-width  0)
-          name markedp flaggedp tags annotation start)
+    (let* ((show-tags-p    bmkp-bmenu-show-tags-flag)
+           (tag-width      bmkp-bmenu-tags-column-width)
+           (name-width-cfg bmkp-bmenu-name-column-width)
+           (longest-name   0)
+           (name-area      0)
+           (name-end-col   0)
+           (max-width      0)
+           name markedp flaggedp tags annotation start)
       (setq bmkp-sorted-alist  (bmkp-sort-omit bookmark-alist
                                                (and (not (eq bmkp-bmenu-filter-function
                                                              'bmkp-omitted-alist-only))
                                                     bmkp-bmenu-omitted-bookmarks)))
       (dolist (bmk  bmkp-sorted-alist)
-        (setq max-width  (max max-width (string-width (bmkp-bookmark-name-from-record bmk)))))
-      (setq max-width  (+ max-width bmkp-bmenu-marks-width))
+        (setq longest-name  (max longest-name
+                                 (string-width (bmkp-bookmark-name-from-record bmk)))))
+      (setq name-area     (or name-width-cfg longest-name)
+            name-end-col  (+ bmkp-bmenu-marks-width name-area)
+            max-width     (if show-tags-p
+                              (+ name-end-col 1 tag-width)
+                            name-end-col))
       (dolist (bmk  bmkp-sorted-alist)
         (setq name        (bmkp-bookmark-name-from-record bmk)
               markedp     (bmkp-marked-bookmark-p bmk)
@@ -1333,15 +1393,25 @@ Non-nil INTERACTIVEP means `bmkp-list' was called
         (when (and (bmkp-image-bookmark-p bmk)  show-image-file-icon-p)
           (let ((image  (create-image bmkp-bmenu-image-bookmark-icon-file nil nil :ascent 95)))
             (when image (put-image image (point)))))
-        (insert name)
+        (insert (bmkp-bmenu--truncate-name name name-area))
+        (when show-tags-p
+          (move-to-column name-end-col t)
+          (insert " ")
+          (insert (bmkp-bmenu--format-tags-for-column tags tag-width)))
         (move-to-column max-width t)
         (bmkp-bmenu-propertize-item bmk start (point))
-        (insert "\n")))
-    (goto-char (point-min)) (forward-line bmkp-bmenu-header-lines)
-    (bmkp-list-mode)
-    (when (and bookmark-alist  bookmark-bmenu-toggle-filenames)
-      (bmkp-list-toggle-filenames t 'NO-MSG-P))
-    (bmkp-fit-bmenu-frame))
+        (insert "\n"))
+      (goto-char (point-min)) (forward-line bmkp-bmenu-header-lines)
+      (bmkp-list-mode)
+      ;; `bmkp-list-mode' (via `define-derived-mode') calls
+      ;; `kill-all-local-variables', so any buffer-local we want the
+      ;; subsequent filename insertion to see must be set AFTER it.
+      (when (or show-tags-p  name-width-cfg)
+        (setq-local bookmark-bmenu-file-column
+                    (max bookmark-bmenu-file-column (+ max-width 2))))
+      (when (and bookmark-alist  bookmark-bmenu-toggle-filenames)
+        (bmkp-list-toggle-filenames t 'NO-MSG-P))
+      (bmkp-fit-bmenu-frame)))
   (when (fboundp 'bmkp-bmenu-mode-line) (bmkp-bmenu-mode-line))
   (when (and interactivep  bmkp-sort-comparer) (bmkp-msg-about-sort-order (bmkp-current-sort-order))))
 
@@ -1394,6 +1464,9 @@ Help - Bookmark Info
 `\\[bookmark-bmenu-toggle-filenames]'\t- Toggle showing filenames next to bookmarks
 `\\[bmkp-bmenu-cycle-filename-style]'\t- Cycle filename display style: full -> ~/path -> ~/.e/m/b -> basename
 \t  (see option `bmkp-bmenu-filename-style')
+`\\[bmkp-bmenu-toggle-tags-column]'\t- Toggle the tags column
+\t  (see options `bmkp-bmenu-show-tags-flag', `bmkp-bmenu-tags-column-width',
+\t   `bmkp-bmenu-name-column-width')
 `\\[bmkp-bmenu-describe-this-bookmark]'
 \t- Show information about bookmark       (`C-u': internal form)
 `\\[bmkp-bmenu-describe-this+move-down]'
@@ -1949,6 +2022,49 @@ Refresh the *Bookmark List* in place if filenames are shown."
   (let* ((rest (cdr (memq bmkp-bmenu-filename-style bmkp-bmenu-filename-style-order)))
          (next (or (car rest) (car bmkp-bmenu-filename-style-order))))
     (bmkp-bmenu-set-filename-style next)))
+
+(defun bmkp-bmenu--refresh-list ()
+  "Rebuild the *Bmkp List* buffer, preserving the current bookmark on point."
+  (let ((buf (or (and (derived-mode-p 'bmkp-list-mode) (current-buffer))
+                 (get-buffer "*Bmkp List*"))))
+    (when buf
+      (with-current-buffer buf
+        (let ((bmk (ignore-errors (bmkp-list-bookmark))))
+          (bmkp-bmenu-refresh-menu-list)
+          (when bmk (bmkp-bmenu-goto-bookmark-named bmk)))))))
+
+(defun bmkp-bmenu-toggle-tags-column ()
+  "Toggle display of the tags column in the bookmark list.
+Flips `bmkp-bmenu-show-tags-flag' and redisplays the buffer."
+  (interactive)
+  (setq bmkp-bmenu-show-tags-flag (not bmkp-bmenu-show-tags-flag))
+  (bmkp-bmenu--refresh-list)
+  (message "Tags column %s" (if bmkp-bmenu-show-tags-flag
+                                (format "shown (%d chars)" bmkp-bmenu-tags-column-width)
+                              "hidden")))
+
+(defun bmkp-bmenu-set-tags-column-width (width)
+  "Set `bmkp-bmenu-tags-column-width' to WIDTH and refresh.
+Prompts for an integer.  Has no visible effect unless
+`bmkp-bmenu-show-tags-flag' is non-nil."
+  (interactive
+   (list (read-number "Tags column width (chars): " bmkp-bmenu-tags-column-width)))
+  (unless (and (integerp width) (> width 0))
+    (user-error "Width must be a positive integer"))
+  (setq bmkp-bmenu-tags-column-width width)
+  (bmkp-bmenu--refresh-list)
+  (message "Tags column width: %d" width))
+
+(defun bmkp-bmenu-set-name-column-width (width)
+  "Set `bmkp-bmenu-name-column-width' to WIDTH and refresh.
+WIDTH is a positive integer, or nil (or 0) to mean automatic
+\(use the longest current bookmark name)."
+  (interactive
+   (list (read-number "Name column width (0 = auto): "
+                      (or bmkp-bmenu-name-column-width 0))))
+  (setq bmkp-bmenu-name-column-width (and (integerp width) (> width 0) width))
+  (bmkp-bmenu--refresh-list)
+  (message "Name column width: %s" (or bmkp-bmenu-name-column-width "auto")))
 
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
@@ -5553,6 +5669,7 @@ are marked or ALLP is non-nil."
 (define-key bmkp-list-mode-map (kbd "<tab>")          'bmkp-list-switch-other-window)
 (define-key bmkp-list-mode-map "\M-p"                 'bmkp-list-preview-mode)
 (define-key bmkp-list-mode-map "\M-F"                 'bmkp-bmenu-cycle-filename-style)
+(define-key bmkp-list-mode-map "\M-T"                 'bmkp-bmenu-toggle-tags-column)
 (define-key bmkp-list-mode-map "\M-~"                 'bmkp-toggle-saving-bookmark-file)
 (define-key bmkp-list-mode-map (kbd "C-M-~")          'bmkp-toggle-saving-menu-list-state)
 (define-key bmkp-list-mode-map "."                    'bmkp-bmenu-show-all)

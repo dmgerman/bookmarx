@@ -662,6 +662,57 @@ or through the Customize interface.  The Casual menu (@pxref{Casual
 Integration}) exposes the same cycle entry as @kbd{M-F}, with a label
 that displays the current value.
 
+@section Tags Column
+@cindex tags column
+@cindex @code{bmkp-bmenu-show-tags-flag}
+@cindex @code{bmkp-bmenu-tags-column-width}
+@cindex @code{bmkp-bmenu-name-column-width}
+
+By default, the bookmark list shows a single @samp{t} flag for tagged
+bookmarks but no indication of @emph{which} tags they have.  Enable
+@code{bmkp-bmenu-show-tags-flag} to add a dedicated tags column
+between the bookmark name and the file/location column.  The @samp{t}
+flag is preserved.
+
+@multitable @columnfractions .35 .65
+@headitem Option @tab Effect
+@item @code{bmkp-bmenu-show-tags-flag} @tab
+Master switch.  When non-nil, the tags column is rendered.  Default
+@code{t}.  Set to @code{nil} to restore the historical layout
+(name column followed immediately by the file/location column).
+@item @code{bmkp-bmenu-tags-column-width} @tab
+Width of the tags column in characters.  Default @code{18}.  Joined
+tag names exceeding this width are truncated with @samp{@dots{}}; if
+shorter, padded with spaces.
+@item @code{bmkp-bmenu-name-column-width} @tab
+Maximum width of the bookmark-name column.  @code{nil} (default) uses
+the longest current name.  An integer truncates longer names with
+@samp{@dots{}}, useful for keeping layout stable when names vary in
+length.
+@end multitable
+
+Tags are joined with a comma and no space, to maximise information
+density.  A bookmark tagged @samp{alpha}, @samp{beta}, @samp{gamma}
+in an 18-char column renders as @samp{alpha,beta,gamma  }; in a
+12-char column it renders as @samp{alpha,beta,@dots{}}.
+
+@table @kbd
+@item M-T
+@code{bmkp-bmenu-toggle-tags-column}---flip the master switch and
+redisplay.  Reports the new state in the echo area.
+@end table
+
+To change widths interactively, use @code{bmkp-bmenu-set-tags-column-width}
+and @code{bmkp-bmenu-set-name-column-width} (both prompt for an
+integer; pass @code{0} to the name-width command for @samp{auto}).
+The Casual menu's Tags submenu exposes the toggle and both width
+commands.
+
+When the tags column is on (or @code{bmkp-bmenu-name-column-width} is
+set), @code{bookmark-bmenu-file-column} is automatically raised in the
+buffer so file paths do not overlap the new columns.  Your custom
+value, if larger, is preserved.
+
 @section Primary Navigation
 @cindex navigation in @file{*Bmkp List*}
 

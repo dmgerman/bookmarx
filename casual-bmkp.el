@@ -42,7 +42,12 @@
 (declare-function bmkp-list-toggle-filenames                     "bookmark+-bmu")
 (declare-function bmkp-bmenu-cycle-filename-style                "bookmark+-bmu")
 (declare-function bmkp-bmenu-set-filename-style                  "bookmark+-bmu")
+(declare-function bmkp-bmenu-toggle-tags-column                  "bookmark+-bmu")
+(declare-function bmkp-bmenu-set-tags-column-width               "bookmark+-bmu")
+(declare-function bmkp-bmenu-set-name-column-width               "bookmark+-bmu")
 (defvar bmkp-bmenu-filename-style)
+(defvar bmkp-bmenu-show-tags-flag)
+(defvar bmkp-bmenu-tags-column-width)
 (declare-function bmkp-list-preview-mode                         "bookmark+-preview")
 (declare-function bmkp-bmenu-flag-for-deletion                   "bookmark+-bmu")
 (declare-function bmkp-bmenu-delete-marked                       "bookmark+-bmu")
@@ -121,6 +126,11 @@
     ("U" "Only untagged"       bmkp-bmenu-show-only-untagged-bookmarks  :transient t)
     ("." "Show all"            bmkp-bmenu-show-all                      :transient t)
     ("s" "Sort: tagged first"  bmkp-bmenu-sort-tagged-before-untagged   :transient t)]
+   ["Display"
+    ("M-T" "Tags column..."    bmkp-bmenu-toggle-tags-column
+     :description casual-bmkp--tags-column-label                        :transient t)
+    ("w"   "Set tags width"    bmkp-bmenu-set-tags-column-width         :transient t)
+    ("W"   "Set name width"    bmkp-bmenu-set-name-column-width         :transient t)]
    ["Global"
     ("l" "List all tags"       bmkp-list-all-tags                       :transient t)
     ("r" "Rename tag"          bmkp-rename-tag                          :transient t)]
@@ -195,6 +205,16 @@ Shows the current value of `bmkp-bmenu-filename-style' inline."
           (if (boundp 'bmkp-bmenu-filename-style)
               bmkp-bmenu-filename-style
             'abbreviate)))
+
+(defun casual-bmkp--tags-column-label ()
+  "Transient description for the tags-column toggle entry.
+Shows whether the tags column is on and at what width."
+  (if (and (boundp 'bmkp-bmenu-show-tags-flag) bmkp-bmenu-show-tags-flag)
+      (format "Tags column: on (%d chars)"
+              (if (boundp 'bmkp-bmenu-tags-column-width)
+                  bmkp-bmenu-tags-column-width
+                18))
+    "Tags column: off"))
 
 
 ;;; Main menu -----------------------------------------------------------
