@@ -171,15 +171,15 @@
   (interactive)
   (message "Bookmark+, version %s" bmkp-version-number))
 
-;; This was made automatically buffer-local for vanilla Emacs 28.  Do it here, for all Bookmark+ files.
+;; This was made automatically buffer-local for built-in Emacs 28.  Do it here, for all Bookmark+ files.
 (defvar bookmark-annotation-name nil
   "Name of bookmark under edit in `bookmark-edit-annotation-mode'.")
 (make-variable-buffer-local 'bookmark-annotation-name)
 
 ;;;###autoload (autoload 'bookmark-bmenu-buffer "bookmark+")
-;; This was added for vanilla Emacs 28.  Add it here for older releases.
+;; This was added for built-in Emacs 28.  Add it here for older releases.
 (defconst bookmark-bmenu-buffer "*Bmkp List*"
-  "Name of buffer used by vanilla Emacs for the bookmark-list display.")
+  "Name of buffer used by built-in Emacs for the bookmark-list display.")
 
 ;;;###autoload (autoload 'bookmark-plus "bookmark+")
 (defgroup bookmark-plus nil
@@ -195,8 +195,8 @@ Don't forget to mention your Emacs and library versions."))
   :link '(emacs-commentary-link :tag "Commentary" "bookmark+"))
 
 ;; NOTE:
-;; $$$$$$ Currently all vanilla Emacs functions that use constant `bookmark-bmenu-buffer' are
-;; already redefined for Bookmark+.  But if vanilla Emacs adds more such functions, and if those
+;; $$$$$$ Currently all built-in Emacs functions that use constant `bookmark-bmenu-buffer' are
+;; already redefined for Bookmark+.  But if built-in Emacs adds more such functions, and if those
 ;; functions could be invoked somehow when using Bookmark+, and if `bmkp-bmenu-buffer' has a
 ;; different value from `bookmark-bmenu-buffer', then some adjustment of Bookmark+ code will be
 ;; needed, to make sure the `bmkp-bmenu-buffer' value gets used instead.
@@ -204,7 +204,7 @@ Don't forget to mention your Emacs and library versions."))
 ;;;###autoload (autoload 'bmkp-bmenu-buffer "bookmark+")
 (defcustom bmkp-bmenu-buffer bookmark-bmenu-buffer
   "Name of buffer used by Bookmark+ for the bookmark-list display.
-The default value is that of vanilla Emacs constant `bookmark-bmenu-buffer'."
+The default value is that of built-in Emacs constant `bookmark-bmenu-buffer'."
   :type 'string :group 'bookmark-plus)
 
 

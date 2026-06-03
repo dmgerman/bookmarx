@@ -783,7 +783,7 @@
                      (defalias 'cl-typecase            'typecase)))
 
 ;; Replacements for the few `thingatpt+.el' helpers bookmark+ relied on.
-;; The originals scanned outward from point for the nearest symbol; vanilla
+;; The originals scanned outward from point for the nearest symbol; built-in
 ;; `symbol-at-point' returns nil if the cursor is not literally on one.
 
 (defcustom bmkp-near-point-distance 2000
@@ -849,7 +849,7 @@ Returns nil if neither is available."
       ((and (fboundp 'bookmark-name-from-full-record)  (not (fboundp 'bookmark-name-from-record)))
        (defalias 'bookmark-name-from-record 'bookmark-name-from-full-record)))
 
-;; 2. The vanilla name of the first is misleading, as it returns only the cdr of the record.
+;; 2. The built-in name of the first is misleading, as it returns only the cdr of the record.
 ;;    The second is for consistency.
 ;;
 (defalias 'bmkp-bookmark-data-from-record 'bookmark-get-bookmark-record)
@@ -1314,7 +1314,7 @@ You can toggle this option using `\\[bmkp-toggle-eww-auto-type]'."
     "Whether and how an EWW buffer is renamed.
 Non-nil values affect EWW behavior even when bookmarks are not used.
 
-* nil:    Do not rename buffer - use `*eww*' (vanilla EWW behavior).
+* nil:    Do not rename buffer - use `*eww*' (built-in EWW behavior).
 * `url':  Rename buffer to web-page title plus last 20 chars of URL.
 * `page': Rename buffer to web-page title (only)."
     :type '(choice
@@ -1433,8 +1433,8 @@ The following names are also provided, after the names described
 above: The value of variable `bookmark-current-bookmark' and the
 return value of function `bookmark-buffer-name', in that order.
 
-These latter names are the defaults provided by vanilla Emacs
-`bookmark.el', so if you want the vanilla behavior then set the option
+These latter names are the defaults provided by built-in Emacs
+`bookmark.el', so if you want the built-in behavior then set the option
 value to nil.
 
 For non-interactive use of a default bookmark name, and for Emacs
@@ -1460,7 +1460,7 @@ point, searching up to `bmkp-near-point-distance' characters away."
 ;;;###autoload (autoload 'bmkp-other-window-pop-to-flag "bookmark+")
 (defcustom bmkp-other-window-pop-to-flag t
   "*Non-nil means other-window bookmark jumping uses `pop-to-buffer'.
-Use nil if you want the vanilla Emacs behavior, which uses
+Use nil if you want the built-in Emacs behavior, which uses
 `switch-to-buffer-other-window'.  That creates a new window even if
 there is already another window showing the buffer."
   :type 'boolean :group 'bookmark-plus)
@@ -1877,7 +1877,7 @@ or the deprecated form (BOOKMARK-NAME PARAM-ALIST).
   in PARAM-ALIST is not important.  The possible entries are described
   below.
 
-Bookmarks created using vanilla Emacs (`bookmark.el'):
+Bookmarks created using built-in Emacs (`bookmark.el'):
 
  (filename . FILENAME)
  (location . LOCATION)
@@ -1901,7 +1901,7 @@ Bookmarks created using vanilla Emacs (`bookmark.el'):
   for a specific kind of bookmark.  This is the case for Info
   bookmarks, for instance (starting with Emacs 23).
 
-Bookmarks created using Bookmark+ are the same as for vanilla Emacs,
+Bookmarks created using Bookmark+ are the same as for built-in Emacs,
 except for the following differences.
 
 1. Time of creation is recorded when you create a new bookmark:
@@ -2245,7 +2245,7 @@ Lines beginning with `#' are ignored."
 ;;
 ;; 1. Make it a command (added `interactive' spec).  Prefix arg means add or edit (choose any bookmark).
 ;; 2. Manage buffer-modified-p.
-;; 3. Emacs 26+: Added ignored &rest arg to accommodate vanilla Emacs fix to bug #20150 (not a bug for us).
+;; 3. Emacs 26+: Added ignored &rest arg to accommodate built-in Emacs fix to bug #20150 (not a bug for us).
 ;;
 ;;;###autoload (autoload 'bmkp-edit-annotation "bookmark+")
 (defun bmkp-edit-annotation (bookmark &rest _IGNORED) ; Bound to `C-x x a e'
@@ -2463,14 +2463,14 @@ A prefix argument changes the behavior as follows:
    same name as NAME, if such a bookmark already exists.  Instead,
    push the new bookmark onto the bookmark alist.
 
-   For use by vanilla Emacs, only the most recently set bookmark named
+   For use by built-in Emacs, only the most recently set bookmark named
    NAME is in effect at any given time, but any others named NAME can
    become available, should you decide to delete the most recent one.
 
    For Bookmark+, if option `bmkp-propertize-bookmark-names-flag' is
    non-`nil' then you can use any number of bookmarks that have the
    same name.  If that option is `nil' then the behavior is the same
-   as for vanilla Emacs.
+   as for built-in Emacs.
 
 Bookmark properties listed in option `bmkp-properties-to-keep' are not
 overwritten when you set an existing bookmark.  Their existing values
@@ -2671,7 +2671,7 @@ DISPLAY-FUNCTION is as in `bmkp-jump'."
                                                                         (bmkp-this-buffer-alist-only))
                                                         nil 'MSG))
         (all-in-buffer            (bmkp-light-this-buffer nil 'MSG))))
-    ;; $$$$$$ Not sure we should place the vanilla fringe mark in this case.  Try it for a while
+    ;; $$$$$$ Not sure we should place the built-in fringe mark in this case.  Try it for a while
     (when (and (boundp 'bookmark-set-fringe-mark)  bookmark-set-fringe-mark) ; Emacs 28+
       (let ((overlays  (overlays-in (pos-bol) (1+ (pos-bol))))
             temp found)
@@ -2846,7 +2846,7 @@ is handled as follows:
                          (message "Bookmark not relocated: `%s'" bookmark)
                          (signal (car err) (cdr err)))))))))))
   (when (stringp bookmark) (setq bookmark-current-bookmark  bookmark))
-  ;; $$$$$$ The vanilla code returns nil, but there is no explanation of why and no code seems
+  ;; $$$$$$ The built-in code returns nil, but there is no explanation of why and no code seems
   ;; to use the return value.  Perhaps we should return the bookmark instead?
   nil)                                  ; Return nil if no error.
 
@@ -2919,7 +2919,7 @@ Otherwise, call `bmkp-goto-position' to go to the recorded position."
            (when (and pos  (> pos (point-max))) (error "Bookmark position is beyond buffer end"))
            ;; Activate region.  Relocate it if it moved.  Save relocated bookmark if confirm.
            (funcall bmkp-handle-region-function bmk)))
-    ;; $$$$$$ The vanilla code returns nil, but there is no explanation of why and no code seems
+    ;; $$$$$$ The built-in code returns nil, but there is no explanation of why and no code seems
     ;; to use the return value.  Perhaps we should return the bookmark instead?
     nil))                               ; Return nil if no file error.
 
@@ -3002,9 +3002,9 @@ Optional arg NO-HISTORY means do not record BOOKMARK-NAME in
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
 ;;
-;; 1. The different `bookmark-get-bookmark' behavior from vanilla Emacs means we can get the right bookmark
+;; 1. The different `bookmark-get-bookmark' behavior from built-in Emacs means we can get the right bookmark
 ;;    if it has a name with property `bmkp-full-record', without looking it up in `bookmark-alist'.
-;;    But we don't require that BOOKMARK have a name, so calls from vanilla or other code aren't bothered.
+;;    But we don't require that BOOKMARK have a name, so calls from built-in or other code aren't bothered.
 ;; 2. Pass full bookmark to the various "get" functions.
 ;; 3. Location returned can be a buffer name.
 ;; 4. If both file and buffer names are recorded, respect option `bmkp-bmenu-show-file-not-buffer-flag'.
@@ -4143,7 +4143,7 @@ BUFFERS is a list of buffer names.
 It defaults to a singleton list with the current buffer's name.
 A new list is returned (no side effects).
 
-Note: Bookmarks created by vanilla Emacs do not record the buffer
+Note: Bookmarks created by built-in Emacs do not record the buffer
 name.  They are therefore excluded from the returned alist."
   (unless buffers  (setq buffers  (list (buffer-name))))
   (bmkp-maybe-load-default-file)
@@ -7022,7 +7022,7 @@ If either name is not absolute, then it is expanded relative to
 ;;;   "Update format of `bookmark-default-file' created in summer of 2009.
 ;;; You DO NOT NEED THIS, unless you happen to have used `bookmark+.el' in
 ;;; the summer of 2009 to create non-file bookmarks.  If you did that,
-;;; then some of those bookmarks might cause vanilla Emacs (emacs -Q) to
+;;; then some of those bookmarks might cause built-in Emacs (emacs -Q) to
 ;;; raise an error.  You can use this command to fix that problem: it
 ;;; modifies your existing `bookmark-default-file' (`~/.emacs.bmk'), after
 ;;; backing up that file (suffixing the name with \"_saveNUMBER\")."
@@ -7403,7 +7403,7 @@ If either is a record then it need not belong to `bookmark-alist'."
 ;; Not used currently.
 (defun bmkp-same-creation-time-p (b1 b2)
   "Return non-nil if `B1 and B2 have same `created' entry.
-If neither has a `created' entry (vanilla bookmarks), then return
+If neither has a `created' entry (built-in bookmarks), then return
 non-nil if the full bookmarks are `equal'.
 
 B1 and B2 are full bookmarks (records) or bookmark names.
@@ -9455,7 +9455,7 @@ enter, just use it to set the bookmark."
     (desktop-save desk-dir 'RELEASE 'AUTOSAVE)
     (message "Desktop saved in `%s'" desktop-file)))
 
-(unless (fboundp 'desktop-full-file-name) ; Emacs < 22.  (This is the vanilla definition.)
+(unless (fboundp 'desktop-full-file-name) ; Emacs < 22.  (This is the built-in definition.)
   (defun desktop-full-file-name (&optional dirname)
     "Return the full name of the desktop file in DIRNAME.
 DIRNAME omitted or nil means use `desktop-dirname'."
@@ -13213,7 +13213,7 @@ See command `bmkp-store-org-link'."
   "Like `thing-at-point' but use SYNTAX-TABLE for the lookup when given."
   (if (syntax-table-p syntax-table)
       (with-syntax-table syntax-table (thing-at-point thing))
-    (thing-at-point thing)))         ; Ignore any SYNTAX-TABLE arg for Emacs 20, for vanilla.
+    (thing-at-point thing)))         ; Ignore any SYNTAX-TABLE arg for Emacs 20, for built-in.
 
 (defun bmkp-get-external-annotation (annotation)
   "Return a cons (DESTINATION . TYPE) for ANNOTATION.

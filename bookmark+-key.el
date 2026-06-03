@@ -163,7 +163,7 @@ there are such bookmarks can take a little time."
       ((and (fboundp 'bookmark-name-from-full-record)  (not (fboundp 'bookmark-name-from-record)))
        (defalias 'bookmark-name-from-record 'bookmark-name-from-full-record)))
 
-;; 2. The vanilla name of the first is misleading, as it returns only the cdr of the record.
+;; 2. The built-in name of the first is misleading, as it returns only the cdr of the record.
 ;;    The second is for consistency.
 ;;
 (defalias 'bmkp-bookmark-data-from-record 'bookmark-get-bookmark-record)
@@ -204,7 +204,7 @@ there are such bookmarks can take a little time."
 (define-key bookmark-map "2"      'bmkp-clone-bookmark)                               ; `C-x x 2'
 (define-key bookmark-map "5"      'bmkp-jump-other-frame)                         ; `C-x x 5'
 (define-key bookmark-map "B"      'bmkp-choose-navlist-from-bookmark-list)            ; `C-x x B'
-;; `e' is `edit-bookmarks' (aka `bmkp-list', from vanilla Emacs.
+;; `e' is `edit-bookmarks' (aka `bmkp-list', from built-in Emacs.
 (define-key bookmark-map "E"      'bmkp-edit-bookmark-record)                         ; `C-x x E'
 ;; The original `bmkp-insert-location' in `bookmark.el' was `f'.
 (define-key bookmark-map "I"      'bmkp-insert-location)                          ; `C-x x I'
@@ -893,7 +893,7 @@ Menu for bookmarks that target this file or buffer.")
 
 
 
-;; `bmkp-annotate-menu' of vanilla `Bookmarks' menu: `Annotate'
+;; `bmkp-annotate-menu' of built-in `Bookmarks' menu: `Annotate'
 
 (defvar bmkp-annotate-menu (make-sparse-keymap)
   "`Annotate' submenu for menu-bar `Bookmarks' menu.")
@@ -916,7 +916,7 @@ Menu for bookmarks that target this file or buffer.")
               :help "Pop up a buffer to add or edit an annotation for a bookmark"))
 
 
-;; `bmkp-highlight-menu' of vanilla `Bookmarks' menu: `Highlight'
+;; `bmkp-highlight-menu' of built-in `Bookmarks' menu: `Highlight'
 
 (when (or (featurep 'bookmark+-lit)
           (and (fboundp 'diredp-highlight-autofiles-mode)  (featurep 'highlight)))
@@ -1007,7 +1007,7 @@ Menu for bookmarks that target this file or buffer.")
                   :help "Set individual highlighting for a bookmark"))))
 
 
-;; `bmkp-here-menu' of vanilla `Bookmarks' menu: `Here'
+;; `bmkp-here-menu' of built-in `Bookmarks' menu: `Here'
 
 (define-key menu-bar-bookmark-map [bookmarks-here]
   `(menu-item "Here (This File/Buffer)" bmkp-here-menu
@@ -1015,7 +1015,7 @@ Menu for bookmarks that target this file or buffer.")
                            (bmkp-exists-this-file/buffer-bookmarks-p))))
 
 
-;; `bmkp-delete-menu' of vanilla `Bookmarks' menu: `Delete'
+;; `bmkp-delete-menu' of built-in `Bookmarks' menu: `Delete'
 
 (defvar bmkp-delete-menu (make-sparse-keymap)
   "`Delete' submenu for menu-bar `Bookmarks' menu.")
@@ -1058,11 +1058,11 @@ Menu for bookmarks that target this file or buffer.")
   '(menu-item "Purge Autofiles with No Tags..." bmkp-purge-notags-autofiles
     :help "Delete all autofile bookmarks that have no tags"))
 
-;; Remove vanilla `bmkp-delete' entry from main `Bookmarks' menu.
+;; Remove built-in `bmkp-delete' entry from main `Bookmarks' menu.
 (define-key menu-bar-bookmark-map [delete] nil)
 
 
-;; `bmkp-set-bookmark-menu' of vanilla `Bookmarks' menu: `New/Update'
+;; `bmkp-set-bookmark-menu' of built-in `Bookmarks' menu: `New/Update'
 (defvar bmkp-set-bookmark-menu (make-sparse-keymap)
   "`New/Update' submenu for menu-bar `Bookmarks' menu.")
 (define-key menu-bar-bookmark-map [set-bookmark] (cons "New/Update" bmkp-set-bookmark-menu))
@@ -1100,15 +1100,15 @@ Menu for bookmarks that target this file or buffer.")
     :help "Set a bookmark at point" :keys "(C-x x m)")) ; Really bound to `bmkp-set'
 
 
-;; Remove vanilla `bmkp-set' from main `Bookmarks' menu.
+;; Remove built-in `bmkp-set' from main `Bookmarks' menu.
 (define-key menu-bar-bookmark-map [set] nil)
 
 
-;; `bmkp-options-menu' of vanilla `Bookmarks' menu: `Toggle'.  Reuse `bmkp-bmenu-toggle-menu'.
+;; `bmkp-options-menu' of built-in `Bookmarks' menu: `Toggle'.  Reuse `bmkp-bmenu-toggle-menu'.
 (define-key menu-bar-bookmark-map [options] (cons "Toggle" bmkp-bmenu-toggle-menu))
 
 
-;; `bmkp-tags-menu' of vanilla `Bookmarks' menu: `Tags'
+;; `bmkp-tags-menu' of built-in `Bookmarks' menu: `Tags'
 
 (defvar bmkp-tags-menu (make-sparse-keymap)
   "`Tags' submenu for menu-bar `Bookmarks' menu.")
@@ -1151,11 +1151,11 @@ Menu for bookmarks that target this file or buffer.")
   '(menu-item "Edit Tags..." bmkp-edit-tags :help "Edit the tags of a bookmark"))
 
 
-;; `bmkp-jump-menu' of vanilla `Bookmarks' menu: `Jump To'
+;; `bmkp-jump-menu' of built-in `Bookmarks' menu: `Jump To'
 
 (defvar bmkp-jump-menu (make-sparse-keymap)
   "`Jump To' submenu for menu-bar `Bookmarks' menu.")
-;; Add jump menu to vanilla Emacs `Bookmarks' menu and remove the two jump commands already there.
+;; Add jump menu to built-in Emacs `Bookmarks' menu and remove the two jump commands already there.
 (define-key menu-bar-bookmark-map [jump] nil)
 (define-key menu-bar-bookmark-map [jump-other] nil)
 (define-key menu-bar-bookmark-map [bmkp-jump] (cons "Jump To" bmkp-jump-menu))
@@ -1315,7 +1315,7 @@ Menu for bookmarks that target this file or buffer.")
                                                bmkp-bmenu-buffer))))
 
 
-;; `bmkp-jump-tags-menu' of vanilla `Bookmarks' menu: `Jump To' > `With Tags'
+;; `bmkp-jump-tags-menu' of built-in `Bookmarks' menu: `Jump To' > `With Tags'
 
 (defvar bmkp-jump-tags-menu (make-sparse-keymap)
   "`With Tags' submenu for `Jump To' submenu of `Bookmarks' menu.")

@@ -193,7 +193,7 @@
       ((and (fboundp 'bookmark-name-from-full-record)  (not (fboundp 'bookmark-name-from-record)))
        (defalias 'bookmark-name-from-record 'bookmark-name-from-full-record)))
 
-;; 2. The vanilla name of the first is misleading, as it returns only the cdr of the record.
+;; 2. The built-in name of the first is misleading, as it returns only the cdr of the record.
 ;;    The second is for consistency.
 ;;
 (defalias 'bmkp-bookmark-data-from-record 'bookmark-get-bookmark-record)

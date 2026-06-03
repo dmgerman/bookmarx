@@ -377,7 +377,7 @@
       ((and (fboundp 'bookmark-name-from-full-record)  (not (fboundp 'bookmark-name-from-record)))
        (defalias 'bookmark-name-from-record 'bookmark-name-from-full-record)))
 
-;; 2. The vanilla name of the first is misleading, as it returns only the cdr of the record.
+;; 2. The built-in name of the first is misleading, as it returns only the cdr of the record.
 ;;    The second is for consistency.
 ;;
 (defalias 'bmkp-bookmark-data-from-record 'bookmark-get-bookmark-record)
@@ -705,7 +705,7 @@ calling but ignored — modern Emacs always has command remapping."
 ;;   "*Face used for a bookmarked w3m url."
 ;;   :group 'bookmark-plus :group 'faces)
 
-;; Instead of vanilla `bookmark-menu-heading' (defined in Emacs 22+), to use a better default.
+;; Instead of built-in `bookmark-menu-heading' (defined in Emacs 22+), to use a better default.
 (defface bmkp-heading '((((background dark)) (:foreground "Yellow"))
                         (t (:foreground "Blue")))
   "*Face used to highlight the headings in various Bookmark+ buffers."
@@ -1020,7 +1020,7 @@ This includes possibly omitted bookmarks, that is, bookmarks listed in
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
 ;;
-;; 1. Return t.  Value doesn't mean anything (didn't anyway), but must be non-nil for vanilla Emacs.
+;; 1. Return t.  Value doesn't mean anything (didn't anyway), but must be non-nil for built-in Emacs.
 ;; 2. Do not count lines.  Just make sure we're on a bookmark line.
 ;;
 (defalias 'bmkp-list-check-position 'bmkp-list-ensure-position)
@@ -1032,7 +1032,7 @@ This includes possibly omitted bookmarks, that is, bookmarks listed in
         (beginning-of-line 0)
       (goto-char (point-min))
       (forward-line bmkp-bmenu-header-lines)))
-  t)                                    ; Older vanilla bookmark code depends on non-nil value.
+  t)                                    ; Older built-in bookmark code depends on non-nil value.
 
 
 ;; REPLACES ORIGINAL in `bookmark.el'.
@@ -2317,7 +2317,7 @@ Non-interactively, non-nil MSG-P means display messages."
 ;;     `bmkp-save' refreshes the bookmark list display, and that removes `D' flags.
 ;;  6. Use `bmkp-get-bookmark' instead of `bookmark-get-bookmark', so we can get the right bookmarks when
 ;;     they have names with property `bmkp-full-record'.  But don't require that they have names, so
-;;     calls from vanilla or other code won't be bothered.
+;;     calls from built-in or other code won't be bothered.
 ;;  7. Use `bmkp-list-surreptitiously-rebuild-list', instead of using
 ;;     `bmkp-list', updating the modification count, and saving.
 ;;  8. Update `bmkp-latest-bookmark-alist' to reflect the deletions.
@@ -4360,7 +4360,7 @@ arg, any that are marked are included."
   (unless bmkp-bmenu-marked-bookmarks (bmkp-list-mark))
   ;; FIXME - Should we re-sort, if it was not annotated and now is, or vice versa, and if `s a'?
   ;; We do that for adding/removing tags - see `bmkp-bmenu-add-tags' and `bmkp-bmenu-remove-tags'.
-  ;; If we do it, then do it also for `bookmark-bmenu-edit-annotation' (which is just vanilla, so far).
+  ;; If we do it, then do it also for `bookmark-bmenu-edit-annotation' (which is just built-in, so far).
   (let ((bmks  (bmkp-bmenu-marked-or-this-or-all allp include-omitted-p)))
     (unless bmks (error "No marked bookmarks"))
     (dolist (bmk  (bmkp-sort-omit bmks)) (bmkp-edit-annotation bmk))))
@@ -5720,7 +5720,7 @@ are marked or ALLP is non-nil."
 (define-key bmkp-list-mode-map "\M-d>"                'bmkp-bmenu-dired-marked)
 (define-key bmkp-list-mode-map "\M-d\M-m"             'bmkp-bmenu-mark-dired-bookmarks)
 (define-key bmkp-list-mode-map "\M-d\M-s"             'bmkp-bmenu-show-only-dired-bookmarks)
-;; `e' is `bookmark-bmenu-edit-annotation' in vanilla Emacs.
+;; `e' is `bookmark-bmenu-edit-annotation' in built-in Emacs.
 (define-key bmkp-list-mode-map "e"                    'bmkp-bmenu-edit-bookmark-record)
 (define-key bmkp-list-mode-map "E"                    'bmkp-bmenu-edit-marked)
 (define-key bmkp-list-mode-map "F"                    nil) ; For Emacs 20
