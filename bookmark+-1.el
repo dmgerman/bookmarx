@@ -6045,17 +6045,23 @@ Non-nil UPDATE-TAGS-ALIST-P means update var `bmkp-tags-alist'."
                          (bmkp-tags-list))))) ; Update the cache.
     (completing-read (or prompt  "Tag: ") cand-tags nil require-match nil 'bmkp-tag-history)))
 
+(defconst bmkp-read-tags--skip-sentinel "[none]"
+  "Sentinel candidate offered at the tag prompt to mean \"no tags\".
+Selecting it (or submitting an empty input in plain-Emacs
+completion) makes `bmkp-read-tags-completing' return nil.
+Filtered out of the result; never recorded as a tag.")
+
 (defun bmkp-read-tags-completing (&optional candidate-tags require-match update-tags-alist-p)
   "Read tags with completion, and return them as a list of strings.
 Tags are entered comma-separated in a single prompt; each segment has
-its own completion against the candidate list.  Submit an empty input
-to return no tags.
+its own completion against the candidate list.
 
-This uses `completing-read-multiple', so it works the same way in
-plain Emacs, Vertico, Ivy, Helm, and other completion frameworks --
-unlike the previous one-at-a-time loop, where modern frameworks
-auto-selected a candidate on empty RET, making it impossible to
-finish.
+To skip (return no tags) in plain Emacs, submit empty input.  In
+completion frameworks that auto-select the highlighted candidate
+on RET (Vertico, Ivy, Helm with some configurations), the first
+candidate offered is `bmkp-read-tags--skip-sentinel'; selecting
+it has the same effect.  The sentinel is filtered out and never
+recorded.
 
 CANDIDATE-TAGS is an alist of tags to use for completion.
  If nil then the candidate tags are taken from variable
@@ -6067,18 +6073,33 @@ determining the tags to use per option `bmkp-tags-for-completion'."
   (let* ((source         (or candidate-tags
                              (and (not update-tags-alist-p)  bmkp-tags-alist)
                              (bmkp-tags-list)))
-         (cands          (delete-dups
+         (tags           (delete-dups
                           (mapcar (lambda (tg) (if (consp tg) (car tg) tg))
                                   source)))
+         ;; Sentinel goes first so frameworks with `vertico-preselect'
+         ;; (or equivalent) highlight it instead of a real tag.  We
+         ;; recognise and strip it from the result below.  The
+         ;; completion-table metadata pins our order: without it,
+         ;; Vertico would re-sort alphabetically and push [none] to
+         ;; the bottom of the candidate list, defeating the purpose.
+         (cands          (cons bmkp-read-tags--skip-sentinel tags))
+         (table          (lambda (string pred action)
+                           (if (eq action 'metadata)
+                               '(metadata
+                                 (display-sort-function . identity)
+                                 (cycle-sort-function   . identity))
+                             (complete-with-action action cands string pred))))
          (crm-separator  ",")
          (raw            (completing-read-multiple
-                          "Tags (comma-separated, empty to skip): "
-                          cands nil require-match nil 'bmkp-tag-history)))
+                          "Tags (comma-separated, [none] to skip): "
+                          table nil require-match nil 'bmkp-tag-history)))
     (delete-dups
      (delq nil
            (mapcar (lambda (s)
                      (let ((trim (string-trim s)))
-                       (and (not (string-empty-p trim)) trim)))
+                       (and (not (string-empty-p trim))
+                            (not (equal trim bmkp-read-tags--skip-sentinel))
+                            trim)))
                    raw)))))
 
 ;;;###autoload (autoload 'bmkp-list-all-tags "bookmark+")
