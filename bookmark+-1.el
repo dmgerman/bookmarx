@@ -2197,9 +2197,9 @@ BOOKMARK is a bookmark name or a bookmark record."
 When you have finished composing, use `C-c C-M-c'.
 
 \\{bmkp-edit-annotation-mode-map}")
-    (define-key bmkp-edit-annotation-mode-map "\C-x\C-q"    'bmkp-show-this-annotation-read-only)
+    (define-key bmkp-edit-annotation-mode-map (kbd "C-x C-q")    'bmkp-show-this-annotation-read-only)
     ;; Define this key because Org mode co-opts `C-c C-c' as a prefix key.
-    (define-key bmkp-edit-annotation-mode-map "\C-c\C-\M-c" 'bmkp-send-edited-annotation)))
+    (define-key bmkp-edit-annotation-mode-map (kbd "C-c C-M-c") 'bmkp-send-edited-annotation)))
 
 (define-derived-mode bmkp-show-annotation-mode bmkp-edit-annotation-mode
     "Show Bookmark Annotation"
@@ -2207,7 +2207,7 @@ When you have finished composing, use `C-c C-M-c'.
 
 \\{bmkp-show-annotation-mode-map}"
   (setq buffer-read-only  t)
-  (define-key bmkp-show-annotation-mode-map "\C-x\C-q" 'bmkp-edit-this-annotation))
+  (define-key bmkp-show-annotation-mode-map (kbd "C-x C-q") 'bmkp-edit-this-annotation))
 
 
 ;; Differences from built-in `bookmark.el':
@@ -3072,7 +3072,7 @@ should be non-nil if BATCH is non-nil.)"
   (let ((newname  (or new  (and (not batchp)  (bmkp-completing-read-lax "New name" old)))))
 ;;; $$$$$$  (read-from-minibuffer "New name: " nil
 ;;;           (let ((now-map  (copy-keymap minibuffer-local-map)))
-;;;             (define-key now-map  "\C-w" 'bmkp-yank-word)
+;;;             (define-key now-map  (kbd "C-w") 'bmkp-yank-word)
 ;;;             now-map)
 ;;;           nil 'bookmark-history))))
     (when newname
@@ -4782,7 +4782,7 @@ When you finish editing, use \\<bmkp-edit-bookmark-record-mode-map>\
 ;; This binding must be defined *after* the mode, so `bmkp-edit-bookmark-records-mode-map' is defined.
 ;; (Alternatively, we could use a `defvar' to define `bmkp-edit-bookmark-records-mode-map' before
 ;; calling `define-derived-mode'.)
-(define-key bmkp-edit-bookmark-records-mode-map "\C-c\C-c" 'bmkp-edit-bookmark-records-send)
+(define-key bmkp-edit-bookmark-records-mode-map (kbd "C-c C-c") 'bmkp-edit-bookmark-records-send)
 
 (defvar bmkp-edit-bookmark-records-number 0
   "NUmber of bookmard records being edited.")
@@ -4853,7 +4853,7 @@ When you finish editing, use \\<bmkp-edit-bookmark-record-mode-map>\
 ;; This binding must be defined *after* the mode, so `bmkp-edit-bookmark-record-mode-map' is defined.
 ;; (Alternatively, we could use a `defvar' to define `bmkp-edit-bookmark-record-mode-map' before
 ;; calling `define-derived-mode'.)
-(define-key bmkp-edit-bookmark-record-mode-map "\C-c\C-c" 'bmkp-edit-bookmark-record-send)
+(define-key bmkp-edit-bookmark-record-mode-map (kbd "C-c C-c") 'bmkp-edit-bookmark-record-send)
 
 ;;;###autoload (autoload 'bmkp-edit-bookmark-record "bookmark+")
 (defun bmkp-edit-bookmark-record (bookmark) ; Bound to `C-x x E'.
@@ -4958,7 +4958,7 @@ When you have finished composing, type \\[bmkp-edit-tags-send]."
 ;; This binding must be defined *after* the mode, so `bmkp-edit-tags-mode-map' is defined.
 ;; (Alternatively, we could use a `defvar' to define `bmkp-edit-tags-mode-map' before
 ;; calling `define-derived-mode'.)
-(define-key bmkp-edit-tags-mode-map "\C-c\C-c" 'bmkp-edit-tags-send)
+(define-key bmkp-edit-tags-mode-map (kbd "C-c C-c") 'bmkp-edit-tags-send)
 
 ;;;###autoload (autoload 'bmkp-edit-tags "bookmark+")
 (defun bmkp-edit-tags (bookmark)        ; Bound to `C-x x t e'

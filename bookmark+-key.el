@@ -208,17 +208,17 @@ there are such bookmarks can take a little time."
 (define-key bookmark-map "E"      'bmkp-edit-bookmark-record)                         ; `C-x x E'
 ;; The original `bmkp-insert-location' in `bookmark.el' was `f'.
 (define-key bookmark-map "I"      'bmkp-insert-location)                          ; `C-x x I'
-(define-key bookmark-map "\C-j"   'bmkp-jump-to-list)                                 ; `C-x x C-j'
+(define-key bookmark-map (kbd "C-j")   'bmkp-jump-to-list)                                 ; `C-x x C-j'
 (define-key bookmark-map "K"      'bmkp-set-desktop-bookmark) ; `C-x x K' (also `C-x r K', `C-x x c K')
 (define-key bookmark-map "L"      'bmkp-switch-bookmark-file-create)                  ; `C-x x L'
-(define-key bookmark-map "\C-l"   'bmkp-switch-to-bookmark-file-this-file/buffer)     ; `C-x x C-l'
+(define-key bookmark-map (kbd "C-l")   'bmkp-switch-to-bookmark-file-this-file/buffer)     ; `C-x x C-l'
 (define-key bookmark-map "m"      'bmkp-bookmark-set-confirm-overwrite)               ; `C-x x m'
 (define-key bookmark-map "N"      'bmkp-navlist-bmenu-list)                           ; `C-x x N'
 (define-key bookmark-map "o"      'bmkp-jump-other-window)           ; `C-x x o' (also `C-x 4 j j')
 (define-key bookmark-map "q"      'bmkp-jump-other-window)           ; `C-x x q' (also `C-x 4 j j')
 (define-key bookmark-map "r"      'bmkp-edit-bookmark-name-and-location)              ; `C-x x r'
-(define-key bookmark-map "\C-s"   'bmkp-save-bookmarks-this-file/buffer)              ; `C-x x C-s'
-(define-key bookmark-map "\M-w"   'bmkp-set-snippet-bookmark)        ; `C-x x M-w' (also `C-x x c M-w')
+(define-key bookmark-map (kbd "C-s")   'bmkp-save-bookmarks-this-file/buffer)              ; `C-x x C-s'
+(define-key bookmark-map (kbd "M-w")   'bmkp-set-snippet-bookmark)        ; `C-x x M-w' (also `C-x x c M-w')
 (define-key bookmark-map "x"      'bmkp-toggle-autotemp-on-set)                       ; `C-x x x'
 (define-key bookmark-map "y"      'bmkp-set-bookmark-file-bookmark)                   ; `C-x x y'
 (when (featurep 'bookmark+-lit)
@@ -226,7 +226,7 @@ there are such bookmarks can take a little time."
   (define-key bookmark-map "H"    'bmkp-light-bookmarks)                              ; `C-x x H'
   (define-key bookmark-map "u"    'bmkp-unlight-bookmark-this-buffer)                 ; `C-x x u'
   (define-key bookmark-map "U"    'bmkp-unlight-bookmarks)                            ; `C-x x U'
-  (define-key bookmark-map "\C-u" 'bmkp-unlight-bookmark-here)                        ; `C-x x C-u'
+  (define-key bookmark-map (kbd "C-u") 'bmkp-unlight-bookmark-here)                        ; `C-x x C-u'
   (define-key bookmark-map "="    'bmkp-bookmarks-lighted-at-point))                  ; `C-x x ='
 (define-key bookmark-map ","      'bmkp-this-file/buffer-bmenu-list)                  ; `C-x x ,'
 (define-key bookmark-map "?"      'bmkp-describe-bookmark-lighted-here)               ; `C-x x ?'
@@ -241,7 +241,7 @@ there are such bookmarks can take a little time."
 (define-key bookmark-map [kp-delete] 'bmkp-delete-bookmarks)                        ; `C-x x kp-delete'
 
 (define-key bookmark-map "n"          'bmkp-next-bookmark-this-file/buffer-repeat) ; `C-x x n'
-(define-key bookmark-map "\C-n"       'bmkp-next-bookmark-this-file/buffer-repeat) ; `C-x x C-n'
+(define-key bookmark-map (kbd "C-n")       'bmkp-next-bookmark-this-file/buffer-repeat) ; `C-x x C-n'
 (define-key bookmark-map [down]       'bmkp-next-bookmark-this-file/buffer-repeat) ; `C-x x down'
 (put 'bmkp-next-bookmark-this-file/buffer-repeat :advertised-binding (kbd "C-x x <down>"))
 
@@ -250,7 +250,7 @@ there are such bookmarks can take a little time."
     'bmkp-next-bookmark-this-file/buffer-repeat))                              ; `C-x x mouse-wheel-up'
 
 (define-key bookmark-map "p"          'bmkp-previous-bookmark-this-file/buffer-repeat) ; `C-x x p'
-(define-key bookmark-map "\C-p"       'bmkp-previous-bookmark-this-file/buffer-repeat) ; `C-x x C-p'
+(define-key bookmark-map (kbd "C-p")       'bmkp-previous-bookmark-this-file/buffer-repeat) ; `C-x x C-p'
 (define-key bookmark-map [up]         'bmkp-previous-bookmark-this-file/buffer-repeat) ; `C-x x up'
 (put 'bmkp-previous-bookmark-this-file/buffer-repeat :advertised-binding (kbd "C-x x <up>"))
 
@@ -259,11 +259,11 @@ there are such bookmarks can take a little time."
     'bmkp-previous-bookmark-this-file/buffer-repeat))                          ; `C-x x mouse-wheel-down'
 
 (define-key bookmark-map "f"          'bmkp-next-bookmark-repeat)              ; `C-x x f'
-(define-key bookmark-map "\C-f"       'bmkp-next-bookmark-repeat)              ; `C-x x C-f'
+(define-key bookmark-map (kbd "C-f")       'bmkp-next-bookmark-repeat)              ; `C-x x C-f'
 (define-key bookmark-map [right]      'bmkp-next-bookmark-repeat)              ; `C-x x right'
 (put 'bmkp-next-bookmark-repeat :advertised-binding (kbd "C-x x <right>"))
 (define-key bookmark-map "b"          'bmkp-previous-bookmark-repeat)          ; `C-x x b'
-(define-key bookmark-map "\C-b"       'bmkp-previous-bookmark-repeat)          ; `C-x x C-b'
+(define-key bookmark-map (kbd "C-b")       'bmkp-previous-bookmark-repeat)          ; `C-x x C-b'
 (define-key bookmark-map [left]       'bmkp-previous-bookmark-repeat)          ; `C-x x left'
 (put 'bmkp-previous-bookmark-repeat :advertised-binding (kbd "C-x x <left>"))
 (define-key bookmark-map [next]       'bmkp-next-bookmark-w32-repeat)          ; `C-x x next'
@@ -299,12 +299,12 @@ there are such bookmarks can take a little time."
 (define-key bmkp-set-map "f"    'bmkp-file-target-set)                         ; `C-x x c f'
 (define-key bmkp-set-map "F"    'bmkp-make-function-bookmark)                  ; `C-x x c F'
 (define-key bmkp-set-map "K"    'bmkp-set-desktop-bookmark)                    ; `C-x x c K'
-(define-key bmkp-set-map "\C-k" 'bmkp-wrap-bookmark-with-last-kbd-macro)       ; `C-x x C-k'
+(define-key bmkp-set-map (kbd "C-k") 'bmkp-wrap-bookmark-with-last-kbd-macro)       ; `C-x x C-k'
 (define-key bmkp-set-map "m"    'bmkp-bookmark-set-confirm-overwrite)          ; `C-x x c m'
 (define-key bmkp-set-map "M"    'bmkp-set)                                 ; `C-x x c M'
 (define-key bmkp-set-map "s"    'bmkp-set-sequence-bookmark)                   ; `C-x x c s'
 (define-key bmkp-set-map "u"    'bmkp-url-target-set)                          ; `C-x x c u'
-(define-key bmkp-set-map "\M-w" 'bmkp-set-snippet-bookmark)                    ; `C-x x c M-w'
+(define-key bmkp-set-map (kbd "M-w") 'bmkp-set-snippet-bookmark)                    ; `C-x x c M-w'
 (define-key bmkp-set-map "y"    'bmkp-set-bookmark-file-bookmark)              ; `C-x x c y'
 (define-key bmkp-set-map "\r"   'bmkp-toggle-autonamed-bmkp-set/delete)    ; `C-x x c RET'
 
@@ -315,9 +315,9 @@ there are such bookmarks can take a little time."
 (add-hook 'occur-mode-hook
           (lambda ()
             (unless (lookup-key occur-mode-map "\C-c\C-b")
-              (define-key occur-mode-map "\C-c\C-b" 'bmkp-occur-target-set)) ; `C-c C-b'
+              (define-key occur-mode-map (kbd "C-c C-b") 'bmkp-occur-target-set)) ; `C-c C-b'
             (unless (lookup-key occur-mode-map "\C-c\C-\M-b")
-              (define-key occur-mode-map "\C-c\C-\M-b" 'bmkp-occur-target-set-all)) ; `C-c C-M-b'
+              (define-key occur-mode-map (kbd "C-c C-M-b") 'bmkp-occur-target-set-all)) ; `C-c C-M-b'
             (unless (lookup-key occur-mode-map [(control ?c) (control meta shift ?b)])
               (define-key occur-mode-map [(control ?c) (control meta shift ?b)]
                 'bmkp-occur-create-autonamed-bookmarks)))) ; `C-c C-M-B' (aka `C-c C-M-S-b')
@@ -327,9 +327,9 @@ there are such bookmarks can take a little time."
   (add-hook 'compilation-mode-hook
             (lambda ()
               (unless (lookup-key compilation-mode-map "\C-c\C-b")
-                (define-key compilation-mode-map "\C-c\C-b" 'bmkp-compilation-target-set)) ; `C-c C-b'
+                (define-key compilation-mode-map (kbd "C-c C-b") 'bmkp-compilation-target-set)) ; `C-c C-b'
               (unless (lookup-key compilation-mode-map "\C-c\C-\M-b") ; `C-c C-M-b'
-                (define-key compilation-mode-map "\C-c\C-\M-b" 'bmkp-compilation-target-set-all))))
+                (define-key compilation-mode-map (kbd "C-c C-M-b") 'bmkp-compilation-target-set-all))))
 
   (when (fboundp 'compilation-minor-mode) ; Emacs 26+
 
@@ -337,17 +337,17 @@ there are such bookmarks can take a little time."
      'grep-mode-hook
      (lambda ()
        (unless (lookup-key grep-mode-map "\C-c\C-b")
-         (define-key grep-mode-map "\C-c\C-b" 'bmkp-compilation-target-set)) ; `C-c C-b'
+         (define-key grep-mode-map (kbd "C-c C-b") 'bmkp-compilation-target-set)) ; `C-c C-b'
        (unless (lookup-key grep-mode-map "\C-c\C-\M-b") ; `C-c C-M-b'
-         (define-key grep-mode-map "\C-c\C-\M-b" 'bmkp-compilation-target-set-all))))
+         (define-key grep-mode-map (kbd "C-c C-M-b") 'bmkp-compilation-target-set-all))))
 
     (add-hook
      'compilation-minor-mode-hook
      (lambda ()
        (unless (lookup-key compilation-minor-mode-map "\C-c\C-b")
-         (define-key compilation-minor-mode-map "\C-c\C-b" 'bmkp-compilation-target-set)) ; `C-c C-b'
+         (define-key compilation-minor-mode-map (kbd "C-c C-b") 'bmkp-compilation-target-set)) ; `C-c C-b'
        (unless (lookup-key compilation-minor-mode-map "\C-c\C-\M-b") ; `C-c C-M-b'
-         (define-key compilation-minor-mode-map "\C-c\C-\M-b" 'bmkp-compilation-target-set-all))))
+         (define-key compilation-minor-mode-map (kbd "C-c C-M-b") 'bmkp-compilation-target-set-all))))
 
     (add-hook
      'compilation-shell-minor-mode-hook
@@ -381,8 +381,8 @@ there are such bookmarks can take a little time."
 (define-key bmkp-tags-map "r"    'bmkp-rename-tag)                                ; `C-x x t r'
 (define-key bmkp-tags-map "v"    'bmkp-set-tag-value)                             ; `C-x x t v'
 (define-key bmkp-tags-map "V"    'bmkp-set-tag-value-for-navlist)                 ; `C-x x t V'
-(define-key bmkp-tags-map "\M-w" 'bmkp-copy-tags)                                 ; `C-x x t M-w'
-(define-key bmkp-tags-map "\C-y" 'bmkp-paste-add-tags)                            ; `C-x x t C-y'
+(define-key bmkp-tags-map (kbd "M-w") 'bmkp-copy-tags)                                 ; `C-x x t M-w'
+(define-key bmkp-tags-map (kbd "C-y") 'bmkp-paste-add-tags)                            ; `C-x x t C-y'
 
 
 ;; `bmkp-jump-map' and `bmkp-jump-other-window-map': prefixes `C-x j' and `C-x 4 j'
@@ -442,16 +442,16 @@ there are such bookmarks can take a little time."
 
 (define-key bmkp-jump-map              "f"    'bmkp-file-jump)                              ; `C-x j f'
 (define-key bmkp-jump-other-window-map "f"    'bmkp-file-jump-other-window)               ; `C-x 4 j f'
-(define-key bmkp-jump-map              "\C-f" 'bmkp-find-file)                            ; `C-x j C-f'
-(define-key bmkp-jump-other-window-map "\C-f" 'bmkp-find-file-other-window)             ; `C-x 4 j C-f'
+(define-key bmkp-jump-map              (kbd "C-f") 'bmkp-find-file)                            ; `C-x j C-f'
+(define-key bmkp-jump-other-window-map (kbd "C-f") 'bmkp-find-file-other-window)             ; `C-x 4 j C-f'
 (define-key bmkp-jump-map              "g"    'bmkp-gnus-jump)                              ; `C-x j g'
 (define-key bmkp-jump-other-window-map "g"    'bmkp-gnus-jump-other-window)               ; `C-x 4 j g'
 (define-key bmkp-jump-map              "h"    'bmkp-lighted-jump)                           ; `C-x j h'
 (define-key bmkp-jump-other-window-map "h"    'bmkp-lighted-jump-other-window)            ; `C-x 4 j h'
 (define-key bmkp-jump-map              "i"    'bmkp-info-jump)                              ; `C-x j i'
 (define-key bmkp-jump-other-window-map "i"    'bmkp-info-jump-other-window)               ; `C-x 4 j i'
-(define-key bmkp-jump-map              "\M-i" 'bmkp-image-jump)                           ; `C-x j M-i'
-(define-key bmkp-jump-other-window-map "\M-i" 'bmkp-image-jump-other-window)            ; `C-x 4 j M-i'
+(define-key bmkp-jump-map              (kbd "M-i") 'bmkp-image-jump)                           ; `C-x j M-i'
+(define-key bmkp-jump-other-window-map (kbd "M-i") 'bmkp-image-jump-other-window)            ; `C-x 4 j M-i'
 (define-key bmkp-jump-map              "j"    'bmkp-jump)                               ; `C-x j j'
 (put 'bmkp-jump :advertised-binding "\C-xjj")
 
@@ -459,7 +459,7 @@ there are such bookmarks can take a little time."
 (put 'bmkp-jump-other-window :advertised-binding "\C-x4jj")
 (put 'jump-other :advertised-binding "\C-x4jj")
 
-(define-key bmkp-jump-map              "\C-j" 'bmkp-jump-to-list)                         ; `C-x j C-j'
+(define-key bmkp-jump-map              (kbd "C-j") 'bmkp-jump-to-list)                         ; `C-x j C-j'
 (define-key bmkp-jump-map              "K"    'bmkp-desktop-jump)                           ; `C-x j K'
 (define-key bmkp-jump-other-window-map "K"    'bmkp-desktop-jump)           ; SAME COMMAND: `C-x 4 j K'
 (define-key bmkp-jump-map              "l"    'bmkp-local-file-jump)                        ; `C-x j l'
@@ -549,8 +549,8 @@ there are such bookmarks can take a little time."
 (define-key bmkp-jump-map              "v"    'bmkp-variable-list-jump)                     ; `C-x j v'
 (define-key bmkp-jump-map              "w"    'bmkp-w3m-jump)                               ; `C-x j w'
 (define-key bmkp-jump-other-window-map "w"    'bmkp-w3m-jump-other-window)                ; `C-x 4 j w'
-(define-key bmkp-jump-map              "\M-w" 'bmkp-snippet-to-kill-ring)                 ; `C-x j M-w'
-(define-key bmkp-jump-other-window-map "\M-w" 'bmkp-snippet-to-kill-ring)     ; SAME CMD: `C-x 4 j M-w'
+(define-key bmkp-jump-map              (kbd "M-w") 'bmkp-snippet-to-kill-ring)                 ; `C-x j M-w'
+(define-key bmkp-jump-other-window-map (kbd "M-w") 'bmkp-snippet-to-kill-ring)     ; SAME CMD: `C-x 4 j M-w'
 (define-key bmkp-jump-map              "x"    'bmkp-temporary-jump)                         ; `C-x j x'
 (define-key bmkp-jump-other-window-map "x"    'bmkp-temporary-jump-other-window)          ; `C-x 4 j x'
 (define-key bmkp-jump-map              "y"    'bmkp-bookmark-file-jump)                     ; `C-x j y'
@@ -701,7 +701,7 @@ Menu for bookmarks that target this file or buffer.")
                 (define-key dired-mode-map "J" 'bmkp-dired-jump)) ; `j'
               (setq now  (lookup-key dired-mode-map "\C-j"))
               (unless (and now  (not (eq now 'undefined))) ; `dired+.el' uses `undefined'.
-                (define-key dired-mode-map "\C-j" 'bmkp-dired-this-dir-jump))) ; `C-j'
+                (define-key dired-mode-map (kbd "C-j") 'bmkp-dired-this-dir-jump))) ; `C-j'
             (let ((map   dired-mode-map)
                   (sep   '(menu-bar subdir separator-bmkp))
                   (bdj   '(menu-bar subdir bmkp-dired-jump))
