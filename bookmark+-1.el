@@ -2651,17 +2651,50 @@ DISPLAY-FUNCTION is as in `bmkp-jump'."
   (bmkp-record-visit bookmark 'BATCHP)
   (setq bmkp-jump-display-function  display-function)
   (catch 'bmkp--jump-via
-    (let ((had-handler  (or (bookmark-prop-get bookmark 'file-handler)
-                            (bookmark-get-handler bookmark))))
+    (let* ((had-handler   (or (bookmark-prop-get bookmark 'file-handler)
+                              (bookmark-get-handler bookmark)))
+           ;; Snapshot the originating window's buffer before the
+           ;; handler runs so we can detect (and undo) in-place
+           ;; clobbers.
+           (orig-window   (and had-handler  display-function (selected-window)))
+           (orig-buffer   (and orig-window  (window-buffer orig-window))))
       (bmkp-handle-bookmark bookmark)
-      ;; Custom handlers (e.g. `pdf-view-bookmark-jump-handler') typically
-      ;; leave the destination buffer current via `set-buffer' but do not
-      ;; display it; built-in `bookmark--jump-via' would call the display
-      ;; function on the resulting buffer, but our default handler is the
-      ;; only path that consults `bmkp-jump-display-function'.  For custom
-      ;; handlers we have to display the destination ourselves.
+      ;; Custom handlers diverge on where they leave things:
+      ;;
+      ;; A. Some (e.g. `find-file' inside many handlers) call
+      ;;    `switch-to-buffer', which clobbers the originating
+      ;;    window's buffer in place regardless of the caller's
+      ;;    `display-buffer-overriding-action'.
+      ;; B. Some (e.g. `org-goto-marker-or-bmk', which calls
+      ;;    `pop-to-buffer-same-window') honour the overriding
+      ;;    action and display the destination in a different
+      ;;    window themselves.
+      ;; C. Some (e.g. `pdf-view-bookmark-jump-handler') only
+      ;;    `set-buffer' the destination and leave displaying to
+      ;;    the caller.
+      ;;
+      ;; The built-in `bookmark--jump-via' assumes case C and
+      ;; unconditionally calls the display function.  That gives us
+      ;; a double display in case B (the second one steals a
+      ;; different window from somewhere -- e.g. `*Bmkp List*' --
+      ;; and overlays the destination there) and a wrongly-clobbered
+      ;; origin in case A.
+      ;;
+      ;; Discriminate:
       (when (and had-handler  display-function)
-        (funcall display-function (current-buffer))))
+        (cond
+         ;; Case A: handler clobbered orig-window in place.
+         ((and orig-window
+               (window-live-p orig-window)
+               (buffer-live-p orig-buffer)
+               (not (eq (window-buffer orig-window) orig-buffer)))
+          (set-window-buffer orig-window orig-buffer)
+          (funcall display-function (current-buffer)))
+         ;; Case B: handler already displayed the destination in
+         ;; some window.  Trust it.
+         ((get-buffer-window (current-buffer) t))
+         ;; Case C: handler only set-buffer'd.  Display now.
+         (t (funcall display-function (current-buffer))))))
     (unless (and bmkp-use-w32-browser-p  (fboundp 'w32-browser)  (bookmark-get-filename bookmark))
       (let ((win  (get-buffer-window (current-buffer) 0)))
         (when win (set-window-point win (point))))
