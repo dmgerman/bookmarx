@@ -923,6 +923,48 @@ bookmark on point.  @xref{Live Preview}, for details.
 @kbd{c} (@code{casual-bmkp-tmenu}) opens a Transient-based menu UI if
 the @code{casual-lib} package is installed.  @xref{Casual Integration}.
 
+@section Controlling Where the List Opens
+@cindex window placement, of @file{*Bmkp List*}
+@cindex @code{display-buffer-alist}, for @file{*Bmkp List*}
+
+When called interactively, @code{bmkp-list} hands the buffer to
+@code{pop-to-buffer-same-window}: by default the list replaces the
+buffer in the currently-selected window.  No frames or windows are
+created, deleted, or resized -- Emacs's normal display rules apply.
+
+To override the default placement, add an entry for the buffer name
+@file{*Bmkp List*} to @code{display-buffer-alist}; that variable
+takes precedence over the package's default.  A few useful recipes:
+
+@example
+;; Always in the current window (this is the default; included for
+;; completeness):
+(add-to-list 'display-buffer-alist
+             '("\\*Bmkp List\\*" (display-buffer-same-window)))
+
+;; Dedicated side window on the right, 60 columns wide:
+(add-to-list 'display-buffer-alist
+             '("\\*Bmkp List\\*"
+               (display-buffer-in-side-window)
+               (side . right) (window-width . 60)))
+
+;; A dedicated frame named "Bookmarks":
+(add-to-list 'display-buffer-alist
+             '("\\*Bmkp List\\*"
+               (display-buffer-pop-up-frame)
+               (pop-up-frame-parameters
+                (name . "Bookmarks") (width . 100) (height . 40))))
+
+;; Re-use whichever window most recently showed the list, otherwise
+;; pop a new window below the current one:
+(add-to-list 'display-buffer-alist
+             '("\\*Bmkp List\\*"
+               (display-buffer-reuse-window display-buffer-below-selected)))
+@end example
+
+The same recipes apply to the @file{*Bmkp Preview*} buffer used by
+live preview mode (@pxref{Live Preview}).
+
 
 @node Bookmark Types
 @chapter Bookmark Types

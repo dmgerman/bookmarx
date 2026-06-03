@@ -1322,15 +1322,18 @@ See `bmkp-list' for the description of FILTEREDP.
 Reset `bmkp-modified-bookmarks' and `bmkp-flagged-bookmarks'.
 Non-nil RESET-P means reset `bmkp-bmenu-marked-bookmarks' also.
 Non-nil INTERACTIVEP means `bmkp-list' was called
- interactively, so pop to bookmark list and communicate sort order."
+ interactively, so display the bookmark list and communicate sort order.
+
+Display goes through `pop-to-buffer-same-window' by default, which
+opens the bookmark list in the currently-selected window.  To put it
+elsewhere (a side window, a dedicated frame, the previously-used
+window), add an entry for buffer name `*Bmkp List*' to
+`display-buffer-alist' -- it takes precedence over our default."
   (setq bmkp-modified-bookmarks  ()
         bmkp-flagged-bookmarks   ())
   (when reset-p (setq bmkp-bmenu-marked-bookmarks  ()))
-;; $$$$$$ Took out 2015/01/22. (unless filteredp (setq bmkp-latest-bookmark-alist  bookmark-alist))
   (if interactivep
-      (let ((one-win-p  (one-window-p)))
-        (pop-to-buffer (get-buffer-create bmkp-bmenu-buffer))
-        (when one-win-p (delete-other-windows)))
+      (pop-to-buffer-same-window (get-buffer-create bmkp-bmenu-buffer))
     (set-buffer (get-buffer-create bmkp-bmenu-buffer)))
   (let* ((inhibit-read-only       t)
          (title                   (if (and filteredp bmkp-bmenu-title  (not (equal "" bmkp-bmenu-title)))

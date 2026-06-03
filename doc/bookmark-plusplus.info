@@ -847,6 +847,45 @@ point.  *Note Live Preview::, for details.
 ‘c’ (‘casual-bmkp-tmenu’) opens a Transient-based menu UI if the
 ‘casual-lib’ package is installed.  *Note Casual Integration::.
 
+7.15 Controlling Where the List Opens
+=====================================
+
+When called interactively, ‘bmkp-list’ hands the buffer to
+‘pop-to-buffer-same-window’: by default the list replaces the buffer in
+the currently-selected window.  No frames or windows are created,
+deleted, or resized - Emacs's normal display rules apply.
+
+   To override the default placement, add an entry for the buffer name
+‘*Bmkp List*’ to ‘display-buffer-alist’; that variable takes precedence
+over the package's default.  A few useful recipes:
+
+     ;; Always in the current window (this is the default; included for
+     ;; completeness):
+     (add-to-list 'display-buffer-alist
+                  '("\\*Bmkp List\\*" (display-buffer-same-window)))
+
+     ;; Dedicated side window on the right, 60 columns wide:
+     (add-to-list 'display-buffer-alist
+                  '("\\*Bmkp List\\*"
+                    (display-buffer-in-side-window)
+                    (side . right) (window-width . 60)))
+
+     ;; A dedicated frame named "Bookmarks":
+     (add-to-list 'display-buffer-alist
+                  '("\\*Bmkp List\\*"
+                    (display-buffer-pop-up-frame)
+                    (pop-up-frame-parameters
+                     (name . "Bookmarks") (width . 100) (height . 40))))
+
+     ;; Re-use whichever window most recently showed the list, otherwise
+     ;; pop a new window below the current one:
+     (add-to-list 'display-buffer-alist
+                  '("\\*Bmkp List\\*"
+                    (display-buffer-reuse-window display-buffer-below-selected)))
+
+   The same recipes apply to the ‘*Bmkp Preview*’ buffer used by live
+preview mode (*note Live Preview::).
+
 
 File: bookmark-plusplus.info,  Node: Bookmark Types,  Next: Tags,  Prev: The Bmkp List Buffer,  Up: Top
 
@@ -2152,6 +2191,8 @@ Concept Index
 * desktop bookmarks:                     Bookmark Types.      (line  89)
 * differences from upstream:             Migration.           (line   6)
 * Dired bookmarks:                       Bookmark Types.      (line  41)
+* display-buffer-alist, for *Bmkp List*: The Bmkp List Buffer.
+                                                              (line 321)
 * dropped dependencies:                  Migration.           (line 185)
 * editing bookmarks:                     The Bmkp List Buffer.
                                                               (line 241)
@@ -2238,6 +2279,8 @@ Concept Index
 * type-specific jump:                    Jumping.             (line  14)
 * types of bookmark:                     Bookmark Types.      (line   6)
 * visiting bookmarks:                    Jumping.             (line   6)
+* window placement, of *Bmkp List*:      The Bmkp List Buffer.
+                                                              (line 321)
 * x versus D:                            The Bmkp List Buffer.
                                                               (line 155)
 
@@ -2253,26 +2296,26 @@ Node: Standard Keys14376
 Node: Setting Bookmarks15284
 Node: Jumping18384
 Node: The Bmkp List Buffer22765
-Node: Bookmark Types36833
-Node: Tags43371
-Node: Annotations48424
-Node: Multiple Bookmark Files50993
-Node: Highlighting53694
-Node: Live Preview56903
-Node: Casual Integration58778
-Node: Cycling59922
-Node: Automatic Bookmarking61650
-Node: Autonamed Bookmarks63262
-Node: Temporary Bookmarks64927
-Node: Bookmark Records66864
-Ref: Round Trip Caveat69210
-Node: Customization71087
-Node: Migration74828
-Node: GNU GPL84874
-Node: Key Index85716
-Node: Command Index85835
-Node: Variable Index86776
-Node: Concept Index89705
+Node: Bookmark Types38517
+Node: Tags45055
+Node: Annotations50108
+Node: Multiple Bookmark Files52677
+Node: Highlighting55378
+Node: Live Preview58587
+Node: Casual Integration60462
+Node: Cycling61606
+Node: Automatic Bookmarking63334
+Node: Autonamed Bookmarks64946
+Node: Temporary Bookmarks66611
+Node: Bookmark Records68548
+Ref: Round Trip Caveat70894
+Node: Customization72771
+Node: Migration76512
+Node: GNU GPL86558
+Node: Key Index87400
+Node: Command Index87519
+Node: Variable Index88460
+Node: Concept Index91389
 
 End Tag Table
 
