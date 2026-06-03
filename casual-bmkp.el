@@ -66,6 +66,86 @@
 (declare-function bmkp-load                                      "bookmark+-1")
 (declare-function bmkp-switch-bookmark-file-create               "bookmark+-1")
 (declare-function bmkp-edit-annotation                           "bookmark+-1")
+(declare-function bmkp-add-tags                                  "bookmark+-1")
+(declare-function bmkp-remove-tags                               "bookmark+-1")
+(declare-function bmkp-remove-all-tags                           "bookmark+-1")
+(declare-function bmkp-edit-tags                                 "bookmark+-1")
+(declare-function bmkp-set-tag-value                             "bookmark+-1")
+(declare-function bmkp-rename-tag                                "bookmark+-1")
+(declare-function bmkp-list-all-tags                             "bookmark+-1")
+(declare-function bmkp-bmenu-add-tags-to-marked                  "bookmark+-bmu")
+(declare-function bmkp-bmenu-remove-tags-from-marked             "bookmark+-bmu")
+(declare-function bmkp-bmenu-list-tags-of-marked                 "bookmark+-bmu")
+(declare-function bmkp-bmenu-mark-bookmarks-tagged-all           "bookmark+-bmu")
+(declare-function bmkp-bmenu-mark-bookmarks-tagged-some          "bookmark+-bmu")
+(declare-function bmkp-bmenu-mark-bookmarks-tagged-regexp        "bookmark+-bmu")
+(declare-function bmkp-bmenu-show-only-tagged-bookmarks          "bookmark+-bmu")
+(declare-function bmkp-bmenu-show-only-untagged-bookmarks        "bookmark+-bmu")
+(declare-function bmkp-bmenu-sort-tagged-before-untagged         "bookmark+-bmu")
+
+
+;;; Tags submenu --------------------------------------------------------
+
+(transient-define-prefix casual-bmkp-tags-tmenu ()
+  "Tag commands for the bookmark on this line, or for marked bookmarks."
+  [["This bookmark"
+    ("+" "Add tags"            bmkp-add-tags                            :transient nil)
+    ("-" "Remove tags"         bmkp-remove-tags                         :transient nil)
+    ("0" "Remove all tags"     bmkp-remove-all-tags                     :transient nil)
+    ("e" "Edit tags"           bmkp-edit-tags                           :transient nil)
+    ("v" "Set tag value"       bmkp-set-tag-value                       :transient nil)]
+   ["Marked"
+    ("M-+" "Add tags"          bmkp-bmenu-add-tags-to-marked            :transient nil)
+    ("M--" "Remove tags"       bmkp-bmenu-remove-tags-from-marked       :transient nil)
+    ("M-l" "List union of tags" bmkp-bmenu-list-tags-of-marked          :transient nil)]
+   ["Mark by tag"
+    ("m*"  "All given tags"    bmkp-bmenu-mark-bookmarks-tagged-all     :transient nil)
+    ("m+"  "Some given tags"   bmkp-bmenu-mark-bookmarks-tagged-some    :transient nil)
+    ("m%"  "Tag matches regex" bmkp-bmenu-mark-bookmarks-tagged-regexp  :transient nil)]]
+
+  [["Show / sort"
+    ("S" "Only tagged"         bmkp-bmenu-show-only-tagged-bookmarks    :transient nil)
+    ("U" "Only untagged"       bmkp-bmenu-show-only-untagged-bookmarks  :transient nil)
+    ("s" "Sort: tagged first"  bmkp-bmenu-sort-tagged-before-untagged   :transient nil)]
+   ["Global"
+    ("l" "List all tags"       bmkp-list-all-tags                       :transient nil)
+    ("r" "Rename tag"          bmkp-rename-tag                          :transient nil)]
+   ["Quit"
+    ("q" "Back"                transient-quit-one)]])
+
+
+;;; Type-filter submenu ------------------------------------------------
+
+(transient-define-prefix casual-bmkp-type-filter-tmenu ()
+  "Show only bookmarks of one type in `*Bmkp List*'."
+  [["Locations"
+    ("f" "File / directory"     bmkp-bmenu-show-only-file-bookmarks      :transient nil)
+    ("r" "Region"               bmkp-bmenu-show-only-region-bookmarks    :transient nil)
+    ("a" "Autofile"             bmkp-bmenu-show-only-autofile-bookmarks  :transient nil)
+    ("b" "Non-file buffer"      bmkp-bmenu-show-only-non-file-bookmarks  :transient nil)
+    ("#" "Autonamed"            bmkp-bmenu-show-only-autonamed-bookmarks :transient nil)]
+   ["Apps"
+    ("i" "Info node"            bmkp-bmenu-show-only-info-bookmarks      :transient nil)
+    ("d" "Dired"                bmkp-bmenu-show-only-dired-bookmarks     :transient nil)
+    ("e" "EWW page"             bmkp-bmenu-show-only-eww-bookmarks       :transient nil)
+    ("g" "Gnus article"         bmkp-bmenu-show-only-gnus-bookmarks      :transient nil)
+    ("m" "man / woman page"     bmkp-bmenu-show-only-man-bookmarks       :transient nil)
+    ("I" "Image"                bmkp-bmenu-show-only-image-bookmarks     :transient nil)]
+   ["Other"
+    ("k" "Desktop"              bmkp-bmenu-show-only-desktop-bookmarks   :transient nil)
+    ("y" "Bookmark-file"        bmkp-bmenu-show-only-bookmark-file-bookmarks :transient nil)
+    ("z" "Bookmark-list view"   bmkp-bmenu-show-only-bookmark-list-bookmarks :transient nil)
+    ("v" "Variable list"        bmkp-bmenu-show-only-variable-list-bookmarks :transient nil)
+    ("Q" "Function"             bmkp-bmenu-show-only-function-bookmarks  :transient nil)
+    ("w" "Snippet"              bmkp-bmenu-show-only-snippet-bookmarks   :transient nil)
+    ("u" "URL"                  bmkp-bmenu-show-only-url-bookmarks       :transient nil)]]
+
+  [["Status"
+    ("X" "Temporary"            bmkp-bmenu-show-only-temporary-bookmarks :transient nil)
+    ("-" "Omitted"              bmkp-bmenu-show-only-omitted-bookmarks   :transient nil)]
+   ["All"
+    ("." "Show all"             bmkp-bmenu-show-all                      :transient nil)
+    ("q" "Back"                 transient-quit-one)]])
 
 
 ;;; Sort submenu --------------------------------------------------------
@@ -135,6 +215,10 @@
     ("M-H" "Describe marked"    bmkp-bmenu-describe-marked            :transient nil)]
    ["Sort"
     ("s"   "Sort menu..."       casual-bmkp-sort-tmenu                :transient nil)]
+   ["Tags"
+    ("T"   "Tag menu..."        casual-bmkp-tags-tmenu                :transient nil)]
+   ["Type"
+    ("f"   "Type filter..."     casual-bmkp-type-filter-tmenu         :transient nil)]
    ["Quit"
     ("g"   "Refresh"            bmkp-bmenu-refresh-menu-list          :transient t)
     ("q"   "Quit list"          bmkp-bmenu-quit                       :transient nil)

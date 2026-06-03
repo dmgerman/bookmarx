@@ -1295,6 +1295,9 @@ everywhere.
 Remember that you can see all bindings for a prefix key by hitting it,
 then `C-h'.  E.g., `s C-h' to see keys with prefix `s' (sorting keys).
 
+If the `casual-lib' package is loaded, key `c' opens a Transient menu
+of common commands (a discoverable alternative to the keymap).
+
 More bookmarking help below.
 
 
