@@ -5,7 +5,7 @@
 
 * Warning
 
-If you are person that would rather not use software developed with the use of AI, stop here.
+If you are a person that would rather not use software developed with the use of AI, stop here.
 
 These improvements have been done with the help of AI under my supervision. 
 If you find bugs, please report them.
