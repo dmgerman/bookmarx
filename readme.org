@@ -97,13 +97,21 @@ Suggested first session:
 5. Use =bmkx-bmenu-show-all= (=.=), sorting keys such as =s s=,
    and filtering keys such as =T S= to shape the list.
 
-If you want programmatic callers (=consult-bookmark=, =helm-bookmark=,
-org-mode bookmark links, etc.) to also pick up bmkx's enhancements
-when they call =bmkx-jump=, add this advice. This effectively replaces bookmark-jump with bookmark-x equivalent.
+For interactive bookmark jumping, use =bmkx-jump= (=C-x j j=)
+directly --- it has facilities that =consult-bookmark= does not
+(MRU sort, tag matching, multi-axis filter state; see
+[[#jumping-with-completion][Jumping with completion]]).  Advising =bookmark-jump= is only
+worthwhile when a /third-party caller/ you cannot edit
+(Org-mode bookmark links, programmatic callers in other packages)
+needs to route through Bookmark-X:
 
 #+begin_src emacs-lisp
-(advice-add 'bookmark-jump :override #'bmkp-jump)
+(advice-add 'bookmark-jump :override #'bmkx-jump)
 #+end_src
+
+This routes existing =bookmark-jump= calls through Bookmark-X but
+does /not/ give those callers the extra UX
+=bmkx-jump= gives you in the minibuffer.
 
 * Table of contents
 :PROPERTIES:
@@ -285,13 +293,23 @@ instead, add this to your init file:
 (define-key bookmark-map "l" #'bmkx-list)
 #+end_src
 
-If you want programmatic callers (=consult-bookmark=, =helm-bookmark=,
-org-mode bookmark links, etc.) to also pick up bmkx's enhancements
-when they call =bmkx-jump=, add this advice:
+For programmatic callers you cannot edit (=consult-bookmark=,
+=helm-bookmark=, Org-mode bookmark links, etc.), if you want them to
+route through Bookmark-X when they invoke =bookmark-jump=, add this
+advice:
 
 #+begin_src emacs-lisp
-(advice-add 'bookmark-jump :override #'bmkp-jump)
+(advice-add 'bookmark-jump :override #'bmkx-jump)
 #+end_src
+
+Note: this fixes /lookup/ but not /UX/.  Those callers still drive
+their own minibuffer reads --- so =consult-bookmark= will keep showing
+its own type-narrow set, its own annotation, its own sort order;
+advising =bookmark-jump= does not graft Bookmark-X's
+=bmkx-jump-narrow=, =bmkx-jump-sort-by=, or the multi-axis filter
+state (M-t / M-D / M-T) onto =consult-bookmark='s prompt.  For full
+power, call =bmkx-jump= directly; treat the advice as a fallback for
+external code paths you don't own.
 
 No helper command is required: bookmark-x does not ship an "install"
 wrapper for these.  They are plain Emacs primitives; deleting the
@@ -376,12 +394,64 @@ You can bookmark targets without first opening them:
 :END:
 
 ** Jumping with completion
+:PROPERTIES:
+:CUSTOM_ID: jumping-with-completion
+:END:
 
 =bmkx-jump= (=C-x j j=) is the generic bookmark jump command;
 completion offers every bookmark.  =bmkx-jump-other-window=
 (=C-x 4 j j=) is its other-window twin.  Inside =*Bmkx List*=,
 =bmkx-list-this-window= (=J=) and the other-window jump prefix
 (=j=) jump same- / other-window.
+
+*** Power features (with =consult= loaded)
+
+When =consult= is on your =load-path= and
+=bmkx-preview-use-consult-flag= is non-nil (the default), =bmkx-jump=
+routes its read through =consult--read= and gains several facilities
+that are /not/ available through =consult-bookmark= --- even if you
+=advice-add 'bookmark-jump :override #'bmkx-jump=.  These belong to
+=bmkx-jump='s own minibuffer; the advice route only redirects /lookup/.
+
+- *Live preview.*  Moving through candidates briefly displays the
+  destination in another window without committing the jump (same
+  mechanism =consult-bookmark= uses).
+- *Tag-substring matching.*  Each candidate carries a hidden
+  =#tag1 #tag2= suffix.  Typing =emacs= filters to bookmarks whose
+  /name or any tag/ contains "emacs".  No special syntax needed.
+- *Type narrowing.*  Press =,= followed by a single char to narrow
+  to a handler family --- =,f= file, =,d= Dired, =,i= Info, =,o=
+  Org heading, =,w= Web, etc.  Keys are configurable via
+  =bmkx-jump-narrow=.
+- *Multi-axis filter state.*  In the minibuffer:
+
+  | Key  | Effect                                                       |
+  |------+--------------------------------------------------------------|
+  | =M-t= | Add a tag filter (completing-read over every known tag).      |
+  | =M-D= | Pop the most recently added filter.                           |
+  | =M-T= | Clear all active filters.                                     |
+
+  Active filters appear bracketed in the prompt
+  (=[#emacs #work] Bookmark: =) and exclude non-matching candidates.
+  The filter set is local to one =bmkx-jump= invocation and stacks
+  with the type narrow above.
+- *Sort modes.*  =bmkx-jump-sort-by= controls order:
+  - =mru= (default) --- most recently jumped first.
+  - =visits= --- most-jumped first.
+  - =alpha= --- alphabetical by name.
+- *Grouping.*  =bmkx-jump-group-by= controls grouping: =nil= (default,
+  flat), =type= (handler family from =bmkx-jump-narrow=), or =tag=
+  (each bookmark's first tag).  When grouping is on, candidates are
+  clustered by group and the chosen sort applies within each group.
+- *Annotation with tags column.*  The display shows an aligned tags
+  column followed by =marginalia='s standard
+  =type | file | location= annotation.
+
+In contrast, =consult-bookmark= --- with or without the
+=advice-add= override above --- ships only its own type-narrow
+(=consult-bookmark-narrow=), its built-in annotation (via Marginalia
+if loaded), and no filter state, no tag matching, no MRU sort.
+=bmkx-jump= is the recommended interactive jump command.
 
 For specific types, type-specific jump commands offer only
 bookmarks of that type as completion candidates.  They live on the

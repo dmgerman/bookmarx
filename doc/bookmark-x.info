@@ -222,7 +222,10 @@ You can jump from anywhere in Emacs:
 
    ‘bmkx-jump’ prompts you with completion; type the bookmark name or
 use your usual completion machinery to pick.  If the ‘consult’ package
-is loaded, you get live preview as you move through candidates.
+is loaded, you also get live preview, MRU sort, type narrowing (‘,’ then
+a single char), hidden tag matching (typing a tag name filters by it),
+and an active-filter state you mutate with ‘M-t’ (add tag filter), ‘M-D’
+(pop), ‘M-T’ (clear) -- see *note Jumping to Bookmarks: Jumping.
 
    To jump in the other window, use ‘C-x 4 j j’.  To jump only among
 bookmarks of a specific type (Dired, Info, EWW, ...), use ‘C-x j :’ and
@@ -367,11 +370,21 @@ to your init file:
      (define-key bookmark-map "b" #'bmkx-jump)
      (define-key bookmark-map "l" #'bmkx-list)
 
-   If you also want programmatic callers (‘consult-bookmark’,
-‘helm-bookmark’, Org-mode bookmark links, etc.)  to pick up Bookmark-X's
-enhancements when they invoke ‘bookmark-jump’, add:
+   If a third-party caller you cannot edit (‘consult-bookmark’,
+‘helm-bookmark’, Org-mode bookmark links, programmatic callers in other
+packages) needs to route through Bookmark-X when it invokes
+‘bookmark-jump’, add:
 
      (advice-add 'bookmark-jump :override #'bmkx-jump)
+
+   This redirects _lookup_ but not _UX_: those callers still drive their
+own minibuffer reads, so ‘consult-bookmark’ will keep showing its own
+type-narrow set, its own annotation, and its own sort order; the advice
+does not graft Bookmark-X's ‘bmkx-jump-narrow’, ‘bmkx-jump-sort-by’, or
+the multi-axis filter state (‘M-t’ / ‘M-D’ / ‘M-T’) onto
+‘consult-bookmark’'s prompt.  For the full feature set, call ‘bmkx-jump’
+directly; treat the advice as a fallback for external code paths you do
+not own.
 
    No helper command is required.  These are plain Emacs primitives;
 remove the lines (or call ‘advice-remove’) to reverse them.
@@ -449,7 +462,66 @@ offers every bookmark.  ‘bmkx-jump-other-window’ (‘C-x 4 j j’) is its
 other-window twin.  Inside ‘*Bmkx List*’, <RET> or ‘f’ calls
 ‘bmkx-list-this-window’, and ‘o’ calls ‘bmkx-list-other-window’.
 
-6.1 Type-Specific Jump Commands
+6.1 Power Features (with ‘consult’ Loaded)
+==========================================
+
+When the ‘consult’ package is on the ‘load-path’ and the user option
+‘bmkx-preview-use-consult-flag’ is non-‘nil’ (the default), ‘bmkx-jump’
+reads bookmark names through ‘consult--read’ and offers facilities that
+are _not_ available through ‘consult-bookmark’--even if you advise
+‘bookmark-jump’ with ‘bmkx-jump’.  These belong to ‘bmkx-jump’'s own
+minibuffer; advising ‘bookmark-jump’ only redirects lookup, it does not
+graft this UX onto another command.
+
+   • *Live preview.*  Moving through candidates briefly displays the
+     destination in another window without committing the jump, using
+     the same ‘consult--bookmark-preview’ that ‘consult-bookmark’ uses.
+
+   • *Tag-substring matching.*  Each candidate has a hidden ‘#tag1
+     #tag2’ suffix.  Typing ‘emacs’ filters to bookmarks whose name _or
+     any tag_ contains ‘emacs’--no special syntax required.
+
+   • *Type narrowing.*  Press ‘,’ followed by a single character to
+     narrow to a handler family: ‘,f’ for file, ‘,d’ for Dired, ‘,i’ for
+     Info, ‘,o’ for Org heading, ‘,w’ for Web, and so on.  The full map
+     is the user option ‘bmkx-jump-narrow’.
+
+   • *Multi-axis filter state.*  Inside the minibuffer:
+
+     ‘M-t’
+          Add a tag filter (completing-read over every distinct tag in
+          ‘bookmark-alist’).
+     ‘M-D’
+          Pop the most recently added filter.
+     ‘M-T’
+          Clear all active filters.
+
+     Active filters appear bracketed in the prompt (‘[#emacs #work]
+     Bookmark: ’) and exclude non-matching candidates.  The filter set
+     is local to one ‘bmkx-jump’ invocation and stacks with the type
+     narrow above (‘,d M-t emacs’ = Dired bookmarks tagged ‘emacs’).
+
+   • *Sort modes.*  The user option ‘bmkx-jump-sort-by’ controls
+     candidate order: ‘mru’ (default; most recently modified first),
+     ‘visits’ (most-jumped first), or ‘alpha’ (alphabetical).
+
+   • *Grouping.*  The user option ‘bmkx-jump-group-by’ controls
+     grouping: ‘nil’ (default; flat list), ‘type’ (handler family from
+     ‘bmkx-jump-narrow’), or ‘tag’ (the bookmark's first tag).  When
+     grouping is on, candidates are clustered by group key and the
+     chosen sort applies within each group.
+
+   • *Annotation with tags column.*  The display shows an aligned tags
+     column followed by Marginalia's standard ‘type | file | location’
+     annotation.
+
+   By comparison, ‘consult-bookmark’--with or without an ‘advice-add’ on
+‘bookmark-jump’--ships only its own type-narrow
+(‘consult-bookmark-narrow’), its built-in annotation (through Marginalia
+if loaded), and no filter state, no tag matching, no MRU sort.  Call
+‘bmkx-jump’ directly for the rich interactive experience.
+
+6.2 Type-Specific Jump Commands
 ===============================
 
 Each bookmark type has its own jump command that offers only bookmarks
@@ -479,7 +551,7 @@ Snippet                ‘C-x j M-w’          ‘C-x 4 j M-w’
 It first asks for the type, then offers only bookmarks of that type.
 Useful when you do not want to remember the type-specific keys.
 
-6.2 ‘find-file’-Style Jumping
+6.3 ‘find-file’-Style Jumping
 =============================
 
 ‘bmkx-find-file’ (‘C-x j C-f’) acts like ‘find-file’, but obeys
@@ -491,7 +563,7 @@ argument it also creates an autofile bookmark for the file.
 t C-f ...’) that filter by tags while reading a file name with
 ‘read-file-name’, so you can browse directories.
 
-6.3 Mode-Specific ‘j’
+6.4 Mode-Specific ‘j’
 =====================
 
 Several modes bind ‘j’ to the corresponding type-specific jump:
@@ -506,7 +578,7 @@ Buffer-menu               Non-file bookmark.
 Dired (‘C-j’)             Dired bookmark whose directory is the current
                           one.
 
-6.4 Tag-Based Jumping
+6.5 Tag-Based Jumping
 =====================
 
 Tag-aware jump commands combine three ideas: which bookmark family
@@ -2066,16 +2138,16 @@ Command Index
 * Menu:
 
 * bmkx-automatic-bookmark-mode:          Automatic Bookmarking.
-                                                               (line 19)
-* bmkx-bookmark-set-confirm-overwrite:   Setting Bookmarks.    (line  6)
-* bmkx-find-file:                        Jumping.              (line 44)
+                                                              (line  19)
+* bmkx-bookmark-set-confirm-overwrite:   Setting Bookmarks.   (line   6)
+* bmkx-find-file:                        Jumping.             (line 103)
 * bmkx-info-auto-bookmark-mode:          Automatic Bookmarking.
-                                                               (line 36)
-* bmkx-jump:                             Jumping.              (line  6)
-* bmkx-jump-other-window:                Jumping.              (line  6)
-* bmkx-list-preview-mode:                Live Preview.         (line 12)
-* bmkx-list-switch-other-window:         Live Preview.         (line 30)
-* bmkx-temporary-bookmarking-mode:       Temporary Bookmarks.  (line 12)
+                                                              (line  36)
+* bmkx-jump:                             Jumping.             (line   6)
+* bmkx-jump-other-window:                Jumping.             (line   6)
+* bmkx-list-preview-mode:                Live Preview.        (line  12)
+* bmkx-list-switch-other-window:         Live Preview.        (line  30)
+* bmkx-temporary-bookmarking-mode:       Temporary Bookmarks. (line  12)
 
 
 File: bookmark-x.info,  Node: Variable Index,  Next: Concept Index,  Prev: Command Index,  Up: Top
@@ -2152,13 +2224,14 @@ Concept Index
 * bmkx-bmenu-tags-column-width:          The Bmkx List Buffer.
                                                               (line  72)
 * bmkx-full-record (upstream):           Migration.           (line  28)
+* bmkx-jump features:                    Jumping.             (line  14)
 * bmkx-list-mode:                        The Bmkx List Buffer.
                                                               (line   6)
 * bookmark browse buffer:                The Bmkx List Buffer.
                                                               (line   6)
 * bookmark file:                         Concepts.            (line   6)
 * bookmark file, format:                 Bookmark Records.    (line  53)
-* bookmark files, tutorial:              Tutorial.            (line 116)
+* bookmark files, tutorial:              Tutorial.            (line 119)
 * bookmark identity:                     Migration.           (line  28)
 * bookmark list:                         Concepts.            (line   6)
 * bookmark record format:                Bookmark Records.    (line   6)
@@ -2179,7 +2252,8 @@ Concept Index
                                                               (line 315)
 * composite bookmarks:                   Bookmark Types.      (line 103)
 * concepts:                              Concepts.            (line   6)
-* consult integration:                   Live Preview.        (line  38)
+* consult integration:                   Jumping.             (line  14)
+* consult integration <1>:               Live Preview.        (line  38)
 * creating bookmarks:                    Setting Bookmarks.   (line   6)
 * creating bookmarks, tutorial:          Tutorial.            (line  12)
 * creation commands by type:             Setting Bookmarks.   (line  20)
@@ -2205,8 +2279,8 @@ Concept Index
                                                               (line 173)
 * filtering:                             The Bmkx List Buffer.
                                                               (line 161)
-* filtering, tutorial:                   Tutorial.            (line  72)
-* find-file-style jumping:               Jumping.             (line  44)
+* filtering, tutorial:                   Tutorial.            (line  75)
+* find-file-style jumping:               Jumping.             (line 103)
 * first session:                         Tutorial.            (line   6)
 * flagging for deletion:                 The Bmkx List Buffer.
                                                               (line 135)
@@ -2228,14 +2302,15 @@ Concept Index
 * jumping, tutorial:                     Tutorial.            (line  57)
 * keymaps:                               Prefix Keys.         (line   6)
 * live preview:                          Live Preview.        (line   6)
-* marked bookmarks, tutorial:            Tutorial.            (line  93)
+* marked bookmarks, tutorial:            Tutorial.            (line  96)
 * marking bookmarks:                     The Bmkx List Buffer.
                                                               (line 135)
 * marks:                                 The Bmkx List Buffer.
                                                               (line  15)
 * metadata loss:                         Bookmark Records.    (line  67)
 * migration:                             Migration.           (line   6)
-* mode-specific j bindings:              Jumping.             (line  56)
+* mode-specific j bindings:              Jumping.             (line 115)
+* MRU jump:                              Jumping.             (line  14)
 * multiple bookmark files:               Multiple Bookmark Files.
                                                               (line   6)
 * name uniqueness:                       Bookmark Records.    (line  40)
@@ -2254,7 +2329,7 @@ Concept Index
 * preview mode:                          Live Preview.        (line  12)
 * preview mode, in *Bmkx List*:          The Bmkx List Buffer.
                                                               (line 309)
-* preview mode, tutorial:                Tutorial.            (line 107)
+* preview mode, tutorial:                Tutorial.            (line 110)
 * relationship to bookmark.el:           Introduction.        (line  33)
 * round-trip:                            Bookmark Records.    (line  67)
 * sequence bookmarks:                    Bookmark Types.      (line 103)
@@ -2266,10 +2341,11 @@ Concept Index
 * snippet bookmarks:                     Bookmark Types.      (line 129)
 * sorting:                               The Bmkx List Buffer.
                                                               (line 219)
-* sorting, tutorial:                     Tutorial.            (line  72)
+* sorting, tutorial:                     Tutorial.            (line  75)
 * standard keys:                         Standard Keys.       (line   6)
+* tag filter, jump:                      Jumping.             (line  14)
 * tag values:                            Tags.                (line  79)
-* tag-based jumping:                     Jumping.             (line  71)
+* tag-based jumping:                     Jumping.             (line 130)
 * tagging, tutorial:                     Tutorial.            (line  47)
 * tags:                                  Tags.                (line   6)
 * tags column:                           The Bmkx List Buffer.
@@ -2277,7 +2353,7 @@ Concept Index
 * temporary bookmarks:                   Temporary Bookmarks. (line   6)
 * Transient menu:                        Casual Integration.  (line   6)
 * tutorial:                              Tutorial.            (line   6)
-* type-specific jump:                    Jumping.             (line  14)
+* type-specific jump:                    Jumping.             (line  73)
 * types of bookmark:                     Bookmark Types.      (line   6)
 * visiting bookmarks:                    Jumping.             (line   6)
 * window placement, of *Bmkx List*:      The Bmkx List Buffer.
@@ -2291,32 +2367,32 @@ Node: Top675
 Node: Preface3349
 Node: Introduction5704
 Node: Tutorial7851
-Node: Concepts11726
-Node: Prefix Keys12945
-Node: Standard Keys14333
-Node: Setting Bookmarks15239
-Node: Jumping18332
-Node: The Bmkx List Buffer22706
-Node: Bookmark Types38441
-Node: Tags44976
-Node: Annotations50024
-Node: Multiple Bookmark Files52587
-Node: Highlighting55282
-Node: Live Preview58486
-Node: Casual Integration60354
-Node: Cycling61492
-Node: Automatic Bookmarking63214
-Node: Autonamed Bookmarks64819
-Node: Temporary Bookmarks66477
-Node: Bookmark Records68407
-Ref: Round Trip Caveat70747
-Node: Customization72624
-Node: Migration76359
-Node: GNU GPL86406
-Node: Key Index87241
-Node: Command Index87353
-Node: Variable Index88287
-Node: Concept Index91209
+Node: Concepts11960
+Node: Prefix Keys13179
+Node: Standard Keys14567
+Node: Setting Bookmarks16035
+Node: Jumping19128
+Node: The Bmkx List Buffer26465
+Node: Bookmark Types42200
+Node: Tags48735
+Node: Annotations53783
+Node: Multiple Bookmark Files56346
+Node: Highlighting59041
+Node: Live Preview62245
+Node: Casual Integration64113
+Node: Cycling65251
+Node: Automatic Bookmarking66973
+Node: Autonamed Bookmarks68578
+Node: Temporary Bookmarks70236
+Node: Bookmark Records72166
+Ref: Round Trip Caveat74506
+Node: Customization76383
+Node: Migration80118
+Node: GNU GPL90165
+Node: Key Index91000
+Node: Command Index91112
+Node: Variable Index92046
+Node: Concept Index94968
 
 End Tag Table
 

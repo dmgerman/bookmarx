@@ -247,7 +247,11 @@ C-x j j RET readme top RET
 
 @code{bmkx-jump} prompts you with completion; type the bookmark name
 or use your usual completion machinery to pick.  If the @code{consult}
-package is loaded, you get live preview as you move through candidates.
+package is loaded, you also get live preview, MRU sort, type
+narrowing (@kbd{,} then a single char), hidden tag matching
+(typing a tag name filters by it), and an active-filter state you
+mutate with @kbd{M-t} (add tag filter), @kbd{M-D} (pop), @kbd{M-T}
+(clear) ---  see @ref{Jumping, , Jumping to Bookmarks}.
 
 To jump in the other window, use @kbd{C-x 4 j j}.  To jump only among
 bookmarks of a specific type (Dired, Info, EWW, @dots{}), use
@@ -407,13 +411,24 @@ versions, add this to your init file:
 (define-key bookmark-map "l" #'bmkx-list)
 @end lisp
 
-If you also want programmatic callers (@code{consult-bookmark},
-@code{helm-bookmark}, Org-mode bookmark links, etc.) to pick up
-Bookmark-X's enhancements when they invoke @code{bookmark-jump}, add:
+If a third-party caller you cannot edit (@code{consult-bookmark},
+@code{helm-bookmark}, Org-mode bookmark links, programmatic callers
+in other packages) needs to route through Bookmark-X when it invokes
+@code{bookmark-jump}, add:
 
 @lisp
 (advice-add 'bookmark-jump :override #'bmkx-jump)
 @end lisp
+
+This redirects @emph{lookup} but not @emph{UX}: those callers still
+drive their own minibuffer reads, so @code{consult-bookmark} will
+keep showing its own type-narrow set, its own annotation, and its
+own sort order; the advice does not graft Bookmark-X's
+@code{bmkx-jump-narrow}, @code{bmkx-jump-sort-by}, or the multi-axis
+filter state (@kbd{M-t} / @kbd{M-D} / @kbd{M-T}) onto
+@code{consult-bookmark}'s prompt.  For the full feature set, call
+@code{bmkx-jump} directly; treat the advice as a fallback for
+external code paths you do not own.
 
 No helper command is required.  These are plain Emacs primitives;
 remove the lines (or call @code{advice-remove}) to reverse them.
@@ -499,6 +514,86 @@ completion offers every bookmark.  @code{bmkx-jump-other-window}
 (@kbd{C-x 4 j j}) is its other-window twin.  Inside @file{*Bmkx List*},
 @key{RET} or @kbd{f} calls @code{bmkx-list-this-window}, and @kbd{o}
 calls @code{bmkx-list-other-window}.
+
+@section Power Features (with @code{consult} Loaded)
+@cindex consult integration
+@cindex bmkx-jump features
+@cindex tag filter, jump
+@cindex MRU jump
+
+When the @code{consult} package is on the @code{load-path} and the
+user option @code{bmkx-preview-use-consult-flag} is non-@code{nil}
+(the default), @code{bmkx-jump} reads bookmark names through
+@code{consult--read} and offers facilities that are @emph{not}
+available through @code{consult-bookmark}---even if you advise
+@code{bookmark-jump} with @code{bmkx-jump}.  These belong to
+@code{bmkx-jump}'s own minibuffer; advising @code{bookmark-jump} only
+redirects lookup, it does not graft this UX onto another command.
+
+@itemize @bullet
+@item
+@strong{Live preview.}  Moving through candidates briefly displays
+the destination in another window without committing the jump, using
+the same @code{consult--bookmark-preview} that @code{consult-bookmark}
+uses.
+
+@item
+@strong{Tag-substring matching.}  Each candidate has a hidden
+@code{#tag1 #tag2} suffix.  Typing @code{emacs} filters to bookmarks
+whose name @emph{or any tag} contains @samp{emacs}---no special
+syntax required.
+
+@item
+@strong{Type narrowing.}  Press @kbd{,} followed by a single
+character to narrow to a handler family: @kbd{,f} for file,
+@kbd{,d} for Dired, @kbd{,i} for Info, @kbd{,o} for Org heading,
+@kbd{,w} for Web, and so on.  The full map is the user option
+@code{bmkx-jump-narrow}.
+
+@item
+@strong{Multi-axis filter state.}  Inside the minibuffer:
+
+@table @kbd
+@item M-t
+Add a tag filter (completing-read over every distinct tag in
+@code{bookmark-alist}).
+@item M-D
+Pop the most recently added filter.
+@item M-T
+Clear all active filters.
+@end table
+
+Active filters appear bracketed in the prompt
+(@samp{[#emacs #work] Bookmark: }) and exclude non-matching
+candidates.  The filter set is local to one @code{bmkx-jump}
+invocation and stacks with the type narrow above (@kbd{,d M-t emacs}
+= Dired bookmarks tagged @code{emacs}).
+
+@item
+@strong{Sort modes.}  The user option @code{bmkx-jump-sort-by}
+controls candidate order: @code{mru} (default; most recently
+modified first), @code{visits} (most-jumped first), or @code{alpha}
+(alphabetical).
+
+@item
+@strong{Grouping.}  The user option @code{bmkx-jump-group-by}
+controls grouping: @code{nil} (default; flat list), @code{type}
+(handler family from @code{bmkx-jump-narrow}), or @code{tag} (the
+bookmark's first tag).  When grouping is on, candidates are clustered
+by group key and the chosen sort applies within each group.
+
+@item
+@strong{Annotation with tags column.}  The display shows an aligned
+tags column followed by Marginalia's standard
+@code{type | file | location} annotation.
+@end itemize
+
+By comparison, @code{consult-bookmark}---with or without an
+@code{advice-add} on @code{bookmark-jump}---ships only its own
+type-narrow (@code{consult-bookmark-narrow}), its built-in annotation
+(through Marginalia if loaded), and no filter state, no tag matching,
+no MRU sort.  Call @code{bmkx-jump} directly for the rich interactive
+experience.
 
 @section Type-Specific Jump Commands
 @cindex type-specific jump

@@ -42,6 +42,26 @@ can still discover them with =M-x bmkx-= =TAB=.
 
 * Jumping
 
+** =bmkx-jump= minibuffer
+
+When =consult= is loaded, =bmkx-jump='s minibuffer also accepts:
+
+| Key                | Effect                                                         |
+|--------------------+----------------------------------------------------------------|
+| =,= then a char    | Type narrow (see =bmkx-jump-narrow=): =,f= file, =,d= Dired, =,i= Info, =,o= Org heading, =,w= Web, ... |
+| =M-t=              | Add a tag filter (completing-read over every distinct tag).    |
+| =M-D=              | Pop the most recently added filter.                            |
+| =M-T=              | Clear all active filters.                                      |
+| Typing a tag name  | Filters by tag (hidden suffix is searchable).                  |
+
+User options:
+
+- =bmkx-jump-sort-by= --- =mru= (default), =visits=, or =alpha=.
+- =bmkx-jump-group-by= --- =nil= (default), =type=, or =tag=.
+- =bmkx-jump-narrow= --- type-narrow key map; see the docstring.
+
+** Commands
+
 | Command                              | Default key | Notes                                  |
 |--------------------------------------+-------------+----------------------------------------|
 | =bmkx-jump=                        | =C-x j j=, =C-x r b= | All bookmarks; same window.            |
