@@ -1,18 +1,18 @@
-# Build the Bookmark++ Info manual.
+# Build the Bookmark-X Info manual.
 #
 # Targets:
-#   make           - build bookmark-plusplus.info
-#   make html      - also build bookmark-plusplus.html
-#   make pdf       - also build bookmark-plusplus.pdf (requires texi2pdf)
+#   make           - build bookmark-x.info
+#   make html      - also build bookmark-x.html
+#   make pdf       - also build bookmark-x.pdf (requires texi2pdf)
 #   make clean     - remove generated files
 
 MAKEINFO ?= makeinfo
 TEXI2PDF ?= texi2pdf
 
-INFO  = bookmark-plusplus.info
-HTML  = bookmark-plusplus.html
-PDF   = bookmark-plusplus.pdf
-TEXI  = bookmark-plusplus.texi
+INFO  = bookmark-x.info
+HTML  = bookmark-x.html
+PDF   = bookmark-x.pdf
+TEXI  = bookmark-x.texi
 
 .PHONY: all html pdf clean
 

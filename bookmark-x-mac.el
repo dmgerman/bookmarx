@@ -1,18 +1,25 @@
-;;; bookmark+-mac.el --- Macros for Bookmark+.   -*- lexical-binding:t -*-
+;;; bookmark-x-mac.el --- Macros for Bookmark-X.   -*- lexical-binding:t -*-
 ;;
-;; Filename: bookmark+-mac.el
-;; Description: Macros for Bookmark+.
-;; Author: Drew Adams
-;; Maintainer: Drew Adams
+;; Filename:    bookmark-x-mac.el
+;; Description: Macros for Bookmark-X.
+;;              Fork of Drew Adams' Bookmark+, modernized for Emacs 30+.
+;;
+;; Author:     Drew Adams
+;; Maintainer: Daniel M. German <dmg@turingmachine.org>
+;;
 ;; Copyright (C) 2000-2024, Drew Adams, all rights reserved.
+;; Copyright (C) 2026, Daniel M. German, all rights reserved.
+;;
 ;; Created: Sun Aug 15 11:12:30 2010 (-0700)
-;; Last-Updated: Sun Sep 15 18:09:29 2024 (-0700)
-;;           By: dradams
-;;     Update #: 238
-;; URL: https://www.emacswiki.org/emacs/download/bookmark%2b-mac.el
-;; Doc URL: https://www.emacswiki.org/emacs/BookmarkPlus
-;; Keywords: bookmarks, bookmark+, placeholders, annotations, search, info, url, eww, w3m, gnus
-;; Compatibility: GNU Emacs: 30.x and later
+;;
+;; URL: https://github.com/dmgerman/bookmarx
+;;
+;; Keywords:      bookmarks, placeholders, annotations, search, info, url, eww, gnus
+;; Compatibility: GNU Emacs 30+
+;;
+;; SPDX-License-Identifier: GPL-3.0-or-later
+;;
+;; Assisted-by: Claude:claude-opus-4-7
 ;;
 ;; Features that might be required by this library:
 ;;
@@ -22,37 +29,37 @@
 ;;
 ;;; Commentary:
 ;;
-;;    Macros for Bookmark+.
+;;    Macros for Bookmark-X.
 ;;
-;;    The Bookmark+ libraries are these:
+;;    The Bookmark-X libraries are these:
 ;;
-;;    `bookmark+.el'     - main (driver) library
-;;    `bookmark+-mac.el' - Lisp macros (this file)
-;;    `bookmark+-bmu.el' - code for the `*Bmkp List*' (bmenu)
-;;    `bookmark+-1.el'   - other (non-bmenu) required code
-;;    `bookmark+-lit.el' - (optional) code for highlighting bookmarks
-;;    `bookmark+-key.el' - key and menu bindings
+;;    `bookmark-x.el'     - main (driver) library
+;;    `bookmark-x-mac.el' - Lisp macros (this file)
+;;    `bookmark-x-bmu.el' - code for the `*Bmkx List*' (bmenu)
+;;    `bookmark-x-1.el'   - other (non-bmenu) required code
+;;    `bookmark-x-lit.el' - (optional) code for highlighting bookmarks
+;;    `bookmark-x-key.el' - key and menu bindings
 ;;
-;;    User documentation is the `bookmark-plusplus' Info manual.  See
-;;    `M-x info RET m bookmark-plusplus RET' or the source in
-;;    `doc/bookmark-plusplus.texi'.
+;;    User documentation is the `bookmark-x' Info manual.  See
+;;    `M-x info RET m bookmark-x RET' or the source in
+;;    `doc/bookmark-x.texi'.
 ;;
 ;;
 ;;    ****** NOTE ******
 ;;
-;;      WHENEVER you update Bookmark+ (i.e., download new versions of
-;;      Bookmark+ source files), I recommend that you do the
+;;      WHENEVER you update Bookmark-X (i.e., download new versions of
+;;      Bookmark-X source files), I recommend that you do the
 ;;      following:
 ;;
-;;      1. Delete ALL existing BYTE-COMPILED Bookmark+ files
-;;         (bookmark+*.elc).
-;;      2. Load Bookmark+ (`load-library' or `require').
+;;      1. Delete ALL existing BYTE-COMPILED Bookmark-X files
+;;         (bookmark-x*.elc).
+;;      2. Load Bookmark-X (`load-library' or `require').
 ;;      3. Byte-compile the source files.
 ;;
-;;      In particular, ALWAYS LOAD `bookmark+-mac.el' (not
-;;      `bookmark+-mac.elc') BEFORE YOU BYTE-COMPILE new versions of
+;;      In particular, ALWAYS LOAD `bookmark-x-mac.el' (not
+;;      `bookmark-x-mac.elc') BEFORE YOU BYTE-COMPILE new versions of
 ;;      the files, in case there have been any changes to Lisp macros
-;;      (in `bookmark+-mac.el').
+;;      (in `bookmark-x-mac.el').
 ;;
 ;;      (This is standard procedure for Lisp: code that depends on
 ;;      macros needs to be byte-compiled anew after loading the
@@ -76,38 +83,36 @@
 ;;
 ;;  Macros defined here:
 ;;
-;;    `bmkp-define-cycle-command', `bmkp-define-file-sort-predicate',
-;;    `bmkp-define-history-variables',
-;;    `bmkp-define-next+prev-cycle-commands',
-;;    `bmkp-define-show-only-command', `bmkp-define-sort-command',
-;;    `bmkp-define-type-from-hander', `bmkp-lexlet', `bmkp-lexlet*',
-;;    `bmkp-make-plain-predicate', `bmkp-menu-bar-make-toggle',
-;;    `bmkp-with-bookmark-dir', `bmkp-with-help-window',
-;;    `bmkp-with-output-to-plain-temp-buffer'.
+;;    `bmkx-define-cycle-command', `bmkx-define-file-sort-predicate',
+;;    `bmkx-define-history-variables',
+;;    `bmkx-define-next+prev-cycle-commands',
+;;    `bmkx-define-show-only-command', `bmkx-define-sort-command',
+;;    `bmkx-define-type-from-hander', `bmkx-lexlet', `bmkx-lexlet*',
+;;    `bmkx-make-plain-predicate', `bmkx-menu-bar-make-toggle',
+;;    `bmkx-with-bookmark-dir', `bmkx-with-help-window',
+;;    `bmkx-with-output-to-plain-temp-buffer'.
 ;;
 ;;  Non-interactive functions defined here:
 ;;
-;;    `bmkp-bookmark-data-from-record',
-;;    `bmkp-bookmark-name-from-record',
-;;    `bmkp-replace-regexp-in-string', `bmkp-types-alist',
+;;    `bmkx-bookmark-data-from-record',
+;;    `bmkx-bookmark-name-from-record',
+;;    `bmkx-replace-regexp-in-string', `bmkx-types-alist',
 ;;    `bookmark-name-from-full-record', `bookmark-name-from-record'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 ;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -116,8 +121,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;
 
 (require 'bookmark)
-;; bmkp-list-bookmark, bmkp-list-ensure-position,
-;; bmkp-list-surreptitiously-rebuild-list, bmkp-get-bookmark,
+;; bmkx-list-bookmark, bmkx-list-ensure-position,
+;; bmkx-list-surreptitiously-rebuild-list, bmkx-get-bookmark,
 ;; bookmark-get-filename
 
  
@@ -135,38 +140,38 @@
 ;; 2. The vanilla name of the first is misleading, as it returns only the cdr of the record.
 ;;    The second is for consistency.
 ;;
-(defalias 'bmkp-bookmark-data-from-record 'bookmark-get-bookmark-record)
-(defalias 'bmkp-bookmark-name-from-record 'bookmark-name-from-full-record)
+(defalias 'bmkx-bookmark-data-from-record 'bookmark-get-bookmark-record)
+(defalias 'bmkx-bookmark-name-from-record 'bookmark-name-from-full-record)
 
 
-;; (eval-when-compile (require 'bookmark+-bmu))
-;; bmkp-assoc-delete-all, bmkp-bmenu-barf-if-not-in-menu-list,
-;; bmkp-bmenu-goto-bookmark-named, bmkp-sort-orders-alist
+;; (eval-when-compile (require 'bookmark-x-bmu))
+;; bmkx-assoc-delete-all, bmkx-bmenu-barf-if-not-in-menu-list,
+;; bmkx-bmenu-goto-bookmark-named, bmkx-sort-orders-alist
 
-;; (eval-when-compile (require 'bookmark+-1))
-;; bmkp-file-bookmark-p, bmkp-float-time, bmkp-local-file-bookmark-p,
-;; bmkp-msg-about-sort-order, bmkp-reverse-sort-p, bmkp-sort-comparer
+;; (eval-when-compile (require 'bookmark-x-1))
+;; bmkx-file-bookmark-p, bmkx-float-time, bmkx-local-file-bookmark-p,
+;; bmkx-msg-about-sort-order, bmkx-reverse-sort-p, bmkx-sort-comparer
 
 
-;;; This is also defined in `bookmark+-bmu.el'.  It is used here to produce the code for
-;;; `bmkp-define-show-only-command' and `bmkp-define-sort-command'.
+;;; This is also defined in `bookmark-x-bmu.el'.  It is used here to produce the code for
+;;; `bmkx-define-show-only-command' and `bmkx-define-sort-command'.
 ;;;
-(defalias 'bmkp-replace-regexp-in-string #'replace-regexp-in-string)
+(defalias 'bmkx-replace-regexp-in-string #'replace-regexp-in-string)
  
 ;;(@* "Macros")
 
 ;;; Macros -----------------------------------------------------------
 
-;;;###autoload (autoload 'bmkp-with-help-window "bookmark+")
-(defmacro bmkp-with-help-window (buffer &rest body)
+;;;###autoload (autoload 'bmkx-with-help-window "bookmark-x")
+(defmacro bmkx-with-help-window (buffer &rest body)
   "Like `with-help-window', for the side-effect of `*Help*' navigation."
   `(with-help-window ,buffer ,@body))
 
-(put 'bmkp-with-help-window 'common-lisp-indent-function '(4 &body))
+(put 'bmkx-with-help-window 'common-lisp-indent-function '(4 &body))
 
 
-;;;###autoload (autoload 'bmkp-with-output-to-plain-temp-buffer "bookmark+")
-(defmacro bmkp-with-output-to-plain-temp-buffer (buf &rest body)
+;;;###autoload (autoload 'bmkx-with-output-to-plain-temp-buffer "bookmark-x")
+(defmacro bmkx-with-output-to-plain-temp-buffer (buf &rest body)
   "Like `with-output-to-temp-buffer', but with no `*Help*' navigation stuff."
   `(unwind-protect
     (progn
@@ -176,32 +181,32 @@
     (add-hook 'temp-buffer-setup-hook 'help-mode-setup)
     (add-hook 'temp-buffer-show-hook  'help-mode-finish)))
 
-(put 'bmkp-with-output-to-plain-temp-buffer 'common-lisp-indent-function '(4 &body))
+(put 'bmkx-with-output-to-plain-temp-buffer 'common-lisp-indent-function '(4 &body))
 
 
-;;;###autoload (autoload 'bmkp-make-plain-predicate "bookmark+")
-(defmacro bmkp-make-plain-predicate (pred &optional final-pred)
+;;;###autoload (autoload 'bmkx-make-plain-predicate "bookmark-x")
+(defmacro bmkx-make-plain-predicate (pred &optional final-pred)
   "Return a plain predicate that corresponds to component-predicate PRED.
 PRED and FINAL-PRED correspond to their namesakes in
-`bmkp-sort-comparer' (which see).
+`bmkx-sort-comparer' (which see).
 
 PRED should return `(t)', `(nil)', or nil.
 
 Optional arg FINAL-PRED is the final predicate to use if PRED cannot
-decide (returns nil).  If FINAL-PRED is nil, then `bmkp-alpha-p', the
-plain-predicate equivalent of `bmkp-alpha-cp' is used as the final
+decide (returns nil).  If FINAL-PRED is nil, then `bmkx-alpha-p', the
+plain-predicate equivalent of `bmkx-alpha-cp' is used as the final
 predicate."
   `(lambda (b1 b2) (let ((res  (funcall ',pred b1 b2)))
-                     (if res (car res) (funcall ',(or final-pred  'bmkp-alpha-p) b1 b2)))))
+                     (if res (car res) (funcall ',(or final-pred  'bmkx-alpha-p) b1 b2)))))
 
-;;;###autoload (autoload 'bmkp-define-cycle-command "bookmark+")
-(defmacro bmkp-define-cycle-command (type &optional otherp)
+;;;###autoload (autoload 'bmkx-define-cycle-command "bookmark-x")
+(defmacro bmkx-define-cycle-command (type &optional otherp)
   "Define a cycling command for bookmarks of type TYPE.
 Non-nil OTHERP means define a command that cycles in another window."
-  `(defun ,(intern (format "bmkp-cycle-%s%s" type (if otherp "-other-window" "")))
+  `(defun ,(intern (format "bmkx-cycle-%s%s" type (if otherp "-other-window" "")))
     (increment &optional startoverp)
     ,(if otherp
-         (format "Same as `bmkp-cycle-%s', but use other window." type)
+         (format "Same as `bmkx-cycle-%s', but use other window." type)
          (format "Cycle through %s bookmarks by INCREMENT (default: 1).
 Positive INCREMENT cycles forward.  Negative INCREMENT cycles backward.
 Interactively, the prefix arg determines INCREMENT:
@@ -211,169 +216,169 @@ Interactively, the prefix arg determines INCREMENT:
 Plain `C-u' also means start over at first bookmark.
 
 In Lisp code:
- Non-nil STARTOVERP means reset `bmkp-current-nav-bookmark' to the
+ Non-nil STARTOVERP means reset `bmkx-current-nav-bookmark' to the
  first bookmark in the navlist." type))
     (interactive (let ((startovr  (consp current-prefix-arg)))
                    (list (if startovr 1 (prefix-numeric-value current-prefix-arg))
                          startovr)))
-    (let ((bmkp-nav-alist  (bmkp-sort-omit (,(intern (format "bmkp-%s-alist-only" type))))))
-      (bmkp-cycle increment ,otherp startoverp))))
+    (let ((bmkx-nav-alist  (bmkx-sort-omit (,(intern (format "bmkx-%s-alist-only" type))))))
+      (bmkx-cycle increment ,otherp startoverp))))
 
-;;;###autoload (autoload 'bmkp-define-next+prev-cycle-commands "bookmark+")
-(defmacro bmkp-define-next+prev-cycle-commands (type &optional otherp)
+;;;###autoload (autoload 'bmkx-define-next+prev-cycle-commands "bookmark-x")
+(defmacro bmkx-define-next+prev-cycle-commands (type &optional otherp)
   "Define `next' and `previous' commands for bookmarks of type TYPE.
 Non-nil OTHERP means define a command that cycles in another window."
   `(progn
     ;; `next' command.
-    (defun ,(intern (format "bmkp-next-%s-bookmark%s" type (if otherp "-other-window" "")))
+    (defun ,(intern (format "bmkx-next-%s-bookmark%s" type (if otherp "-other-window" "")))
         (n &optional startoverp)
       ,(if otherp
-           (format "Same as `bmkp-next-%s-bookmark', but use other window." type)
+           (format "Same as `bmkx-next-%s-bookmark', but use other window." type)
            (format "Jump to the Nth-next %s bookmark.
 N defaults to 1, meaning the next one.
 Plain `C-u' means start over at the first one.
-See also `bmkp-cycle-%s'." type type))
+See also `bmkx-cycle-%s'." type type))
       (interactive (let ((startovr  (consp current-prefix-arg)))
                      (list (if startovr 1 (prefix-numeric-value current-prefix-arg)) startovr)))
-      (,(intern (format "bmkp-cycle-%s%s" type (if otherp "-other-window" ""))) n startoverp))
+      (,(intern (format "bmkx-cycle-%s%s" type (if otherp "-other-window" ""))) n startoverp))
 
     ;; `previous' command.
-    (defun ,(intern (format "bmkp-previous-%s-bookmark%s" type (if otherp "-other-window" "")))
+    (defun ,(intern (format "bmkx-previous-%s-bookmark%s" type (if otherp "-other-window" "")))
         (n &optional startoverp)
       ,(if otherp
-           (format "Same as `bmkp-previous-%s-bookmark', but use other window." type)
+           (format "Same as `bmkx-previous-%s-bookmark', but use other window." type)
            (format "Jump to the Nth-previous %s bookmark.
-See `bmkp-next-%s-bookmark'." type type))
+See `bmkx-next-%s-bookmark'." type type))
       (interactive (let ((startovr  (consp current-prefix-arg)))
                      (list (if startovr 1 (prefix-numeric-value current-prefix-arg)) startovr)))
-      (,(intern (format "bmkp-cycle-%s%s" type (if otherp "-other-window" "")))
+      (,(intern (format "bmkx-cycle-%s%s" type (if otherp "-other-window" "")))
         (- n) startoverp))
 
     ;; `next' repeating command.
-    (defun ,(intern (format "bmkp-next-%s-bookmark%s-repeat"
+    (defun ,(intern (format "bmkx-next-%s-bookmark%s-repeat"
                             type
                             (if otherp "-other-window" "")))
         ()
       ,(if otherp
-           (format "Same as `bmkp-next-%s-bookmark-repeat', but use other window." type)
+           (format "Same as `bmkx-next-%s-bookmark-repeat', but use other window." type)
            (format "Jump to the next %s bookmark.
-This is a repeatable version of `bmkp-next-%s-bookmark'." type type))
+This is a repeatable version of `bmkx-next-%s-bookmark'." type type))
       (interactive)
       (require 'repeat)
-      (bmkp-repeat-command
-       ',(intern (format "bmkp-next-%s-bookmark%s" type (if otherp "-other-window" "")))))
+      (bmkx-repeat-command
+       ',(intern (format "bmkx-next-%s-bookmark%s" type (if otherp "-other-window" "")))))
 
     ;; `previous repeating command.
-    (defun ,(intern (format "bmkp-previous-%s-bookmark%s-repeat"
+    (defun ,(intern (format "bmkx-previous-%s-bookmark%s-repeat"
                             type
                             (if otherp "-other-window" "")))
         ()
       ,(if otherp
-           (format "Same as `bmkp-previous-%s-bookmark-repeat', but use other window." type)
+           (format "Same as `bmkx-previous-%s-bookmark-repeat', but use other window." type)
            (format "Jump to the previous %s bookmark.
-See `bmkp-next-%s-bookmark-repeat'." type type))
+See `bmkx-next-%s-bookmark-repeat'." type type))
       (interactive)
       (require 'repeat)
-      (bmkp-repeat-command
-       ',(intern (format "bmkp-previous-%s-bookmark%s" type (if otherp "-other-window" "")))))))
+      (bmkx-repeat-command
+       ',(intern (format "bmkx-previous-%s-bookmark%s" type (if otherp "-other-window" "")))))))
 
-;; We don't bother making this hygienic.  Presumably only the Bookmark+ code will call it.
-;;;###autoload (autoload 'bmkp-define-show-only-command "bookmark+")
-(defmacro bmkp-define-show-only-command (type doc-string filter-function)
-  "Define a command to show only bookmarks of TYPE in *Bmkp List*.
+;; We don't bother making this hygienic.  Presumably only the Bookmark-X code will call it.
+;;;###autoload (autoload 'bmkx-define-show-only-command "bookmark-x")
+(defmacro bmkx-define-show-only-command (type doc-string filter-function)
+  "Define a command to show only bookmarks of TYPE in *Bmkx List*.
 TYPE is a short string or symbol describing the type of bookmarks.
 
-The new command is named `bmkp-bmenu-show-only-TYPED-bookmarks', where
+The new command is named `bmkx-bmenu-show-only-TYPED-bookmarks', where
 TYPED is TYPE, but with any spaces replaced by hyphens (`-').
-Example: `bmkp-bmenu-show-only-tagged-bookmarks', for TYPE `tagged'.
+Example: `bmkx-bmenu-show-only-tagged-bookmarks', for TYPE `tagged'.
 
 DOC-STRING is the doc string of the new command.
 
 The command shows only the bookmarks allowed by FILTER-FUNCTION.
 
-In case of error, variables `bmkp-bmenu-filter-function',
-`bmkp-bmenu-title', and `bmkp-latest-bookmark-alist' are reset to
+In case of error, variables `bmkx-bmenu-filter-function',
+`bmkx-bmenu-title', and `bmkx-latest-bookmark-alist' are reset to
 their values before the command was invoked."
   (unless (stringp type) (setq type  (symbol-name type)))
-  (let* ((type--   (bmkp-replace-regexp-in-string "\\s-+" "-" type))
-         (command  (intern (format "bmkp-bmenu-show-only-%s-bookmarks" type--))))
+  (let* ((type--   (bmkx-replace-regexp-in-string "\\s-+" "-" type))
+         (command  (intern (format "bmkx-bmenu-show-only-%s-bookmarks" type--))))
     `(progn
       (defun ,command ()
         ,doc-string
         (interactive)
-        (bmkp-bmenu-barf-if-not-in-menu-list)
-        (let ((orig-filter-fn      bmkp-bmenu-filter-function)
-              (orig-title          bmkp-bmenu-title)
-              (orig-latest-alist   bmkp-latest-bookmark-alist))
+        (bmkx-bmenu-barf-if-not-in-menu-list)
+        (let ((orig-filter-fn      bmkx-bmenu-filter-function)
+              (orig-title          bmkx-bmenu-title)
+              (orig-latest-alist   bmkx-latest-bookmark-alist))
           (condition-case err
-              (progn (setq bmkp-bmenu-filter-function  ',filter-function
-                           bmkp-bmenu-title            ,(format "%s Bookmarks" (capitalize type)))
-                     (let ((bookmark-alist  (funcall bmkp-bmenu-filter-function)))
-                       (setq bmkp-latest-bookmark-alist  bookmark-alist)
-                       (bmkp-list 'filteredp))
+              (progn (setq bmkx-bmenu-filter-function  ',filter-function
+                           bmkx-bmenu-title            ,(format "%s Bookmarks" (capitalize type)))
+                     (let ((bookmark-alist  (funcall bmkx-bmenu-filter-function)))
+                       (setq bmkx-latest-bookmark-alist  bookmark-alist)
+                       (bmkx-list 'filteredp))
                      (when (called-interactively-p 'interactive)
-                       (bmkp-msg-about-sort-order (bmkp-current-sort-order)
+                       (bmkx-msg-about-sort-order (bmkx-current-sort-order)
                                                   ,(format "Only %s bookmarks are shown" type))))
-            (error (progn (setq bmkp-bmenu-filter-function  orig-filter-fn
-                                bmkp-bmenu-title            orig-title
-                                bmkp-latest-bookmark-alist  orig-latest-alist)
+            (error (progn (setq bmkx-bmenu-filter-function  orig-filter-fn
+                                bmkx-bmenu-title            orig-title
+                                bmkx-latest-bookmark-alist  orig-latest-alist)
                           (error "%s" (error-message-string err))))))))))
 
-;;;###autoload (autoload 'bmkp-define-sort-command "bookmark+")
-(defmacro bmkp-define-sort-command (sort-order comparer doc-string)
+;;;###autoload (autoload 'bmkx-define-sort-command "bookmark-x")
+(defmacro bmkx-define-sort-command (sort-order comparer doc-string)
   "Define a command to sort bookmarks in the bookmark list by SORT-ORDER.
 SORT-ORDER is a short string or symbol describing the sorting method.
 Examples: \"by last access time\", \"by bookmark name\".
 
 The new command is named by replacing any spaces in SORT-ORDER with
-hyphens (`-') and then adding the prefix `bmkp-bmenu-sort-'.  Example:
-`bmkp-bmenu-sort-by-bookmark-name', for SORT-ORDER `by bookmark name'.
+hyphens (`-') and then adding the prefix `bmkx-bmenu-sort-'.  Example:
+`bmkx-bmenu-sort-by-bookmark-name', for SORT-ORDER `by bookmark name'.
 
 COMPARER compares two bookmarks, returning non-nil if and only if the
 first bookmark sorts before the second.  It must be acceptable as a
-value of `bmkp-sort-comparer'.  That is, it is either nil, a
+value of `bmkx-sort-comparer'.  That is, it is either nil, a
 predicate, or a list ((PRED...) FINAL-PRED).  See the doc for
-`bmkp-sort-comparer'.
+`bmkx-sort-comparer'.
 
 DOC-STRING is the doc string of the new command."
   (unless (stringp sort-order) (setq sort-order  (symbol-name sort-order)))
-  (let ((command  (intern (concat "bmkp-bmenu-sort-" (bmkp-replace-regexp-in-string
+  (let ((command  (intern (concat "bmkx-bmenu-sort-" (bmkx-replace-regexp-in-string
                                                       "\\s-+" "-" sort-order)))))
     `(progn
-      (setq bmkp-sort-orders-alist  (bmkp-assoc-delete-all ,sort-order (copy-sequence
-                                                                        bmkp-sort-orders-alist)))
-      (setq bmkp-sort-orders-alist  (cons (cons ,sort-order ',comparer) bmkp-sort-orders-alist))
+      (setq bmkx-sort-orders-alist  (bmkx-assoc-delete-all ,sort-order (copy-sequence
+                                                                        bmkx-sort-orders-alist)))
+      (setq bmkx-sort-orders-alist  (cons (cons ,sort-order ',comparer) bmkx-sort-orders-alist))
       (defun ,command ()
         ,(concat doc-string "\nRepeating this command cycles among normal sort, reversed \
 sort, and unsorted.")
         (interactive)
-        (bmkp-bmenu-barf-if-not-in-menu-list)
+        (bmkx-bmenu-barf-if-not-in-menu-list)
         (cond (;; Not this sort order - make it this sort order.
-               (not (equal bmkp-sort-comparer ',comparer))
-               (setq bmkp-sort-comparer   ',comparer
-                     bmkp-reverse-sort-p  nil))
+               (not (equal bmkx-sort-comparer ',comparer))
+               (setq bmkx-sort-comparer   ',comparer
+                     bmkx-reverse-sort-p  nil))
               (;; Not this sort order reversed - make it reversed.
-               (not bmkp-reverse-sort-p)
-               (setq bmkp-reverse-sort-p  t))
+               (not bmkx-reverse-sort-p)
+               (setq bmkx-reverse-sort-p  t))
               (t;; This sort order reversed.  Change to unsorted.
-               (setq bmkp-sort-comparer   nil)))
+               (setq bmkx-sort-comparer   nil)))
         (message "Sorting...")
-        (bmkp-list-ensure-position)
-        (let ((current-bmk  (bmkp-list-bookmark)))
-          (bmkp-list-surreptitiously-rebuild-list)
+        (bmkx-list-ensure-position)
+        (let ((current-bmk  (bmkx-list-bookmark)))
+          (bmkx-list-surreptitiously-rebuild-list)
           (when current-bmk             ; Should be non-nil, but play safe.
-            (bmkp-bmenu-goto-bookmark-named current-bmk))) ; Put cursor back on right line.
+            (bmkx-bmenu-goto-bookmark-named current-bmk))) ; Put cursor back on right line.
         (when (called-interactively-p 'interactive)
-          (bmkp-msg-about-sort-order
+          (bmkx-msg-about-sort-order
            ,sort-order
            nil
-           (cond ((and (not bmkp-reverse-sort-p)
-                       (equal bmkp-sort-comparer ',comparer)) "(Repeat: reverse)")
-                 ((equal bmkp-sort-comparer ',comparer)       "(Repeat: unsorted)")
+           (cond ((and (not bmkx-reverse-sort-p)
+                       (equal bmkx-sort-comparer ',comparer)) "(Repeat: reverse)")
+                 ((equal bmkx-sort-comparer ',comparer)       "(Repeat: unsorted)")
                  (t                                           "(Repeat: sort)"))))))))
 
-;;;###autoload (autoload 'bmkp-define-file-sort-predicate "bookmark+")
-(defmacro bmkp-define-file-sort-predicate (att-nb)
+;;;###autoload (autoload 'bmkx-define-file-sort-predicate "bookmark-x")
+(defmacro bmkx-define-file-sort-predicate (att-nb)
   "Define a predicate for sorting bookmarks by file attribute ATT-NB.
 See function `file-attributes' for the meanings of the various file
 attribute numbers.
@@ -391,7 +396,7 @@ A bookmark that has file attributes sorts before a bookmark that does
 not.  A file bookmark sorts before a non-file bookmark.  Only local
 files are tested for attributes - remote-file bookmarks are treated
 here like non-file bookmarks."
-  `(defun ,(intern (format "bmkp-file-attribute-%d-cp" att-nb)) (b1 b2)
+  `(defun ,(intern (format "bmkx-file-attribute-%d-cp" att-nb)) (b1 b2)
     ,(format "Sort file bookmarks by attribute %d.
 Sort bookmarks with file attributes before those without attributes
 Sort file bookmarks before non-file bookmarks.
@@ -400,11 +405,11 @@ Treat remote file bookmarks like non-file bookmarks.
 B1 and B2 are full bookmarks (records) or bookmark names.
 If either is a record then it need not belong to `bookmark-alist'."
              att-nb)
-    (setq b1  (bmkp-get-bookmark b1))
-    (setq b2  (bmkp-get-bookmark b2))
+    (setq b1  (bmkx-get-bookmark b1))
+    (setq b2  (bmkx-get-bookmark b2))
     (let (a1 a2)
       (cond (;; Both are file bookmarks.
-             (and (bmkp-file-bookmark-p b1) (bmkp-file-bookmark-p b2))
+             (and (bmkx-file-bookmark-p b1) (bmkx-file-bookmark-p b2))
              (setq a1  (file-attributes (bookmark-get-filename b1))
                    a2  (file-attributes (bookmark-get-filename b2)))
              (cond (;; Both have attributes.
@@ -413,8 +418,8 @@ If either is a record then it need not belong to `bookmark-alist'."
                           a2  (nth ,att-nb a2))
                     ;; Convert times and maybe inode number to floats.
                     ;; The inode conversion is kludgy, but is probably OK in practice.
-                    (when (consp a1) (setq a1  (bmkp-float-time a1)))
-                    (when (consp a2) (setq a2  (bmkp-float-time a2)))
+                    (when (consp a1) (setq a1  (bmkx-float-time a1)))
+                    (when (consp a2) (setq a2  (bmkx-float-time a2)))
                     (cond (;; (1) links, (2) maybe uid, (3) maybe gid, (4, 5, 6) times
                            ;; (7) size, (10) inode, (11) device.
                            (numberp a1)
@@ -447,80 +452,80 @@ If either is a record then it need not belong to `bookmark-alist'."
                     t
                     nil)))
             (;; First is a file, second is not.
-             (bmkp-local-file-bookmark-p b1)
+             (bmkx-local-file-bookmark-p b1)
              '(t))
             (;; Second is a file, first is not.
-             (bmkp-local-file-bookmark-p b2)
+             (bmkx-local-file-bookmark-p b2)
              '(nil))
             (t;; Neither is a file.
              nil)))))
 
-;;; This is also defined in `bookmark+-1.el'.  It is used here to produce the code for
-;;; `bmkp-define-history-variables' and `bmkp-define-sort-command'.
+;;; This is also defined in `bookmark-x-1.el'.  It is used here to produce the code for
+;;; `bmkx-define-history-variables' and `bmkx-define-sort-command'.
 ;;;
-(defun bmkp-types-alist ()
-  "Alist of bookmark types used by `bmkp-jump-to-type'.
+(defun bmkx-types-alist ()
+  "Alist of bookmark types used by `bmkx-jump-to-type'.
 Keys are bookmark type names.  Values are corresponding history variables.
-The alist is used in commands such as `bmkp-jump-to-type'."
+The alist is used in commands such as `bmkx-jump-to-type'."
   (let ((entries  ()))
     (mapatoms
      (lambda (sym)
        (let ((name  (symbol-name sym)))
-         (when (string-match "\\`bmkp-\\(.+\\)-alist-only\\'" name)
+         (when (string-match "\\`bmkx-\\(.+\\)-alist-only\\'" name)
            (push (cons (match-string 1 name)
-                       (intern (format "bmkp-%s-history" (match-string 1 name))))
+                       (intern (format "bmkx-%s-history" (match-string 1 name))))
                  entries)))))
     entries))
 
-;; Macro that defines Bookmark+ history variables.
-;; Use this after you define any new filter function, `bmkp-*-alist-only',
+;; Macro that defines Bookmark-X history variables.
+;; Use this after you define any new filter function, `bmkx-*-alist-only',
 ;; for a new kind of bookmark.
 ;;
-;;;###autoload (autoload 'bmkp-define-history-variables "bookmark+")
-(defmacro bmkp-define-history-variables ()
-  "Create and eval defvars for Bookmark+ history variables.
-The variables are the cdrs of `bmkp-types-alist'.  They are used in
-commands such as `bmkp-jump-to-type'."
+;;;###autoload (autoload 'bmkx-define-history-variables "bookmark-x")
+(defmacro bmkx-define-history-variables ()
+  "Create and eval defvars for Bookmark-X history variables.
+The variables are the cdrs of `bmkx-types-alist'.  They are used in
+commands such as `bmkx-jump-to-type'."
   (let ((dfvars  ()))
-    (dolist (entry  (bmkp-types-alist))
+    (dolist (entry  (bmkx-types-alist))
       (push `(defvar ,(cdr entry) () ,(format "History for %s bookmarks." (car entry)))
             dfvars))
     `(progn ,@dfvars)))
 
-;; This macro is not used in the Bookmark+ code.  It's available for users who want to define
+;; This macro is not used in the Bookmark-X code.  It's available for users who want to define
 ;; simple bookmark types that are based only on a handler.
 ;;
-;;;###autoload (autoload 'bmkp-define-type-from-hander "bookmark+")
-(defmacro bmkp-define-type-from-hander (type handler)
+;;;###autoload (autoload 'bmkx-define-type-from-hander "bookmark-x")
+(defmacro bmkx-define-type-from-hander (type handler)
   "Define a TYPE of bookmarks based only on a HANDLER function.
 TYPE is a short string or symbol.
 
-Define predicate `bmkp-TYPE-bookmark-p', which returns non-nil if its
+Define predicate `bmkx-TYPE-bookmark-p', which returns non-nil if its
 bookmark argument has HANDLER.
 
-Define filter function `bmkp-TYPE-alist-only', which returns only the
+Define filter function `bmkx-TYPE-alist-only', which returns only the
 TYPE bookmarks from the current bookmark list.
 
-Define command `bmkp-bmenu-show-only-TYPE-bookmarks', which shows only
+Define command `bmkx-bmenu-show-only-TYPE-bookmarks', which shows only
 the TYPE bookmarks, in the bookmark-list display."
   (let  ((predicate-doc   (format "Return non-nil if BOOKMARK is a %s bookmark." type))
-         (predicate-symb  (intern (format "bmkp-%s-bookmark-p" type)))
+         (predicate-symb  (intern (format "bmkx-%s-bookmark-p" type)))
          (predicate       `(eq (bookmark-get-handler bmk) ',handler))
          (alist-only-doc  (format "`bookmark-alist', filtered to retain only %s bookmarks." type))
-         (alist-only-fn   (intern (format "bmkp-%s-alist-only" type)))
+         (alist-only-fn   (intern (format "bmkx-%s-alist-only" type)))
          (show-only-doc   (format "Display (only) the %s bookmarks." type)))
     `(progn (defun ,predicate-symb (bookmark)
               ,predicate-doc
               ,predicate)
             (defun ,alist-only-fn ()
               ,alist-only-doc
-              (bmkp-maybe-load-default-file)
-              (bmkp-remove-if-not (lambda (bmk) ,predicate) bookmark-alist))
-            (bmkp-define-show-only-command ,type ,show-only-doc ,alist-only-fn)
-            (bmkp-define-history-variables))))
+              (bmkx-maybe-load-default-file)
+              (bmkx-remove-if-not (lambda (bmk) ,predicate) bookmark-alist))
+            (bmkx-define-show-only-command ,type ,show-only-doc ,alist-only-fn)
+            (bmkx-define-history-variables))))
 
-;;;###autoload (autoload 'bmkp-menu-bar-make-toggle "bookmark+")
-(defmacro bmkp-menu-bar-make-toggle (command variable item-name message help
+;;;###autoload (autoload 'bmkx-menu-bar-make-toggle "bookmark-x")
+(defmacro bmkx-menu-bar-make-toggle (command variable item-name message help
                                      &optional setting-sexp &rest keywords)
   "Define a menu-bar toggle command.
 COMMAND (a symbol) is the toggle command to define.
@@ -558,19 +563,19 @@ by \"Save Options\" in Custom buffers.")
       ,@keywords)))
 
 ;;; Not used currently.  Provided so you can use it in your own code, if appropriate.
-;;;###autoload (autoload 'bmkp-with-bookmark-dir "bookmark+")
-(defmacro bmkp-with-bookmark-dir (bookmark &rest body)
+;;;###autoload (autoload 'bmkx-with-bookmark-dir "bookmark-x")
+(defmacro bmkx-with-bookmark-dir (bookmark &rest body)
   "Evaluate BODY forms with BOOKMARK location as `default-directory'.
 If BOOKMARK has no location then use nil as `default-directory'."
-  `(let* ((loc                (bmkp-location ,bookmark))
-          (default-directory  (and (stringp loc)  (not (member loc (list bmkp-non-file-filename
+  `(let* ((loc                (bmkx-location ,bookmark))
+          (default-directory  (and (stringp loc)  (not (member loc (list bmkx-non-file-filename
                                                                     "-- Unknown location --")))
                                (if (file-directory-p loc) loc (file-name-directory loc)))))
     ,@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(provide 'bookmark+-mac)
+(provide 'bookmark-x-mac)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; bookmark+-mac.el ends here
+;;; bookmark-x-mac.el ends here

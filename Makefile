@@ -1,4 +1,4 @@
-# Top-level Makefile for bookmark-plusplus.
+# Top-level Makefile for bookmark-x.
 #
 # Targets:
 #   make test          - run the test suite (ERT, batch mode)
@@ -8,21 +8,21 @@
 
 EMACS ?= emacs
 
-CORE_FILES = bookmark+-mac.el bookmark+-lit.el bookmark+-bmu.el \
-             bookmark+-1.el bookmark+-key.el bookmark+-preview.el \
-             bookmark+.el
+CORE_FILES = bookmark-x-mac.el bookmark-x-lit.el bookmark-x-bmu.el \
+             bookmark-x-1.el bookmark-x-key.el bookmark-x-preview.el \
+             bookmark-x.el
 
 .PHONY: test compile clean
 
 test:
 	$(EMACS) -Q --batch -L . -L test \
-	    -l bookmark+-mac.el \
+	    -l bookmark-x-mac.el \
 	    -l ert \
 	    -l test/run-tests.el \
 	    -f ert-run-tests-batch-and-exit
 
 compile:
-	$(EMACS) -Q --batch -L . -l bookmark+-mac.el \
+	$(EMACS) -Q --batch -L . -l bookmark-x-mac.el \
 	    -f batch-byte-compile $(CORE_FILES)
 
 clean:

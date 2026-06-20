@@ -1,22 +1,29 @@
-;;; bookmark+-lit.el --- Bookmark highlighting for Bookmark+.   -*- lexical-binding:t -*-
+;;; bookmark-x-lit.el --- Bookmark highlighting for Bookmark-X.   -*- lexical-binding:t -*-
 ;;
-;; Filename: bookmark+-lit.el
-;; Description: Bookmark highlighting for Bookmark+.
-;; Author: Drew Adams
-;; Maintainer: Drew Adams
+;; Filename:    bookmark-x-lit.el
+;; Description: Bookmark highlighting for Bookmark-X.
+;;              Fork of Drew Adams' Bookmark+, modernized for Emacs 30+.
+;;
+;; Author:     Drew Adams
+;; Maintainer: Daniel M. German <dmg@turingmachine.org>
+;;
 ;; Copyright (C) 2010-2023, Drew Adams, all rights reserved.
+;; Copyright (C) 2026, Daniel M. German, all rights reserved.
+;;
 ;; Created: Wed Jun 23 07:49:32 2010 (-0700)
-;; Last-Updated: Thu Oct 26 15:09:05 2023 (-0700)
-;;           By: dradams
-;;     Update #: 1091
-;; URL: https://www.emacswiki.org/emacs/download/bookmark%2b-lit.el
-;; Doc URL: https://www.emacswiki.org/emacs/BookmarkPlus
-;; Keywords: bookmarks, highlighting, bookmark+
-;; Compatibility: GNU Emacs: 30.x and later
+;;
+;; URL: https://github.com/dmgerman/bookmarx
+;;
+;; Keywords:      bookmarks, highlighting
+;; Compatibility: GNU Emacs 30+
+;;
+;; SPDX-License-Identifier: GPL-3.0-or-later
+;;
+;; Assisted-by: Claude:claude-opus-4-7
 ;;
 ;; Features that might be required by this library:
 ;;
-;;   `backquote', `bookmark', `bookmark+-1', `button', `bytecomp',
+;;   `backquote', `bookmark', `bookmark-x-1', `button', `bytecomp',
 ;;   `cconv', `cl-lib', `font-lock',
 ;;   `font-lock+', `help-mode', `hl-line', `hl-line+', `kmacro',
 ;;   `macroexp', `pp', `pp+', `replace', `syntax', `text-mode',
@@ -26,24 +33,24 @@
 ;;
 ;;; Commentary:
 ;;
-;;    Bookmark highlighting for Bookmark+ (library `bookmark+.el').
+;;    Bookmark highlighting for Bookmark-X (library `bookmark-x.el').
 ;;
-;;    The Bookmark+ libraries are:
+;;    The Bookmark-X libraries are:
 ;;
-;;    `bookmark+.el'     - main code library
-;;    `bookmark+-mac.el' - Lisp macros
-;;    `bookmark+-lit.el' - code for highlighting bookmarks (this file)
-;;    `bookmark+-bmu.el' - code for the `*Bmkp List*'
-;;    `bookmark+-1.el'   - other required code (non-bmenu)
-;;    `bookmark+-key.el' - key and menu bindings
+;;    `bookmark-x.el'     - main code library
+;;    `bookmark-x-mac.el' - Lisp macros
+;;    `bookmark-x-lit.el' - code for highlighting bookmarks (this file)
+;;    `bookmark-x-bmu.el' - code for the `*Bmkx List*'
+;;    `bookmark-x-1.el'   - other required code (non-bmenu)
+;;    `bookmark-x-key.el' - key and menu bindings
 ;;
-;;    This library (`bookmark+-lit.el') is a Bookmark+ option.  If you
-;;    want to use it then load it before loading `bookmark+.el', so
+;;    This library (`bookmark-x-lit.el') is a Bookmark-X option.  If you
+;;    want to use it then load it before loading `bookmark-x.el', so
 ;;    that its commands can be bound to keys and menu items.
 ;;
-;;    User documentation is the `bookmark-plusplus' Info manual.  See
-;;    `M-x info RET m bookmark-plusplus RET' or the source in
-;;    `doc/bookmark-plusplus.texi'.
+;;    User documentation is the `bookmark-x' Info manual.  See
+;;    `M-x info RET m bookmark-x RET' or the source in
+;;    `doc/bookmark-x.texi'.
  
 ;;(@> "Index")
 ;;
@@ -70,94 +77,92 @@
 ;;  Commands defined here:
 ;;
 ;;
-;;    `bmkp-bmenu-light', `bmkp-bmenu-light-marked',
-;;    `bmkp-bmenu-set-lighting', `bmkp-bmenu-set-lighting-for-marked',
-;;    `bmkp-bmenu-show-only-lighted-bookmarks', `bmkp-bmenu-unlight',
-;;    `bmkp-bmenu-unlight-marked', `bmkp-bookmarks-lighted-at-point',
-;;    `bmkp-cycle-lighted-this-buffer',
-;;    `bmkp-cycle-lighted-this-buffer-other-window',
-;;    `bmkp-describe-bookmark-lighted-on-this-line',
-;;    `bmkp-light-autonamed-this-buffer', `bmkp-light-bookmark',
-;;    `bmkp-light-bookmark-this-buffer', `bmkp-light-bookmarks',
-;;    `bmkp-light-bookmarks-in-region',
-;;    `bmkp-light-navlist-bookmarks',
-;;    `bmkp-light-non-autonamed-this-buffer',
-;;    `bmkp-light-this-buffer', `bmkp-lighted-here-jump-to-list',
-;;    `bmkp-lighted-jump', `bmkp-lighted-jump-other-window',
-;;    `bmkp-next-lighted-this-buffer',
-;;    `bmkp-next-lighted-this-buffer-repeat',
-;;    `bmkp-previous-lighted-this-buffer',
-;;    `bmkp-previous-lighted-this-buffer-repeat',
-;;    `bmkp-set-lighting-for-bookmark',
-;;    `bmkp-set-lighting-for-buffer',
-;;    `bmkp-set-lighting-for-this-buffer',
-;;    `bmkp-toggle-auto-light-when-jump',
-;;    `bmkp-toggle-auto-light-when-set',
-;;    `bmkp-unlight-autonamed-this-buffer', `bmkp-unlight-bookmark',
-;;    `bmkp-unlight-bookmark-on-this-line',
-;;    `bmkp-unlight-bookmark-this-buffer', `bmkp-unlight-bookmarks',
-;;    `bmkp-unlight-non-autonamed-this-buffer',
-;;    `bmkp-unlight-this-buffer'.
+;;    `bmkx-bmenu-light', `bmkx-bmenu-light-marked',
+;;    `bmkx-bmenu-set-lighting', `bmkx-bmenu-set-lighting-for-marked',
+;;    `bmkx-bmenu-show-only-lighted-bookmarks', `bmkx-bmenu-unlight',
+;;    `bmkx-bmenu-unlight-marked', `bmkx-bookmarks-lighted-at-point',
+;;    `bmkx-cycle-lighted-this-buffer',
+;;    `bmkx-cycle-lighted-this-buffer-other-window',
+;;    `bmkx-describe-bookmark-lighted-on-this-line',
+;;    `bmkx-light-autonamed-this-buffer', `bmkx-light-bookmark',
+;;    `bmkx-light-bookmark-this-buffer', `bmkx-light-bookmarks',
+;;    `bmkx-light-bookmarks-in-region',
+;;    `bmkx-light-navlist-bookmarks',
+;;    `bmkx-light-non-autonamed-this-buffer',
+;;    `bmkx-light-this-buffer', `bmkx-lighted-here-jump-to-list',
+;;    `bmkx-lighted-jump', `bmkx-lighted-jump-other-window',
+;;    `bmkx-next-lighted-this-buffer',
+;;    `bmkx-next-lighted-this-buffer-repeat',
+;;    `bmkx-previous-lighted-this-buffer',
+;;    `bmkx-previous-lighted-this-buffer-repeat',
+;;    `bmkx-set-lighting-for-bookmark',
+;;    `bmkx-set-lighting-for-buffer',
+;;    `bmkx-set-lighting-for-this-buffer',
+;;    `bmkx-toggle-auto-light-when-jump',
+;;    `bmkx-toggle-auto-light-when-set',
+;;    `bmkx-unlight-autonamed-this-buffer', `bmkx-unlight-bookmark',
+;;    `bmkx-unlight-bookmark-on-this-line',
+;;    `bmkx-unlight-bookmark-this-buffer', `bmkx-unlight-bookmarks',
+;;    `bmkx-unlight-non-autonamed-this-buffer',
+;;    `bmkx-unlight-this-buffer'.
 ;;
 ;;  User options defined here:
 ;;
-;;    `bmkp-auto-light-relocate-when-jump-flag',
-;;    `bmkp-auto-light-when-jump', `bmkp-auto-light-when-set',
-;;    `bmkp-light-left-fringe-bitmap' (Emacs 22+),
-;;    `bmkp-light-priorities', `bmkp-light-right-fringe-bitmap' (Emacs
-;;    22+), `bmkp-light-style-autonamed',
-;;    `bmkp-light-style-non-autonamed', `bmkp-light-threshold',
-;;    `bmkp-tooltip-content-function'.
+;;    `bmkx-auto-light-relocate-when-jump-flag',
+;;    `bmkx-auto-light-when-jump', `bmkx-auto-light-when-set',
+;;    `bmkx-light-left-fringe-bitmap' (Emacs 22+),
+;;    `bmkx-light-priorities', `bmkx-light-right-fringe-bitmap' (Emacs
+;;    22+), `bmkx-light-style-autonamed',
+;;    `bmkx-light-style-non-autonamed', `bmkx-light-threshold',
+;;    `bmkx-tooltip-content-function'.
 ;;
 ;;  Faces defined here:
 ;;
-;;    `bmkp-light-autonamed', `bmkp-light-fringe-autonamed' (Emacs
-;;    22+), `bmkp-light-fringe-non-autonamed' (Emacs 22+),
-;;    `bmkp-light-mark', `bmkp-light-non-autonamed'.
+;;    `bmkx-light-autonamed', `bmkx-light-fringe-autonamed' (Emacs
+;;    22+), `bmkx-light-fringe-non-autonamed' (Emacs 22+),
+;;    `bmkx-light-mark', `bmkx-light-non-autonamed'.
 ;;
 ;;  Non-interactive functions defined here:
 ;;
-;;    `bmkp-a-bookmark-lighted-at-pos',
-;;    `bmkp-a-bookmark-lighted-on-this-line',
-;;    `bmkp-bookmark-data-from-record',
-;;    `bmkp-bookmark-name-from-record', `bmkp-bookmark-overlay-p',
-;;    `bmkp-choose-bookmark-lighted-at-point', `bmkp-default-lighted',
-;;    `bmkp-fringe-string' (Emacs 22+), `bmkp-get-lighting',
-;;    `bmkp-lighted-p', `bmkp-light-face', `bmkp-light-style',
-;;    `bmkp-light-style-choices', `bmkp-light-when',
-;;    `bmkp-lighted-alist-only', `bmkp-lighting-attribute',
-;;    `bmkp-lighting-face', `bmkp-lighting-style',
-;;    `bmkp-lighting-when', `bmkp-make/move-fringe' (Emacs 22+),
-;;    `bmkp-make/move-overlay-of-style', `bmkp-make-obsolete',
-;;    `bmkp-number-lighted', `bmkp-overlay-of-bookmark',
-;;    `bmkp--pop-to-buffer-same-window',
-;;    `bmkp-read-set-lighting-args',
-;;    `bmkp-set-lighting-for-bookmarks',
-;;    `bmkp-this-buffer-lighted-alist-only',
+;;    `bmkx-a-bookmark-lighted-at-pos',
+;;    `bmkx-a-bookmark-lighted-on-this-line',
+;;    `bmkx-bookmark-data-from-record',
+;;    `bmkx-bookmark-name-from-record', `bmkx-bookmark-overlay-p',
+;;    `bmkx-choose-bookmark-lighted-at-point', `bmkx-default-lighted',
+;;    `bmkx-fringe-string' (Emacs 22+), `bmkx-get-lighting',
+;;    `bmkx-lighted-p', `bmkx-light-face', `bmkx-light-style',
+;;    `bmkx-light-style-choices', `bmkx-light-when',
+;;    `bmkx-lighted-alist-only', `bmkx-lighting-attribute',
+;;    `bmkx-lighting-face', `bmkx-lighting-style',
+;;    `bmkx-lighting-when', `bmkx-make/move-fringe' (Emacs 22+),
+;;    `bmkx-make/move-overlay-of-style', `bmkx-make-obsolete',
+;;    `bmkx-number-lighted', `bmkx-overlay-of-bookmark',
+;;    `bmkx--pop-to-buffer-same-window',
+;;    `bmkx-read-set-lighting-args',
+;;    `bmkx-set-lighting-for-bookmarks',
+;;    `bmkx-this-buffer-lighted-alist-only',
 ;;    `bookmark-name-from-full-record', `bookmark-name-from-record'.
 ;;
 ;;  Internal variables defined here:
 ;;
-;;    `bmkp-autonamed-overlays', `bmkp-last-auto-light-when-jump',
-;;    `bmkp-last-auto-light-when-set', `bmkp-light-styles-alist',
-;;    `bmkp-non-autonamed-overlays'.
+;;    `bmkx-autonamed-overlays', `bmkx-last-auto-light-when-jump',
+;;    `bmkx-last-auto-light-when-set', `bmkx-light-styles-alist',
+;;    `bmkx-non-autonamed-overlays'.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
+;; This program is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
 ;; (at your option) any later version.
 ;;
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -170,16 +175,16 @@
                      (defalias 'cl-case 'case)))
 
 (require 'bookmark)
-;; bookmark-alist, bmkp-list-bookmark, bmkp-completing-read, bmkp-get-bookmark,
-;; bookmark-get-position, bmkp-handle-bookmark, bmkp-maybe-load-default-file,
-;; bookmark-name-from-full-record, bookmark-name-from-record, bookmark-prop-get, bmkp-prop-set
-;; (Note: bmkp-prop-set is provided by bookmark+-1.el.)
+;; bookmark-alist, bmkx-list-bookmark, bmkx-completing-read, bmkx-get-bookmark,
+;; bookmark-get-position, bmkx-handle-bookmark, bmkx-maybe-load-default-file,
+;; bookmark-name-from-full-record, bookmark-name-from-record, bookmark-prop-get, bmkx-prop-set
+;; (Note: bmkx-prop-set is provided by bookmark-x-1.el.)
 
 
-;; Just repeat definition of `bmkp-make-obsolete', to make requires less complicated.
-;;   (require 'bookmark+-1) ;; bmkp-make-obsolete
+;; Just repeat definition of `bmkx-make-obsolete', to make requires less complicated.
+;;   (require 'bookmark-x-1) ;; bmkx-make-obsolete
 ;;
-(defun bmkp-make-obsolete (obsolete-name current-name &optional when)
+(defun bmkx-make-obsolete (obsolete-name current-name &optional when)
   "Same as `make-obsolete'."
   (make-obsolete obsolete-name current-name when))
 
@@ -196,33 +201,33 @@
 ;; 2. The built-in name of the first is misleading, as it returns only the cdr of the record.
 ;;    The second is for consistency.
 ;;
-(defalias 'bmkp-bookmark-data-from-record 'bookmark-get-bookmark-record)
-(defalias 'bmkp-bookmark-name-from-record 'bookmark-name-from-full-record)
+(defalias 'bmkx-bookmark-data-from-record 'bookmark-get-bookmark-record)
+(defalias 'bmkx-bookmark-name-from-record 'bookmark-name-from-full-record)
 
 
 (eval-when-compile
  (or (condition-case nil
-         (load-library "bookmark+-mac") ; Use load-library to ensure latest .elc.
+         (load-library "bookmark-x-mac") ; Use load-library to ensure latest .elc.
        (error nil))
-     (require 'bookmark+-mac)))         ; Require, so can load separately if not on `load-path'.
-;; bmkp-define-show-only-command
+     (require 'bookmark-x-mac)))         ; Require, so can load separately if not on `load-path'.
+;; bmkx-define-show-only-command
 
 
-(require 'bookmark+-bmu)
-;; bmkp-bmenu-barf-if-not-in-menu-list, bmkp-bmenu-filter-function,
-;; bmkp-bmenu-title
+(require 'bookmark-x-bmu)
+;; bmkx-bmenu-barf-if-not-in-menu-list, bmkx-bmenu-filter-function,
+;; bmkx-bmenu-title
 
-(require 'bookmark+-1)
-;; bmkp-autonamed-bookmark-p, bmkp-autonamed-this-buffer-alist-only,
-;; bmkp-autoname-format, bmkp-current-nav-bookmark,
-;; bmkp-current-sort-order, bmkp-cycle-1, bmkp-default-bookmark-name,
-;; bmkp-function-bookmark-p, bmkp-get-bookmark-in-alist, bmkp-get-buffer-name, bmkp-jump-1,
-;; bmkp-latest-bookmark-alist, bmkp-marked-bookmarks-only,
-;; bmkp-msg-about-sort-order, bmkp-nav-alist, bmkp-refresh-menu-list,
-;; bmkp-remove-if, bmkp-remove-if-not, bmkp-repeat-command,
-;; bmkp-sequence-bookmark-p, bmkp-sort-omit,
-;; bmkp-specific-buffers-alist-only, bmkp-this-buffer-alist-only,
-;; bmkp-this-file/buffer-cycle-sort-comparer, bmkp-this-buffer-p
+(require 'bookmark-x-1)
+;; bmkx-autonamed-bookmark-p, bmkx-autonamed-this-buffer-alist-only,
+;; bmkx-autoname-format, bmkx-current-nav-bookmark,
+;; bmkx-current-sort-order, bmkx-cycle-1, bmkx-default-bookmark-name,
+;; bmkx-function-bookmark-p, bmkx-get-bookmark-in-alist, bmkx-get-buffer-name, bmkx-jump-1,
+;; bmkx-latest-bookmark-alist, bmkx-marked-bookmarks-only,
+;; bmkx-msg-about-sort-order, bmkx-nav-alist, bmkx-refresh-menu-list,
+;; bmkx-remove-if, bmkx-remove-if-not, bmkx-repeat-command,
+;; bmkx-sequence-bookmark-p, bmkx-sort-omit,
+;; bmkx-specific-buffers-alist-only, bmkx-this-buffer-alist-only,
+;; bmkx-this-file/buffer-cycle-sort-comparer, bmkx-this-buffer-p
 
 (require 'pp+ nil t) ;; pp-read-expression-map
 
@@ -230,56 +235,56 @@
 
 ;; Quiet the byte-compiler
 ;;
-(defvar bmkp-autoname-format)           ; In `bookmark+-1.el'.
-(defvar bmkp-bmenu-buffer)              ; In `bookmark+.el'
-(defvar bmkp-current-nav-bookmark)      ; In `bookmark+-1.el'.
-(defvar bmkp-latest-bookmark-alist)     ; In `bookmark+-1.el'.
-(defvar bmkp-light-left-fringe-bitmap)  ; Defined in this file for Emacs 22+.
-(defvar bmkp-light-right-fringe-bitmap) ; Defined in this file for Emacs 22+.
-(defvar bmkp-nav-alist)                 ; In `bookmark+-1.el'.
-(defvar bmkp-this-file/buffer-cycle-sort-comparer) ; In `bookmark+-1.el'.
+(defvar bmkx-autoname-format)           ; In `bookmark-x-1.el'.
+(defvar bmkx-bmenu-buffer)              ; In `bookmark-x.el'
+(defvar bmkx-current-nav-bookmark)      ; In `bookmark-x-1.el'.
+(defvar bmkx-latest-bookmark-alist)     ; In `bookmark-x-1.el'.
+(defvar bmkx-light-left-fringe-bitmap)  ; Defined in this file for Emacs 22+.
+(defvar bmkx-light-right-fringe-bitmap) ; Defined in this file for Emacs 22+.
+(defvar bmkx-nav-alist)                 ; In `bookmark-x-1.el'.
+(defvar bmkx-this-file/buffer-cycle-sort-comparer) ; In `bookmark-x-1.el'.
 (defvar fringe-bitmaps)                 ; Built-in for Emacs 22+.
 
  
 ;;(@* "Faces (Customizable)")
 ;;; Faces (Customizable) ---------------------------------------------
 
-(defface bmkp-light-autonamed
+(defface bmkx-light-autonamed
     '((((background dark)) (:background "#00004AA652F1")) ; a dark cyan
       (t (:background "misty rose")))   ; a light pink
   "*Face used to highlight an autonamed bookmark (except in the fringe)."
   :group 'bookmark-plus :group 'faces)
 
-(defface bmkp-light-autonamed-region
+(defface bmkx-light-autonamed-region
     '((((background dark)) (:background "#22225F5F2222")) ; a dark green
       (t (:background "plum")))   ; a light magenta
   "*Face used to highlight an autonamed bookmark (except in the fringe)."
   :group 'bookmark-plus :group 'faces)
 
-(defface bmkp-light-fringe-autonamed
+(defface bmkx-light-fringe-autonamed
     '((((background dark)) (:background "#B19E6A64B19E")) ; a dark magenta
       (t (:background "#691DC8A2691D"))) ; a medium green
   "*Face used to highlight an autonamed bookmark in the fringe."
   :group 'bookmark-plus :group 'faces)
 
-(defface bmkp-light-fringe-non-autonamed
+(defface bmkx-light-fringe-non-autonamed
     '((((background dark)) (:background "#691DC8A2691D")) ; a medium green
       (t (:foreground "Black" :background "Plum"))) ; a light magenta
   "*Face used to highlight a non-autonamed bookmark in the fringe."
   :group 'bookmark-plus :group 'faces)
 
-(defface bmkp-light-mark '((t (:background "Plum")))
+(defface bmkx-light-mark '((t (:background "Plum")))
   "*Face used to mark bookmarks with highlight overrides, in bookmark list.
-This face must be combinable with face `bmkp-t-mark'."
+This face must be combinable with face `bmkx-t-mark'."
   :group 'bookmark-plus :group 'faces)
 
-(defface bmkp-light-non-autonamed
+(defface bmkx-light-non-autonamed
     '((((background dark)) (:background "#B19E6A64B19E")) ; a dark magenta
       (t (:background "DarkSeaGreen1"))) ; a light green
   "*Face used to highlight a non-autonamed bookmark (except in the fringe)."
   :group 'bookmark-plus :group 'faces)
 
-(defface bmkp-light-non-autonamed-region
+(defface bmkx-light-non-autonamed-region
     '((((background dark)) (:background "#BFBF1F1F2F2F")) ; a dark red
       (t (:background "turquoise")))
   "*Face used to highlight a non-autonamed bookmark (except in the fringe)."
@@ -287,7 +292,7 @@ This face must be combinable with face `bmkp-t-mark'."
 
 ;; Emacs bug # prevents making use of a face in a tooltip.
 ;;
-;; (defface bmkp-tooltip-content-face
+;; (defface bmkx-tooltip-content-face
 ;;   '((((class color))
 ;;      :background "lightyellow"
 ;;      :foreground "black"
@@ -300,15 +305,15 @@ This face must be combinable with face `bmkp-t-mark'."
 ;;(@* "User Options (Customizable)")
 ;;; User Options (Customizable) --------------------------------------
 
-;;;###autoload (autoload 'bmkp-auto-light-relocate-when-jump-flag "bookmark+")
-(defcustom bmkp-auto-light-relocate-when-jump-flag t
+;;;###autoload (autoload 'bmkx-auto-light-relocate-when-jump-flag "bookmark-x")
+(defcustom bmkx-auto-light-relocate-when-jump-flag t
   "*Non-nil means highlight the relocated, instead of the recorded, position.
 This has an effect only when the highlighting style for the bookmark
 is `point'."
   :type 'boolean :group 'bookmark-plus)
 
-;;;###autoload (autoload 'bmkp-auto-light-when-jump "bookmark+")
-(defcustom bmkp-auto-light-when-jump nil
+;;;###autoload (autoload 'bmkx-auto-light-when-jump "bookmark-x")
+(defcustom bmkx-auto-light-when-jump nil
   "*Which bookmarks to automatically highlight when jumped to.
 NOTE: The values that specify highlighting in the current buffer
 highlight bookmarks in the buffer that is current after jumping.  If
@@ -326,13 +331,13 @@ will be the buffer before jumping."
           (const :tag "None (no automatic highlighting)"   nil))
   :group 'bookmark-plus)
 
-;; The value is not correct if user customizes `bmkp-auto-light-when-jump' to non-nil.
-;; So must compensate in `bmkp-toggle-auto-light-when-jump'.
-(defvar bmkp-last-auto-light-when-jump (and (not bmkp-auto-light-when-jump)  'all-in-buffer)
-  "Last value of `bmkp-auto-light-when-jump'.")
+;; The value is not correct if user customizes `bmkx-auto-light-when-jump' to non-nil.
+;; So must compensate in `bmkx-toggle-auto-light-when-jump'.
+(defvar bmkx-last-auto-light-when-jump (and (not bmkx-auto-light-when-jump)  'all-in-buffer)
+  "Last value of `bmkx-auto-light-when-jump'.")
 
-;;;###autoload (autoload 'bmkp-auto-light-when-set "bookmark+")
-(defcustom bmkp-auto-light-when-set nil
+;;;###autoload (autoload 'bmkx-auto-light-when-set "bookmark-x")
+(defcustom bmkx-auto-light-when-set nil
   "*Which bookmarks to automatically highlight when set."
   :type '(choice
           (const :tag "Autonamed bookmark"                 autonamed-bookmark)
@@ -344,32 +349,32 @@ will be the buffer before jumping."
           (const :tag "None (no automatic highlighting)"   nil))
   :group 'bookmark-plus)
 
-;; The value is not correct if user customizes `bmkp-auto-light-when-set' to non-nil.
-;; So must compensate in `bmkp-toggle-auto-light-when-set'.
-(defvar bmkp-last-auto-light-when-set (and (not bmkp-auto-light-when-set)  'all-in-buffer)
-  "Last value of `bmkp-auto-light-when-set'.")
+;; The value is not correct if user customizes `bmkx-auto-light-when-set' to non-nil.
+;; So must compensate in `bmkx-toggle-auto-light-when-set'.
+(defvar bmkx-last-auto-light-when-set (and (not bmkx-auto-light-when-set)  'all-in-buffer)
+  "Last value of `bmkx-auto-light-when-set'.")
 
-;;;###autoload (autoload 'bmkp-light-priorities "bookmark+")
-(defcustom bmkp-light-priorities '((bmkp-autonamed-overlays        . 160)
-                                   (bmkp-non-autonamed-overlays    . 150))
+;;;###autoload (autoload 'bmkx-light-priorities "bookmark-x")
+(defcustom bmkx-light-priorities '((bmkx-autonamed-overlays        . 160)
+                                   (bmkx-non-autonamed-overlays    . 150))
   "*Priorities of bookmark highlighting overlay types.
 As an idea, `isearch' uses 1000 and 1001."
   :group 'bookmark-plus :type '(alist :key-type symbol :value-type integer))
 
 ;; Not used on Emacs built without fringe support.
 (when (boundp 'fringe-bitmaps)
-  (defcustom bmkp-light-left-fringe-bitmap 'left-triangle
+  (defcustom bmkx-light-left-fringe-bitmap 'left-triangle
     "*Symbol for the left fringe bitmap to use to highlight a bookmark."
     :type (cons 'choice (mapcar (lambda (bb) (list 'const bb)) fringe-bitmaps))
     :group 'bookmark-plus)
 
-  (defcustom bmkp-light-right-fringe-bitmap 'right-triangle
+  (defcustom bmkx-light-right-fringe-bitmap 'right-triangle
     "*Symbol for the right fringe bitmap to use to highlight a bookmark."
     :type (cons 'choice (mapcar (lambda (bb) (list 'const bb)) fringe-bitmaps))
     :group 'bookmark-plus))
 
 ;; Must be before any options that use it.
-(defvar bmkp-light-styles-alist '(("Region"              . region)
+(defvar bmkx-light-styles-alist '(("Region"              . region)
                                   ("Line Beginning"      . bol)
                                   ("Position"            . point)
                                   ("Line"                . line)
@@ -381,44 +386,44 @@ As an idea, `isearch' uses 1000 and 1001."
   "Alist of highlighting styles.  Key: string description.  Value: symbol.")
 
 ;; Must be before options that use it.
-(defun bmkp-light-style-choices ()
+(defun bmkx-light-style-choices ()
   "Return custom `:type' used for bookmark highlighting style choices."
   (cons 'choice
-        (mapcar (lambda (xx) (list 'const :tag (car xx) (cdr xx))) bmkp-light-styles-alist)))
+        (mapcar (lambda (xx) (list 'const :tag (car xx) (cdr xx))) bmkx-light-styles-alist)))
 
-;;;###autoload (autoload 'bmkp-light-style-autonamed "bookmark+")
-(defcustom bmkp-light-style-autonamed 'line+lfringe
+;;;###autoload (autoload 'bmkx-light-style-autonamed "bookmark-x")
+(defcustom bmkx-light-style-autonamed 'line+lfringe
   "*Default highlight style for autonamed bookmarks."
-  :group 'bookmark-plus :type (bmkp-light-style-choices))
+  :group 'bookmark-plus :type (bmkx-light-style-choices))
 
-;;;###autoload (autoload 'bmkp-light-style-non-autonamed "bookmark+")
-(defcustom bmkp-light-style-non-autonamed 'line+rfringe
+;;;###autoload (autoload 'bmkx-light-style-non-autonamed "bookmark-x")
+(defcustom bmkx-light-style-non-autonamed 'line+rfringe
   "*Default highlight style for non-autonamed bookmarks."
-  :group 'bookmark-plus :type (bmkp-light-style-choices))
+  :group 'bookmark-plus :type (bmkx-light-style-choices))
 
-;;;###autoload (autoload 'bmkp-light-style-autonamed-region "bookmark+")
-(defcustom bmkp-light-style-autonamed-region  'region
+;;;###autoload (autoload 'bmkx-light-style-autonamed-region "bookmark-x")
+(defcustom bmkx-light-style-autonamed-region  'region
   "*Default highlight style for autonamed region bookmarks."
-  :group 'bookmark-plus :type (bmkp-light-style-choices))
+  :group 'bookmark-plus :type (bmkx-light-style-choices))
 
-;;;###autoload (autoload 'bmkp-light-style-non-autonamed-region "bookmark+")
-(defcustom bmkp-light-style-non-autonamed-region 'region
+;;;###autoload (autoload 'bmkx-light-style-non-autonamed-region "bookmark-x")
+(defcustom bmkx-light-style-non-autonamed-region 'region
   "*Default highlight style for non-autonamed region bookmarks."
-  :group 'bookmark-plus :type (bmkp-light-style-choices))
+  :group 'bookmark-plus :type (bmkx-light-style-choices))
 
-;;;###autoload (autoload 'bmkp-light-threshold "bookmark+")
-(defcustom bmkp-light-threshold 100000
+;;;###autoload (autoload 'bmkx-light-threshold "bookmark-x")
+(defcustom bmkx-light-threshold 100000
   "*Maximum number of bookmarks to highlight."
   :type 'integer :group 'bookmark-plus)
 
-;;;###autoload (autoload 'bmkp-tooltip-content-function "bookmark+")
-(defcustom bmkp-tooltip-content-function 'bmkp-bookmark-description
+;;;###autoload (autoload 'bmkx-tooltip-content-function "bookmark-x")
+(defcustom bmkx-tooltip-content-function 'bmkx-bookmark-description
   "Function providing mouseover tooltip content for highlighted bookmarks.
 It should accept a bookmark name or record as its first arg and return
 a value acceptable as a `help-echo' property value.
 
-One alternative to the default value of `bmkp-bookmark-description' is
-`bmkp-annotation-or-bookmark-description', which shows the bookmark
+One alternative to the default value of `bmkx-bookmark-description' is
+`bmkx-annotation-or-bookmark-description', which shows the bookmark
 annotation if there is one, or the full description if not.
 
 To prevent showing any tooltip you can use a function, such as
@@ -428,10 +433,10 @@ To prevent showing any tooltip you can use a function, such as
 ;;(@* "Internal Variables")
 ;;; Internal Variables -----------------------------------------------
 
-(defvar bmkp-autonamed-overlays nil
+(defvar bmkx-autonamed-overlays nil
   "Overlays used to highlight autonamed bookmarks.")
 
-(defvar bmkp-non-autonamed-overlays nil
+(defvar bmkx-non-autonamed-overlays nil
   "Overlays used to highlight non-autonamed bookmarks.")
  
 ;;(@* "Functions")
@@ -441,98 +446,98 @@ To prevent showing any tooltip you can use a function, such as
 ;;(@* "Menu-List (`*-bmenu-*') Commands")
 ;;  *** Menu-List (`*-bmenu-*') Commands ***
 
-;;;###autoload (autoload 'bmkp-bmenu-show-only-lighted-bookmarks "bookmark+")
-(bmkp-define-show-only-command lighted "Display (only) the highlighted bookmarks." ; `H S' in bookmark list
-                               bmkp-lighted-alist-only)
+;;;###autoload (autoload 'bmkx-bmenu-show-only-lighted-bookmarks "bookmark-x")
+(bmkx-define-show-only-command lighted "Display (only) the highlighted bookmarks." ; `H S' in bookmark list
+                               bmkx-lighted-alist-only)
 
-;;;###autoload (autoload 'bmkp-bmenu-light "bookmark+")
-(defun bmkp-bmenu-light ()              ; `H H' in bookmark list
+;;;###autoload (autoload 'bmkx-bmenu-light "bookmark-x")
+(defun bmkx-bmenu-light ()              ; `H H' in bookmark list
   "Highlight the location of this line's bookmark."
   (interactive)
-  (bmkp-bmenu-barf-if-not-in-menu-list)
-  (bmkp-light-bookmark (bmkp-list-bookmark) nil nil 'MSG))
+  (bmkx-bmenu-barf-if-not-in-menu-list)
+  (bmkx-light-bookmark (bmkx-list-bookmark) nil nil 'MSG))
 
-;;;###autoload (autoload 'bmkp-bmenu-light-marked "bookmark+")
-(defun bmkp-bmenu-light-marked (&optional msgp) ; `H > H' in bookmark list
+;;;###autoload (autoload 'bmkx-bmenu-light-marked "bookmark-x")
+(defun bmkx-bmenu-light-marked (&optional msgp) ; `H > H' in bookmark list
   "Highlight the marked bookmarks.
 When called from Lisp, non-nil MSGP means echo status messages."
   (interactive (list 'MSG))
-  (bmkp-bmenu-barf-if-not-in-menu-list)
+  (bmkx-bmenu-barf-if-not-in-menu-list)
   (when msgp (message "Highlighting marked bookmarks..."))
-  (let ((marked  (bmkp-marked-bookmarks-only)))
+  (let ((marked  (bmkx-marked-bookmarks-only)))
     (unless marked (error "No marked bookmarks"))
-    (dolist (bmk  marked) (bmkp-light-bookmark bmk)))
+    (dolist (bmk  marked) (bmkx-light-bookmark bmk)))
   (when msgp (message "Highlighting marked bookmarks...done")))
 
-;;;###autoload (autoload 'bmkp-bmenu-unlight "bookmark+")
-(defun bmkp-bmenu-unlight ()            ; `H U' in bookmark list
+;;;###autoload (autoload 'bmkx-bmenu-unlight "bookmark-x")
+(defun bmkx-bmenu-unlight ()            ; `H U' in bookmark list
   "Unhighlight the location of this line's bookmark."
   (interactive)
-  (bmkp-bmenu-barf-if-not-in-menu-list)
-  (bmkp-unlight-bookmark (bmkp-list-bookmark) 'NOERROR))
+  (bmkx-bmenu-barf-if-not-in-menu-list)
+  (bmkx-unlight-bookmark (bmkx-list-bookmark) 'NOERROR))
 
-;;;###autoload (autoload 'bmkp-bmenu-unlight-marked "bookmark+")
-(defun bmkp-bmenu-unlight-marked (&optional msgp) ; `H > U' in bookmark list
+;;;###autoload (autoload 'bmkx-bmenu-unlight-marked "bookmark-x")
+(defun bmkx-bmenu-unlight-marked (&optional msgp) ; `H > U' in bookmark list
   "Unhighlight the marked bookmarks.
 When called from Lisp, non-nil MSGP means echo status messages."
   (interactive (list 'MSG))
-  (bmkp-bmenu-barf-if-not-in-menu-list)
+  (bmkx-bmenu-barf-if-not-in-menu-list)
   (when msgp (message "Unhighlighting marked bookmarks..."))
-  (let ((marked  (bmkp-marked-bookmarks-only)))
+  (let ((marked  (bmkx-marked-bookmarks-only)))
     (unless marked (error "No marked bookmarks"))
-    (dolist (bmk  marked) (bmkp-unlight-bookmark bmk t)))
+    (dolist (bmk  marked) (bmkx-unlight-bookmark bmk t)))
   (when msgp (message "Unhighlighting marked bookmarks...done")))
 
-;;;###autoload (autoload 'bmkp-bmenu-set-lighting "bookmark+")
-(defun bmkp-bmenu-set-lighting (style face when &optional msgp) ; `H +' in bookmark list
+;;;###autoload (autoload 'bmkx-bmenu-set-lighting "bookmark-x")
+(defun bmkx-bmenu-set-lighting (style face when &optional msgp) ; `H +' in bookmark list
   "Set the `lighting' entry for this line's bookmark.
 You are prompted for the highlight STYLE, FACE, and condition (WHEN)
 that make up the property-list value of the `lighting' entry.
 
 When called from Lisp, the arguments are passed to
-`bmkp-set-lighting-for-bookmark' for the current line's bookmark."
+`bmkx-set-lighting-for-bookmark' for the current line's bookmark."
   (interactive
-   (let* ((bmk        (bmkp-list-bookmark))
-          (bmk-style  (bmkp-lighting-style bmk))
-          (bmk-face   (bmkp-lighting-face bmk))
-          (bmk-when   (bmkp-lighting-when bmk)))
-     (append (bmkp-read-set-lighting-args
-              (and bmk-style  (format "%s" (car (rassq bmk-style bmkp-light-styles-alist))))
+   (let* ((bmk        (bmkx-list-bookmark))
+          (bmk-style  (bmkx-lighting-style bmk))
+          (bmk-face   (bmkx-lighting-face bmk))
+          (bmk-when   (bmkx-lighting-when bmk)))
+     (append (bmkx-read-set-lighting-args
+              (and bmk-style  (format "%s" (car (rassq bmk-style bmkx-light-styles-alist))))
               (and bmk-face   (format "%S" bmk-face))
               (and bmk-when   (format "%S" bmk-when)))
              '(MSG))))
-  (bmkp-bmenu-barf-if-not-in-menu-list)
-  (bmkp-set-lighting-for-bookmark (bmkp-list-bookmark) style face when msgp))
+  (bmkx-bmenu-barf-if-not-in-menu-list)
+  (bmkx-set-lighting-for-bookmark (bmkx-list-bookmark) style face when msgp))
 
-;;;###autoload (autoload 'bmkp-bmenu-set-lighting-for-marked "bookmark+")
-(defun bmkp-bmenu-set-lighting-for-marked (style face when &optional msgp) ; `H > +' in bookmark list
+;;;###autoload (autoload 'bmkx-bmenu-set-lighting-for-marked "bookmark-x")
+(defun bmkx-bmenu-set-lighting-for-marked (style face when &optional msgp) ; `H > +' in bookmark list
   "Set the `lighting' entry for the marked bookmarks.
 You are prompted for the highlight STYLE, FACE, and condition (WHEN)
 that make up the property-list value of the `lighting' entry.
 
-When called from Lisp, the args are passed to `bmkp-prop-set' for
+When called from Lisp, the args are passed to `bmkx-prop-set' for
 the current line's bookmark."
-  (interactive (append (bmkp-read-set-lighting-args) '(MSG)))
-  (bmkp-bmenu-barf-if-not-in-menu-list)
+  (interactive (append (bmkx-read-set-lighting-args) '(MSG)))
+  (bmkx-bmenu-barf-if-not-in-menu-list)
   (when msgp (message "Setting highlighting..."))
-  (let ((marked    (bmkp-marked-bookmarks-only))
-        (curr-bmk  (bmkp-list-bookmark)))
+  (let ((marked    (bmkx-marked-bookmarks-only))
+        (curr-bmk  (bmkx-list-bookmark)))
     (unless marked (error "No marked bookmarks"))
     (dolist (bmk  marked)
-      (bmkp-prop-set bmk 'lighting (if (or face  style  when)
+      (bmkx-prop-set bmk 'lighting (if (or face  style  when)
                                            `(,@(and face   (not (eq face 'auto))   `(:face ,face))
                                              ,@(and style  (not (eq style 'none))  `(:style ,style))
                                              ,@(and when   (not (eq when 'auto))   `(:when ,when)))
                                          ())))
-    (when (get-buffer-create bmkp-bmenu-buffer) (bmkp-refresh-menu-list curr-bmk)))
+    (when (get-buffer-create bmkx-bmenu-buffer) (bmkx-refresh-menu-list curr-bmk)))
   (when msgp (message "Setting highlighting...done")))
 
 
 ;;(@* "General Highlight Commands")
 ;;  *** General Highlight Commands ***
 
-;;;###autoload (autoload 'bmkp-bookmarks-lighted-at-point "bookmark+")
-(defun bmkp-bookmarks-lighted-at-point (&optional position fullp msgp) ; `C-x x ='
+;;;###autoload (autoload 'bmkx-bookmarks-lighted-at-point "bookmark-x")
+(defun bmkx-bookmarks-lighted-at-point (&optional position fullp msgp) ; `C-x x ='
   "Return a list of the bookmarks highlighted at point.
 Include only those in the current bookmark list (`bookmark-alist').
 With no prefix arg, return the bookmark names.
@@ -549,127 +554,127 @@ Non-interactively:
         bmk)
     (dolist (ov  (overlays-at position))
       (when (setq bmk  (overlay-get ov 'bookmark))
-        (when (setq bmk  (bmkp-get-bookmark-in-alist bmk 'NOERROR)) ; Ensure it's in current bookmark list.
-          (push (if fullp bmk (bmkp-bookmark-name-from-record bmk)) bmks))))
+        (when (setq bmk  (bmkx-get-bookmark-in-alist bmk 'NOERROR)) ; Ensure it's in current bookmark list.
+          (push (if fullp bmk (bmkx-bookmark-name-from-record bmk)) bmks))))
     (if (not fullp)
         (when msgp (message "%s" bmks))
-      (setq bmks  (mapcar #'bmkp-get-bookmark bmks))
+      (setq bmks  (mapcar #'bmkx-get-bookmark bmks))
       (when msgp (pp-eval-expression 'bmks)))
     bmks))
 
-;;;###autoload (autoload 'bmkp-toggle-auto-light-when-jump "bookmark+")
-(defun bmkp-toggle-auto-light-when-jump (&optional msgp) ; Not bound.
+;;;###autoload (autoload 'bmkx-toggle-auto-light-when-jump "bookmark-x")
+(defun bmkx-toggle-auto-light-when-jump (&optional msgp) ; Not bound.
   "Toggle automatic bookmark highlighting when a bookmark is jumped to.
-Set option `bmkp-auto-light-when-jump' to nil if non-nil, and to its
+Set option `bmkx-auto-light-when-jump' to nil if non-nil, and to its
 last non-nil value if nil.
 
 Non-interactively, non-nil MSGP means echo a status message."
   (interactive "p")
-  (when (and bmkp-auto-light-when-jump  bmkp-last-auto-light-when-jump) ; Compensate for wrong default
-    (setq bmkp-last-auto-light-when-jump  nil))
-  (setq bmkp-last-auto-light-when-jump
-        (prog1 bmkp-auto-light-when-jump ; Swap
-          (setq bmkp-auto-light-when-jump  bmkp-last-auto-light-when-jump)))
+  (when (and bmkx-auto-light-when-jump  bmkx-last-auto-light-when-jump) ; Compensate for wrong default
+    (setq bmkx-last-auto-light-when-jump  nil))
+  (setq bmkx-last-auto-light-when-jump
+        (prog1 bmkx-auto-light-when-jump ; Swap
+          (setq bmkx-auto-light-when-jump  bmkx-last-auto-light-when-jump)))
   (when msgp (message "Automatic highlighting of bookmarks when jumping is now %s"
-                      (if bmkp-auto-light-when-jump
-                          (upcase (symbol-name bmkp-auto-light-when-jump))
+                      (if bmkx-auto-light-when-jump
+                          (upcase (symbol-name bmkx-auto-light-when-jump))
                         "OFF"))))
                                         
-;;;###autoload (autoload 'bmkp-lighted-jump "bookmark+")
-(defun bmkp-lighted-jump (bookmark-name &optional flip-use-region-p) ; `C-x j h'
+;;;###autoload (autoload 'bmkx-lighted-jump "bookmark-x")
+(defun bmkx-lighted-jump (bookmark-name &optional flip-use-region-p) ; `C-x j h'
   "Jump to a highlighted bookmark.
-This is a specialization of `bmkp-jump' - see that, in particular
+This is a specialization of `bmkx-jump' - see that, in particular
 for info about using a prefix argument."
   (interactive
-   (let ((alist  (bmkp-lighted-alist-only)))
+   (let ((alist  (bmkx-lighted-alist-only)))
      (unless alist  (error "No highlighted bookmarks"))
-     (list (bmkp-completing-read "Jump to highlighted bookmark" nil alist) current-prefix-arg)))
-  (bmkp-jump-1 bookmark-name 'bmkp--pop-to-buffer-same-window flip-use-region-p))
+     (list (bmkx-completing-read "Jump to highlighted bookmark" nil alist) current-prefix-arg)))
+  (bmkx-jump-1 bookmark-name 'bmkx--pop-to-buffer-same-window flip-use-region-p))
 
-;;;###autoload (autoload 'bmkp-lighted-jump-other-window "bookmark+")
-(defun bmkp-lighted-jump-other-window (bookmark-name &optional flip-use-region-p) ; `C-x 4 j h'
+;;;###autoload (autoload 'bmkx-lighted-jump-other-window "bookmark-x")
+(defun bmkx-lighted-jump-other-window (bookmark-name &optional flip-use-region-p) ; `C-x 4 j h'
   "Jump to a highlighted bookmark in another window.
-See `bmkp-lighted-jump'."
+See `bmkx-lighted-jump'."
   (interactive
-   (let ((alist  (bmkp-lighted-alist-only)))
+   (let ((alist  (bmkx-lighted-alist-only)))
      (unless alist  (error "No highlighted bookmarks"))
-     (list (bmkp-completing-read "Jump to highlighted bookmark in another window" nil alist)
+     (list (bmkx-completing-read "Jump to highlighted bookmark in another window" nil alist)
            current-prefix-arg)))
-  (bmkp-jump-1 bookmark-name 'bmkp-select-buffer-other-window flip-use-region-p))
+  (bmkx-jump-1 bookmark-name 'bmkx-select-buffer-other-window flip-use-region-p))
 
 ;; Keep the alias for a while, in case someone has it referenced in a state file.
-(defalias 'bmkp-lighted-jump-to-list 'bmkp-lighted-here-jump-to-list)
-(bmkp-make-obsolete 'bmkp-lighted-jump-to-list 'bmkp-lighted-here-jump-to-list "2022-11-12")
+(defalias 'bmkx-lighted-jump-to-list 'bmkx-lighted-here-jump-to-list)
+(bmkx-make-obsolete 'bmkx-lighted-jump-to-list 'bmkx-lighted-here-jump-to-list "2022-11-12")
 
-;;;###autoload (autoload 'bmkp-lighted-here-jump-to-list "bookmark+")
-(defun bmkp-lighted-here-jump-to-list (bookmark) ; Not bound.
-  "Jump to location in `*Bmkp List*' for a lighted BOOKMARK at point.
+;;;###autoload (autoload 'bmkx-lighted-here-jump-to-list "bookmark-x")
+(defun bmkx-lighted-here-jump-to-list (bookmark) ; Not bound.
+  "Jump to location in `*Bmkx List*' for a lighted BOOKMARK at point.
 If there's more than one such bookmark then you're prompted for the
 bookmark name.  Completion candidates are the names of the lighted
 bookmarks at point."
-  (interactive (list (bmkp-choose-bookmark-lighted-at-point)))
-  (pop-to-buffer (get-buffer-create bmkp-bmenu-buffer))
-  (bmkp-list)
-  (bmkp-bmenu-goto-bookmark-named (setq bmkp-last-bmenu-bookmark  bookmark)))
+  (interactive (list (bmkx-choose-bookmark-lighted-at-point)))
+  (pop-to-buffer (get-buffer-create bmkx-bmenu-buffer))
+  (bmkx-list)
+  (bmkx-bmenu-goto-bookmark-named (setq bmkx-last-bmenu-bookmark  bookmark)))
 
-(defun bmkp-choose-bookmark-lighted-at-point (&optional position noerrorp)
+(defun bmkx-choose-bookmark-lighted-at-point (&optional position noerrorp)
   "Return the name of a bookmark lighted at POSITION (default: point).
 If there is more than one such, prompt user to choose one.
 Optional arg POSITION is a buffer position to use instead of point.
 
 Raise an error if there is no highlighted bookmark present, unless
 optional arg NOERRORP is non-nil, in which case return nil."
-  (let ((lbmks  (bmkp-bookmarks-lighted-at-point position)))
+  (let ((lbmks  (bmkx-bookmarks-lighted-at-point position)))
     (unless (or lbmks  noerrorp) (error "No highlighted bookmark %s" (if position "" "at point")))
     (if (cdr lbmks)
-        (bmkp-completing-read "Bookmark" (car lbmks) lbmks)
+        (bmkx-completing-read "Bookmark" (car lbmks) lbmks)
       (car lbmks))))
 
-;;;###autoload (autoload 'bmkp-unlight-bookmark "bookmark+")
-(defun bmkp-unlight-bookmark (bookmark &optional noerrorp msgp) ; Not bound
+;;;###autoload (autoload 'bmkx-unlight-bookmark "bookmark-x")
+(defun bmkx-unlight-bookmark (bookmark &optional noerrorp msgp) ; Not bound
   "Unhighlight BOOKMARK.
 BOOKMARK is a bookmark name or a bookmark record.
 When called from Lisp:
  Non-nil NOERRORP means don't raise an error if not highlighted.
  NOn-nil MSGP means echo a status message."
   (interactive
-   (let ((lighted-bmks  (bmkp-lighted-alist-only)))
+   (let ((lighted-bmks  (bmkx-lighted-alist-only)))
      (unless lighted-bmks (error "No highlighted bookmarks"))
-     (list (bmkp-completing-read "UNhighlight bookmark" (bmkp-default-lighted) lighted-bmks)
+     (list (bmkx-completing-read "UNhighlight bookmark" (bmkx-default-lighted) lighted-bmks)
            nil
            'MSG)))
-  (let* ((bmk         (bmkp-get-bookmark bookmark 'NOERROR))
-         (bmk-name    (bmkp-bookmark-name-from-record bmk))
-         (autonamedp  (and bmk  (bmkp-autonamed-bookmark-p bmk))))
+  (let* ((bmk         (bmkx-get-bookmark bookmark 'NOERROR))
+         (bmk-name    (bmkx-bookmark-name-from-record bmk))
+         (autonamedp  (and bmk  (bmkx-autonamed-bookmark-p bmk))))
     (when bmk                           ; Skip bad bookmark, but not already highlighted bookmark.
-      (unless (or noerrorp  (bmkp-lighted-p bmk-name)) (error "Bookmark `%s' is not highlighted" bmk-name))
-      (dolist (ov  (if autonamedp bmkp-autonamed-overlays bmkp-non-autonamed-overlays))
+      (unless (or noerrorp  (bmkx-lighted-p bmk-name)) (error "Bookmark `%s' is not highlighted" bmk-name))
+      (dolist (ov  (if autonamedp bmkx-autonamed-overlays bmkx-non-autonamed-overlays))
         (when (eq bmk (overlay-get ov 'bookmark))  (delete-overlay ov)))) ; Check full bookmark, not name.
     (when msgp (message "UNhighlighted bookmark `%s'" bmk-name))))
 
 ;; Keep the alias for a while, in case someone has it referenced in a state file.
-(defalias 'bmkp-unlight-bookmark-here 'bmkp-unlight-bookmark-on-this-line)
-(bmkp-make-obsolete 'bmkp-unlight-bookmark-here 'bmkp-unlight-bookmark-on-this-line "2022-11-12")
+(defalias 'bmkx-unlight-bookmark-here 'bmkx-unlight-bookmark-on-this-line)
+(bmkx-make-obsolete 'bmkx-unlight-bookmark-here 'bmkx-unlight-bookmark-on-this-line "2022-11-12")
 
-;;;###autoload (autoload 'bmkp-unlight-bookmark-on-this-line "bookmark+")
-(defun bmkp-unlight-bookmark-on-this-line (&optional noerrorp msgp) ; `C-x x C-u'
+;;;###autoload (autoload 'bmkx-unlight-bookmark-on-this-line "bookmark-x")
+(defun bmkx-unlight-bookmark-on-this-line (&optional noerrorp msgp) ; `C-x x C-u'
   "Unhighlight a highlighted bookmark on this line, preferably at point.
 Other than preferring a bookmark at point, if more than one
 highlighted bookmark is present then which one gets unhighlighted is
 undefined.  When multiple highlighted bookmarks are present you might
-want to use `\\[bmkp-bookmarks-lighted-at-point]' to see the names of all of the bookmarks at
+want to use `\\[bmkx-bookmarks-lighted-at-point]' to see the names of all of the bookmarks at
 point.
 
 When called from Lisp:
  Non-nil NOERRORP means don't raise an error if not highlighted.
  NOn-nil MSGP means echo a status message."
   (interactive (list nil 'MSG))
-  (let ((bmk  (or (bmkp-a-bookmark-lighted-at-pos)  (bmkp-a-bookmark-lighted-on-this-line))))
+  (let ((bmk  (or (bmkx-a-bookmark-lighted-at-pos)  (bmkx-a-bookmark-lighted-on-this-line))))
     (unless bmk (error "No highlighted bookmark on this line"))
-    (bmkp-unlight-bookmark bmk noerrorp msgp)))
+    (bmkx-unlight-bookmark bmk noerrorp msgp)))
 
-;;;###autoload (autoload 'bmkp-unlight-bookmark-this-buffer "bookmark+")
-(defun bmkp-unlight-bookmark-this-buffer (bookmark &optional noerrorp msgp) ; `C-x x u'
+;;;###autoload (autoload 'bmkx-unlight-bookmark-this-buffer "bookmark-x")
+(defun bmkx-unlight-bookmark-this-buffer (bookmark &optional noerrorp msgp) ; `C-x x u'
   "Unhighlight a BOOKMARK in this buffer.
 BOOKMARK is a bookmark name or a bookmark record.
 With a prefix arg, choose from all lighted bookmarks, not just those
@@ -680,22 +685,22 @@ When called from Lisp:
  NOn-nil MSGP means echo a status message."
   (interactive
    (let ((lighted-bmks  (if current-prefix-arg
-                            (bmkp-lighted-alist-only)
-                          (bmkp-this-buffer-lighted-alist-only)))
+                            (bmkx-lighted-alist-only)
+                          (bmkx-this-buffer-lighted-alist-only)))
          (msg-suffix    (if current-prefix-arg "" " in this buffer")))
      (unless lighted-bmks (error "No highlighted bookmarks%s" msg-suffix))
-     (list (bmkp-completing-read (format "UNhighlight bookmark%s in this buffer" msg-suffix)
-                                     (bmkp-default-lighted)
+     (list (bmkx-completing-read (format "UNhighlight bookmark%s in this buffer" msg-suffix)
+                                     (bmkx-default-lighted)
                                      lighted-bmks
                                      nil
                                      nil
                                      'USE-NIL-ALIST-P)
            nil
            'MSG)))
-  (bmkp-unlight-bookmark bookmark noerrorp msgp))
+  (bmkx-unlight-bookmark bookmark noerrorp msgp))
 
-;;;###autoload (autoload 'bmkp-unlight-bookmarks "bookmark+")
-(defun bmkp-unlight-bookmarks (&optional overlays-symbols this-buffer-p msgp) ; `C-x x U'
+;;;###autoload (autoload 'bmkx-unlight-bookmarks "bookmark-x")
+(defun bmkx-unlight-bookmarks (&optional overlays-symbols this-buffer-p msgp) ; `C-x x U'
   "Unhighlight lighted bookmarks.
 A prefix argument determines which bookmarks to unhighlight:
  none    - Current buffer, all lighted bookmarks.
@@ -705,18 +710,18 @@ A prefix argument determines which bookmarks to unhighlight:
 
 Non-nil optional args used when called from Lisp:
  OVERLAYS-SYMBOLS is a list whose possible elements are
-  `bmkp-autonamed-overlays' and `bmkp-non-autonamed-overlays'.
+  `bmkx-autonamed-overlays' and `bmkx-non-autonamed-overlays'.
   These name the kinds of highlighting overlays to delete.
   An empty list is the same as a list with both symbols.
  THIS-BUFFER-P means delete only overlays in this buffer.
  MSGP means echo an action summary."
   (interactive (list (cond ((or (not current-prefix-arg)  (consp current-prefix-arg))
-                            '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays))
-                           ((natnump current-prefix-arg) '(bmkp-autonamed-overlays))
-                           (current-prefix-arg           '(bmkp-non-autonamed-overlays)))
+                            '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays))
+                           ((natnump current-prefix-arg) '(bmkx-autonamed-overlays))
+                           (current-prefix-arg           '(bmkx-non-autonamed-overlays)))
                      (or (not current-prefix-arg)  (atom current-prefix-arg))
                      'MSG))
-  (unless overlays-symbols (setq overlays-symbols  '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays)))
+  (unless overlays-symbols (setq overlays-symbols  '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays)))
   (let ((count           0)
         (count-auto      0)
         (count-non-auto  0)
@@ -725,10 +730,10 @@ Non-nil optional args used when called from Lisp:
       (dolist (ov  (symbol-value ov-symb))
         (let ((ov-buf  (overlay-buffer ov)))
           (when (and ov-buf  (or (not this-buffer-p)  (eq ov-buf this-buf)))
-            (when (eq 'bmkp-autonamed-overlays ov-symb)
+            (when (eq 'bmkx-autonamed-overlays ov-symb)
               (setq count-auto  (1+ count-auto)
                     count       (1+ count)))
-            (when (eq 'bmkp-non-autonamed-overlays ov-symb)
+            (when (eq 'bmkx-non-autonamed-overlays ov-symb)
               (setq count-non-auto  (1+ count-non-auto)
                     count           (1+ count)))
             (delete-overlay ov)))))
@@ -736,51 +741,51 @@ Non-nil optional args used when called from Lisp:
                         count (if this-buffer-p "in this buffer" "(all buffers)")
                         count-auto count-non-auto))))
 
-;;;###autoload (autoload 'bmkp-unlight-autonamed-this-buffer "bookmark+")
-(defun bmkp-unlight-autonamed-this-buffer (&optional everywherep) ; Not bound
+;;;###autoload (autoload 'bmkx-unlight-autonamed-this-buffer "bookmark-x")
+(defun bmkx-unlight-autonamed-this-buffer (&optional everywherep) ; Not bound
   "Unhighlight autonamed bookmarks.
 No prefix arg: unhighlight them only in the current buffer.
 Prefix arg, unhighlight them everywhere.
 
 Non-interactively, non-nil EVERYWHEREP means unhighlight everywhere."
   (interactive "P")
-  (bmkp-unlight-bookmarks '(bmkp-autonamed-overlays) (not everywherep)))
+  (bmkx-unlight-bookmarks '(bmkx-autonamed-overlays) (not everywherep)))
 
-;;;###autoload (autoload 'bmkp-unlight-non-autonamed-this-buffer "bookmark+")
-(defun bmkp-unlight-non-autonamed-this-buffer (&optional everywherep) ; Not bound
+;;;###autoload (autoload 'bmkx-unlight-non-autonamed-this-buffer "bookmark-x")
+(defun bmkx-unlight-non-autonamed-this-buffer (&optional everywherep) ; Not bound
   "Unhighlight non-autonamed bookmarks.
 No prefix arg: unhighlight them only in the current buffer.
 Prefix arg, unhighlight them everywhere.
 
 Non-interactively, non-nil EVERYWHEREP means unhighlight everywhere."
   (interactive "P")
-  (bmkp-unlight-bookmarks '(bmkp-non-autonamed-overlays) (not everywherep)))
+  (bmkx-unlight-bookmarks '(bmkx-non-autonamed-overlays) (not everywherep)))
 
-;;;###autoload (autoload 'bmkp-unlight-this-buffer "bookmark+")
-(defun bmkp-unlight-this-buffer ()      ; Not bound
+;;;###autoload (autoload 'bmkx-unlight-this-buffer "bookmark-x")
+(defun bmkx-unlight-this-buffer ()      ; Not bound
   "Unhighlight all bookmarks in the current buffer."
   (interactive)
-  (bmkp-unlight-bookmarks))
+  (bmkx-unlight-bookmarks))
 
-;;;###autoload (autoload 'bmkp-toggle-auto-light-when-set "bookmark+")
-(defun bmkp-toggle-auto-light-when-set (&optional msgp) ; Not bound.
+;;;###autoload (autoload 'bmkx-toggle-auto-light-when-set "bookmark-x")
+(defun bmkx-toggle-auto-light-when-set (&optional msgp) ; Not bound.
   "Toggle automatic bookmark highlighting when a bookmark is set.
-Set option `bmkp-auto-light-when-set' to nil if non-nil, and to its
+Set option `bmkx-auto-light-when-set' to nil if non-nil, and to its
 last non-nil value if nil.
 
 When called from Lisp, non-nil MSGP means echo the new status."
   (interactive "p")
-  (when (and bmkp-auto-light-when-set  bmkp-last-auto-light-when-set) ; Compensate for wrong default
-    (setq bmkp-last-auto-light-when-set  nil))
-  (setq bmkp-last-auto-light-when-set  (prog1 bmkp-auto-light-when-set ; Swap
-                                         (setq bmkp-auto-light-when-set  bmkp-last-auto-light-when-set)))
+  (when (and bmkx-auto-light-when-set  bmkx-last-auto-light-when-set) ; Compensate for wrong default
+    (setq bmkx-last-auto-light-when-set  nil))
+  (setq bmkx-last-auto-light-when-set  (prog1 bmkx-auto-light-when-set ; Swap
+                                         (setq bmkx-auto-light-when-set  bmkx-last-auto-light-when-set)))
   (when msgp (message "Automatic highlighting of bookmarks when setting is now %s"
-                      (if bmkp-auto-light-when-set
-                          (upcase (symbol-name bmkp-auto-light-when-set))
+                      (if bmkx-auto-light-when-set
+                          (upcase (symbol-name bmkx-auto-light-when-set))
                         "OFF"))))
                                         
-;;;###autoload (autoload 'bmkp-set-lighting-for-bookmark "bookmark+")
-(defun bmkp-set-lighting-for-bookmark (bookmark-name style face when &optional msgp light-now-p) ; Not bound
+;;;###autoload (autoload 'bmkx-set-lighting-for-bookmark "bookmark-x")
+(defun bmkx-set-lighting-for-bookmark (bookmark-name style face when &optional msgp light-now-p) ; Not bound
   "Set the `lighting' entry for bookmark BOOKMARK-NAME.
 You are prompted for the bookmark, highlight STYLE, FACE, and
 condition (WHEN) that make up the property-list value of the
@@ -797,29 +802,29 @@ Non-interactively:
  Non-nil MSGP means display a highlighting progress message.
  Non-nil LIGHT-NOW-P means apply the highlighting now."
   (interactive
-   (let* ((bmk        (bmkp-completing-read "Highlight bookmark"
-                                                (or (bmkp-default-lighted)  (bmkp-default-bookmark-name))))
-          (bmk-style  (bmkp-lighting-style bmk))
-          (bmk-face   (bmkp-lighting-face bmk))
-          (bmk-when   (bmkp-lighting-when bmk)))
+   (let* ((bmk        (bmkx-completing-read "Highlight bookmark"
+                                                (or (bmkx-default-lighted)  (bmkx-default-bookmark-name))))
+          (bmk-style  (bmkx-lighting-style bmk))
+          (bmk-face   (bmkx-lighting-face bmk))
+          (bmk-when   (bmkx-lighting-when bmk)))
      (append (list bmk)
-             (bmkp-read-set-lighting-args
-              (and bmk-style  (format "%s" (car (rassq bmk-style bmkp-light-styles-alist))))
+             (bmkx-read-set-lighting-args
+              (and bmk-style  (format "%s" (car (rassq bmk-style bmkx-light-styles-alist))))
               (and bmk-face   (format "%S" bmk-face))
               (and bmk-when   (format "%S" bmk-when)))
              (list 'MSGP (not current-prefix-arg)))))
   (when msgp (message "Setting highlighting..."))
-  (bmkp-prop-set bookmark-name 'lighting (if (or face  style  when)
+  (bmkx-prop-set bookmark-name 'lighting (if (or face  style  when)
                                                  `(,@(and face   (not (eq face 'auto))   `(:face ,face))
                                                    ,@(and style  (not (eq style 'none))  `(:style ,style))
                                                    ,@(and when   (not (eq when 'auto))   `(:when ,when)))
                                                ()))
-  (when (get-buffer-create bmkp-bmenu-buffer) (bmkp-refresh-menu-list bookmark-name))
+  (when (get-buffer-create bmkx-bmenu-buffer) (bmkx-refresh-menu-list bookmark-name))
   (when msgp (message "Setting highlighting...done"))
-  (when light-now-p (bmkp-light-bookmark bookmark-name nil nil msgp))) ; This msg is more informative.
+  (when light-now-p (bmkx-light-bookmark bookmark-name nil nil msgp))) ; This msg is more informative.
 
-;;;###autoload (autoload 'bmkp-set-lighting-for-buffer "bookmark+")
-(defun bmkp-set-lighting-for-buffer (buffer style face when &optional msgp light-now-p) ; Not bound
+;;;###autoload (autoload 'bmkx-set-lighting-for-buffer "bookmark-x")
+(defun bmkx-set-lighting-for-buffer (buffer style face when &optional msgp light-now-p) ; Not bound
   "Set the `lighting' entry for each of the bookmarks for BUFFER.
 You are prompted for the highlight STYLE, FACE, and condition (WHEN).
 With a prefix argument, do not highlight now.
@@ -829,15 +834,15 @@ Non-interactively:
    properties, or nil if no such property.
  Non-nil MSGP means display a highlighting progress message.
  Non-nil LIGHT-NOW-P means apply the highlighting now."
-  (interactive (append (list (bmkp-completing-read-buffer-name))
-                       (bmkp-read-set-lighting-args)
+  (interactive (append (list (bmkx-completing-read-buffer-name))
+                       (bmkx-read-set-lighting-args)
                        (list 'MSGP (not current-prefix-arg))))
-  (bmkp-set-lighting-for-bookmarks
-   (let ((bmkp-last-specific-buffer  buffer)) (bmkp-last-specific-buffer-alist-only))
+  (bmkx-set-lighting-for-bookmarks
+   (let ((bmkx-last-specific-buffer  buffer)) (bmkx-last-specific-buffer-alist-only))
    style face when msgp light-now-p))
 
-;;;###autoload (autoload 'bmkp-set-lighting-for-this-buffer "bookmark+")
-(defun bmkp-set-lighting-for-this-buffer (style face when &optional msgp light-now-p) ; Not bound
+;;;###autoload (autoload 'bmkx-set-lighting-for-this-buffer "bookmark-x")
+(defun bmkx-set-lighting-for-this-buffer (style face when &optional msgp light-now-p) ; Not bound
   "Set the `lighting' entry for each of the bookmarks for this buffer.
 You are prompted for the highlight STYLE, FACE, and condition (WHEN).
 With a prefix argument, do not highlight now.
@@ -847,10 +852,10 @@ Non-interactively:
    properties, or nil if no such property.
  Non-nil MSGP means display a highlighting progress message.
  Non-nil LIGHT-NOW-P means apply the highlighting now."
-  (interactive (append (bmkp-read-set-lighting-args) (list 'MSGP (not current-prefix-arg))))
-  (bmkp-set-lighting-for-bookmarks (bmkp-this-buffer-alist-only) style face when msgp light-now-p))
+  (interactive (append (bmkx-read-set-lighting-args) (list 'MSGP (not current-prefix-arg))))
+  (bmkx-set-lighting-for-bookmarks (bmkx-this-buffer-alist-only) style face when msgp light-now-p))
 
-(defun bmkp-set-lighting-for-bookmarks (alist style face when &optional msgp light-now-p)
+(defun bmkx-set-lighting-for-bookmarks (alist style face when &optional msgp light-now-p)
   "Set the `lighting' entry for each of the bookmarks in ALIST.
 Non-interactively:
  STYLE, FACE, and WHEN are as for a bookmark's `lighting' entry
@@ -858,12 +863,12 @@ Non-interactively:
  Non-nil MSGP means display a highlighting progress message.
  Non-nil LIGHT-NOW-P means apply the highlighting now."
   (when msgp (message "Setting highlighting..."))
-  (dolist (bmk  alist) (bmkp-set-lighting-for-bookmark bmk style face when)) ; No MSGP arg here.
+  (dolist (bmk  alist) (bmkx-set-lighting-for-bookmark bmk style face when)) ; No MSGP arg here.
   (when msgp (message "Setting highlighting...done"))
-  (when light-now-p (bmkp-light-bookmarks alist nil msgp))) ; Do separately so we get its message.
+  (when light-now-p (bmkx-light-bookmarks alist nil msgp))) ; Do separately so we get its message.
 
-;;;###autoload (autoload 'bmkp-light-bookmark "bookmark+")
-(defun bmkp-light-bookmark (bookmark &optional style face msgp pointp) ; Not bound
+;;;###autoload (autoload 'bmkx-light-bookmark "bookmark-x")
+(defun bmkx-light-bookmark (bookmark &optional style face msgp pointp) ; Not bound
   "Highlight BOOKMARK.
 With a prefix arg you are prompted for the style and/or face to use:
  Plain prefix arg (`C-u'): prompt for both style and face.
@@ -876,75 +881,75 @@ Non-interactively:
  POINT-P non-nil means highlight point rather than the recorded
   bookmark position."
   (interactive
-   (let* ((bmk  (bmkp-completing-read "Highlight bookmark" (bmkp-default-bookmark-name)))
+   (let* ((bmk  (bmkx-completing-read "Highlight bookmark" (bmkx-default-bookmark-name)))
           (sty  (and current-prefix-arg  (or (consp current-prefix-arg)
                                              (<= (prefix-numeric-value current-prefix-arg) 0))
                      (cdr (assoc (let ((completion-ignore-case  t))
                                    (completing-read
-                                    "Style: " bmkp-light-styles-alist nil t nil nil
-                                    (and (bmkp-lighting-style bmk)
-                                         (format "%s" (car (rassq (bmkp-lighting-style bmk)
-                                                                  bmkp-light-styles-alist))))))
-                                 bmkp-light-styles-alist))))
+                                    "Style: " bmkx-light-styles-alist nil t nil nil
+                                    (and (bmkx-lighting-style bmk)
+                                         (format "%s" (car (rassq (bmkx-lighting-style bmk)
+                                                                  bmkx-light-styles-alist))))))
+                                 bmkx-light-styles-alist))))
           (fac  (and current-prefix-arg  (or (consp current-prefix-arg)
                                              (natnump (prefix-numeric-value current-prefix-arg)))
                      (not (member sty '(lfringe rfringe none))) ; No face possible for these.
                      (condition-case nil ; Emacs 22+ accepts a default.
-                         (read-face-name "Face: " (format "%S" (bmkp-lighting-face  bmk)))
+                         (read-face-name "Face: " (format "%S" (bmkx-lighting-face  bmk)))
                        (wrong-number-of-arguments (read-face-name "Face: "))))))
      (list bmk sty fac 'MSG)))
-  (let* ((bmkp-use-region  nil)         ; Inhibit region handling.
-         (bmk              (bmkp-get-bookmark bookmark (not msgp))) ; Error if interactive.
-         (bmk-name         (bmkp-bookmark-name-from-record bmk))
+  (let* ((bmkx-use-region  nil)         ; Inhibit region handling.
+         (bmk              (bmkx-get-bookmark bookmark (not msgp))) ; Error if interactive.
+         (bmk-name         (bmkx-bookmark-name-from-record bmk))
          (pos              (and bmk  (bookmark-get-position bmk)))
-         (buf              (and bmk  (bmkp-get-buffer-name bmk)))
-         (autonamedp       (and bmk  (bmkp-autonamed-bookmark-p bmk)))
-         (styl             (or style  (and bmk  (bmkp-light-style bmk))))
+         (buf              (and bmk  (bmkx-get-buffer-name bmk)))
+         (autonamedp       (and bmk  (bmkx-autonamed-bookmark-p bmk)))
+         (styl             (or style  (and bmk  (bmkx-light-style bmk))))
          (fac              (or face   (and bmk
                                            (not (member styl '(lfringe rfringe none)))
-                                           (bmkp-light-face  bmk))))
+                                           (bmkx-light-face  bmk))))
          (passes-when-p    (and bmk  (or face
                                          style ; Always highlight if changed face or style.
-                                         (bmkp-light-when bmk))))
-         (nb-lit           (bmkp-number-lighted))
+                                         (bmkx-light-when bmk))))
+         (nb-lit           (bmkx-number-lighted))
          bmk-ov)
-    (catch 'bmkp-light-bookmark
+    (catch 'bmkx-light-bookmark
       (when bmk                         ; Just skip bad bookmark if not interactive.
-        (cond ((setq bmk-ov  (bmkp-overlay-of-bookmark bmk)) ; Already highlighted.
+        (cond ((setq bmk-ov  (bmkx-overlay-of-bookmark bmk)) ; Already highlighted.
                (if (not (or style  face))
                    (when msgp           ; No-op batch.
                      (error "Already highlighted - use prefix arg to change"))
-                 (when style (bmkp-make/move-overlay-of-style style pos autonamedp bmk bmk-ov))
+                 (when style (bmkx-make/move-overlay-of-style style pos autonamedp bmk bmk-ov))
                  (when (and face  (not (memq styl '(lfringe rfringe none))))
                    (overlay-put bmk-ov 'face face)))
                (when msgp (message "%sighlighted bookmark `%s'" (if bmk-ov "H" "UNh") bmk-name)))
               (passes-when-p
                (save-excursion
 
-                 ;; See note in comments of `bmkp-light-bookmarks' - same considerations here.
-                 ;; (let ((bmkp-jump-display-function  nil)) (bmkp-handle-bookmark bmk))
+                 ;; See note in comments of `bmkx-light-bookmarks' - same considerations here.
+                 ;; (let ((bmkx-jump-display-function  nil)) (bmkx-handle-bookmark bmk))
                  ;;
                  (with-current-buffer (or (and buf  (get-buffer buf))  (current-buffer))
 
-                   ;; POINTP is non-nil when `bmkp-light-bookmark' is called from
-                   ;; `bmkp--jump-via'.
-                   (when (and pointp  bmkp-auto-light-relocate-when-jump-flag)
+                   ;; POINTP is non-nil when `bmkx-light-bookmark' is called from
+                   ;; `bmkx--jump-via'.
+                   (when (and pointp  bmkx-auto-light-relocate-when-jump-flag)
                      (setq pos  (point)))
                    (when (and pos  (< pos (point-max)))
-                     (let ((ov  (bmkp-make/move-overlay-of-style styl pos autonamedp bmk)))
+                     (let ((ov  (bmkx-make/move-overlay-of-style styl pos autonamedp bmk)))
                        (when ov         ; nil means `none' style.
-                         (let ((ovs  (if autonamedp 'bmkp-autonamed-overlays 'bmkp-non-autonamed-overlays)))
+                         (let ((ovs  (if autonamedp 'bmkx-autonamed-overlays 'bmkx-non-autonamed-overlays)))
                            (push ov (symbol-value ovs)))
-                         (when (and (not (bmkp-lighted-p bmk))
-                                    (> (setq nb-lit  (1+ nb-lit)) bmkp-light-threshold))
+                         (when (and (not (bmkx-lighted-p bmk))
+                                    (> (setq nb-lit  (1+ nb-lit)) bmkx-light-threshold))
                            (setq nb-lit  (1- nb-lit))
-                           (throw 'bmkp-light-bookmark bmk))
+                           (throw 'bmkx-light-bookmark bmk))
                          (overlay-put ov 'priority
                                       (or (cdr (assoc (if autonamedp
-                                                          'bmkp-autonamed-overlays
-                                                        'bmkp-non-autonamed-overlays)
-                                                      bmkp-light-priorities))
-                                          (apply #'min (mapcar #'cdr bmkp-light-priorities))))
+                                                          'bmkx-autonamed-overlays
+                                                        'bmkx-non-autonamed-overlays)
+                                                      bmkx-light-priorities))
+                                          (apply #'min (mapcar #'cdr bmkx-light-priorities))))
                          (unless (memq styl '(lfringe rfringe none)) (overlay-put ov 'face fac))
                          (overlay-put ov 'evaporate  t)
                          (overlay-put ov 'category   'bookmark-plus)
@@ -954,18 +959,18 @@ Non-interactively:
               (t
                (when msgp (message "Bookmark's condition canceled highlighting"))))))))
 
-;;;###autoload (autoload 'bmkp-light-bookmark-this-buffer "bookmark+")
-(defun bmkp-light-bookmark-this-buffer (bookmark &optional style face msgp) ; `C-x x h'
+;;;###autoload (autoload 'bmkx-light-bookmark-this-buffer "bookmark-x")
+(defun bmkx-light-bookmark-this-buffer (bookmark &optional style face msgp) ; `C-x x h'
   "Highlight a BOOKMARK in the current buffer.
 With a prefix arg you are prompted for the style and/or face to use:
  Plain prefix arg (`C-u'): prompt for both style and face.
  Numeric non-negative arg: prompt for face.
  Numeric negative arg: prompt for style.
-See `bmkp-light-bookmark' for arguments when called from Lisp."
+See `bmkx-light-bookmark' for arguments when called from Lisp."
   (interactive
-   (let* ((bmk  (bmkp-completing-read "Highlight bookmark"
+   (let* ((bmk  (bmkx-completing-read "Highlight bookmark"
                                           nil
-                                          (bmkp-this-buffer-alist-only)
+                                          (bmkx-this-buffer-alist-only)
                                           nil
                                           nil
                                           'USE-NIL-ALIST-P))
@@ -973,22 +978,22 @@ See `bmkp-light-bookmark' for arguments when called from Lisp."
                                              (<= (prefix-numeric-value current-prefix-arg) 0))
                      (cdr (assoc (let ((completion-ignore-case  t))
                                    (completing-read
-                                    "Style: " bmkp-light-styles-alist nil t nil nil
-                                    (and (bmkp-lighting-style bmk)
-                                         (format "%s" (car (rassq (bmkp-lighting-style bmk)
-                                                                  bmkp-light-styles-alist))))))
-                                 bmkp-light-styles-alist))))
+                                    "Style: " bmkx-light-styles-alist nil t nil nil
+                                    (and (bmkx-lighting-style bmk)
+                                         (format "%s" (car (rassq (bmkx-lighting-style bmk)
+                                                                  bmkx-light-styles-alist))))))
+                                 bmkx-light-styles-alist))))
           (fac  (and current-prefix-arg  (or (consp current-prefix-arg)
                                              (natnump (prefix-numeric-value current-prefix-arg)))
                      (not (member sty '(lfringe rfringe none))) ; No face possible for these.
                      (condition-case nil ; Emacs 22+ accepts a default.
-                         (read-face-name "Face: " (format "%S" (bmkp-lighting-face  bmk)))
+                         (read-face-name "Face: " (format "%S" (bmkx-lighting-face  bmk)))
                        (wrong-number-of-arguments (read-face-name "Face: "))))))
      (list bmk sty fac 'MSG)))
-  (bmkp-light-bookmark bookmark style face msgp))
+  (bmkx-light-bookmark bookmark style face msgp))
 
-;;;###autoload (autoload 'bmkp-light-bookmarks "bookmark+")
-(defun bmkp-light-bookmarks (alist &optional overlays-symbols msgp) ; `C-x x H'
+;;;###autoload (autoload 'bmkx-light-bookmarks "bookmark-x")
+(defun bmkx-light-bookmarks (alist &optional overlays-symbols msgp) ; `C-x x H'
   "Highlight bookmarks.
 A prefix argument determines which bookmarks to highlight:
  none    - Current buffer, all bookmarks.
@@ -1002,50 +1007,50 @@ Non-interactively, ALIST is the alist of bookmarks to highlight.
  It must be provided: if nil then do not highlight any bookmarks.
 Non-nil optional args used when called from Lisp:
  OVERLAYS-SYMBOLS is a list whose possible elements are
-  `bmkp-autonamed-overlays' and `bmkp-non-autonamed-overlays'.
+  `bmkx-autonamed-overlays' and `bmkx-non-autonamed-overlays'.
   These name the kinds of highlighting overlays to highlight.
   An empty list is the same as a list with both symbols.
  MSGP means echo an action summary."
   (interactive
-   (list (cond ((not current-prefix-arg)     (bmkp-this-buffer-alist-only))
+   (list (cond ((not current-prefix-arg)     (bmkx-this-buffer-alist-only))
                ((consp current-prefix-arg)   (if (> (prefix-numeric-value current-prefix-arg) 4)
-                                                 bmkp-nav-alist
+                                                 bmkx-nav-alist
                                                (unless (y-or-n-p
                                                         "Confirm highlighting bookmarks in ALL buffers ")
                                                  (error "Canceled highlighting"))
-                                               (bmkp-specific-buffers-alist-only
+                                               (bmkx-specific-buffers-alist-only
                                                 (mapcar #'buffer-name (buffer-list)))))
-               ((> current-prefix-arg 0)     (bmkp-autonamed-this-buffer-alist-only))
-               ((< current-prefix-arg 0)     (bmkp-remove-if #'bmkp-autonamed-bookmark-p
-                                                             (bmkp-this-buffer-alist-only)))
-               ((= current-prefix-arg 0)     (bmkp-this-buffer-lighted-alist-only)))
+               ((> current-prefix-arg 0)     (bmkx-autonamed-this-buffer-alist-only))
+               ((< current-prefix-arg 0)     (bmkx-remove-if #'bmkx-autonamed-bookmark-p
+                                                             (bmkx-this-buffer-alist-only)))
+               ((= current-prefix-arg 0)     (bmkx-this-buffer-lighted-alist-only)))
          (cond ((or (not current-prefix-arg)  (consp current-prefix-arg))
-                '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays))
-               ((natnump current-prefix-arg) '(bmkp-autonamed-overlays))
-               (current-prefix-arg           '(bmkp-non-autonamed-overlays)))
+                '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays))
+               ((natnump current-prefix-arg) '(bmkx-autonamed-overlays))
+               (current-prefix-arg           '(bmkx-non-autonamed-overlays)))
          'MSG))
-  (unless overlays-symbols (setq overlays-symbols  '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays)))
-  (let ((bmkp-use-region  nil)          ; Inhibit region handling.
+  (unless overlays-symbols (setq overlays-symbols  '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays)))
+  (let ((bmkx-use-region  nil)          ; Inhibit region handling.
         (total            0)
         (nb-auto          0)
         (nb-non-auto      0)
         (new-auto         0)
         (new-non-auto     0)
-        (nb-lit           (bmkp-number-lighted))
+        (nb-lit           (bmkx-number-lighted))
         bmk bmk-name autonamedp face style pos buf bmk-ov passes-when-p)
-    (catch 'bmkp-light-bookmarks
+    (catch 'bmkx-light-bookmarks
       (dolist (bookmark  alist)
-        (setq bmk            (bmkp-get-bookmark bookmark 'NOERROR) ; Should be a no-op.
-              bmk-name       (and bmk  (bmkp-bookmark-name-from-record bmk))
-              autonamedp     (and bmk  (bmkp-autonamed-bookmark-p bmk-name))
-              face           (and bmk  (bmkp-light-face bmk))
-              style          (and bmk  (bmkp-light-style bmk))
-              bmk-ov         (bmkp-overlay-of-bookmark bmk)
+        (setq bmk            (bmkx-get-bookmark bookmark 'NOERROR) ; Should be a no-op.
+              bmk-name       (and bmk  (bmkx-bookmark-name-from-record bmk))
+              autonamedp     (and bmk  (bmkx-autonamed-bookmark-p bmk-name))
+              face           (and bmk  (bmkx-light-face bmk))
+              style          (and bmk  (bmkx-light-style bmk))
+              bmk-ov         (bmkx-overlay-of-bookmark bmk)
               passes-when-p  (and bmk  (or bmk-ov ; Always highlight if already highlighted.
-                                           (bmkp-light-when bmk))))
+                                           (bmkx-light-when bmk))))
         (when (and bmk  passes-when-p)  ; Skip bad bookmark and respect `:when' (unless highlighted).
           (setq pos  (bookmark-get-position bmk)
-                buf  (bmkp-get-buffer-name bmk))
+                buf  (bmkx-get-buffer-name bmk))
           (save-excursion
             ;; An alternative here would be to call the handler and let it do the highlighting.
             ;; In that case, we would need at least to bind the display function to nil while
@@ -1054,7 +1059,7 @@ Non-nil optional args used when called from Lisp:
             ;; Calling the handler would be good for some cases, such as Info, where the
             ;; highlighting is not really specific to the buffer but to a narrowed part of it.
             ;;
-            ;; (let ((bmkp-jump-display-function  nil)) (bmkp-handle-bookmark bmk))
+            ;; (let ((bmkx-jump-display-function  nil)) (bmkx-handle-bookmark bmk))
             ;;
             ;; But calling the handler is in general the wrong thing.  We don't want highlighting
             ;; all Dired bookmarks in a given directory to also do all the file marking and
@@ -1064,24 +1069,24 @@ Non-nil optional args used when called from Lisp:
                                      (current-buffer))
               (when (and pos  (< pos (point-max)))
                 (dolist (ov-symb  overlays-symbols)
-                  (when (or (and (eq 'bmkp-autonamed-overlays     ov-symb)  autonamedp)
-                            (and (eq 'bmkp-non-autonamed-overlays ov-symb)  (not autonamedp)))
-                    (let ((ov  (bmkp-make/move-overlay-of-style style pos autonamedp bmk bmk-ov)))
+                  (when (or (and (eq 'bmkx-autonamed-overlays     ov-symb)  autonamedp)
+                            (and (eq 'bmkx-non-autonamed-overlays ov-symb)  (not autonamedp)))
+                    (let ((ov  (bmkx-make/move-overlay-of-style style pos autonamedp bmk bmk-ov)))
                       (when ov          ; nil means `none' style.
                         (add-to-list ov-symb ov)
-                        (when (eq 'bmkp-autonamed-overlays ov-symb)
+                        (when (eq 'bmkx-autonamed-overlays ov-symb)
                           (unless bmk-ov (setq new-auto  (1+ new-auto)))
                           (setq nb-auto  (1+ nb-auto)))
-                        (when (eq 'bmkp-non-autonamed-overlays ov-symb)
+                        (when (eq 'bmkx-non-autonamed-overlays ov-symb)
                           (unless bmk-ov (setq new-non-auto  (1+ new-non-auto)))
                           (setq nb-non-auto  (1+ nb-non-auto)))
-                        (when (and (not bmk-ov)  (> (setq nb-lit  (1+ nb-lit)) bmkp-light-threshold))
+                        (when (and (not bmk-ov)  (> (setq nb-lit  (1+ nb-lit)) bmkx-light-threshold))
                           (setq nb-lit  (1- nb-lit))
-                          (throw 'bmkp-light-bookmarks bmk))
+                          (throw 'bmkx-light-bookmarks bmk))
                         (setq total  (1+ total))
                         (overlay-put ov 'priority ; > ediff's 100+, < isearch-overlay's 1001.
-                                     (or (cdr (assoc ov-symb bmkp-light-priorities))
-                                         (apply #'min (mapcar #'cdr bmkp-light-priorities))))
+                                     (or (cdr (assoc ov-symb bmkx-light-priorities))
+                                         (apply #'min (mapcar #'cdr bmkx-light-priorities))))
                         (unless (memq style '(lfringe rfringe none)) (overlay-put ov 'face face))
                         (overlay-put ov 'evaporate  t)
                         (overlay-put ov 'category  'bookmark-plus)
@@ -1094,250 +1099,250 @@ Non-nil optional args used when called from Lisp:
                           "[This buffer]")
                         new-auto new-non-auto nb-auto nb-non-auto total))))
 
-;;;###autoload (autoload 'bmkp-light-navlist-bookmarks "bookmark+")
-(defun bmkp-light-navlist-bookmarks (&optional overlays-symbols msgp) ; Not bound
+;;;###autoload (autoload 'bmkx-light-navlist-bookmarks "bookmark-x")
+(defun bmkx-light-navlist-bookmarks (&optional overlays-symbols msgp) ; Not bound
   "Highlight bookmarks in the navigation list.
 No prefix arg:   all bookmarks.
 Prefix arg >= 0: autonamed bookmarks only.
 Prefix arg < 0:  non-autonamed bookmarks only.
 
-\(See `bmkp-light-bookmarks' for arguments when called from Lisp.)"
+\(See `bmkx-light-bookmarks' for arguments when called from Lisp.)"
   (interactive
-   (list (cond ((not current-prefix-arg) '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays))
-               ((natnump (prefix-numeric-value current-prefix-arg)) '(bmkp-autonamed-overlays))
-               (current-prefix-arg '(bmkp-non-autonamed-overlays)))
+   (list (cond ((not current-prefix-arg) '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays))
+               ((natnump (prefix-numeric-value current-prefix-arg)) '(bmkx-autonamed-overlays))
+               (current-prefix-arg '(bmkx-non-autonamed-overlays)))
          'MSG))
-  (bmkp-light-bookmarks bmkp-nav-alist overlays-symbols msgp))
+  (bmkx-light-bookmarks bmkx-nav-alist overlays-symbols msgp))
 
-;;;###autoload (autoload 'bmkp-light-this-buffer "bookmark+")
-(defun bmkp-light-this-buffer (&optional overlays-symbols msgp) ; Not bound
+;;;###autoload (autoload 'bmkx-light-this-buffer "bookmark-x")
+(defun bmkx-light-this-buffer (&optional overlays-symbols msgp) ; Not bound
   "Highlight bookmarks in the current buffer.
 No prefix arg:   all bookmarks.
 Prefix arg >= 0: autonamed bookmarks only.
 Prefix arg < 0:  non-autonamed bookmarks only.
 
-\(See `bmkp-light-bookmarks' for arguments when called from Lisp.)"
+\(See `bmkx-light-bookmarks' for arguments when called from Lisp.)"
   (interactive
-   (list (cond ((not current-prefix-arg) '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays))
-               ((natnump (prefix-numeric-value current-prefix-arg)) '(bmkp-autonamed-overlays))
-               (current-prefix-arg '(bmkp-non-autonamed-overlays)))
+   (list (cond ((not current-prefix-arg) '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays))
+               ((natnump (prefix-numeric-value current-prefix-arg)) '(bmkx-autonamed-overlays))
+               (current-prefix-arg '(bmkx-non-autonamed-overlays)))
          'MSG))
-  (bmkp-light-bookmarks (bmkp-this-buffer-alist-only) overlays-symbols msgp))
+  (bmkx-light-bookmarks (bmkx-this-buffer-alist-only) overlays-symbols msgp))
 
-;;;###autoload (autoload 'bmkp-light-bookmarks-in-region "bookmark+")
-(defun bmkp-light-bookmarks-in-region (start end &optional overlays-symbols msgp) ; Not bound
+;;;###autoload (autoload 'bmkx-light-bookmarks-in-region "bookmark-x")
+(defun bmkx-light-bookmarks-in-region (start end &optional overlays-symbols msgp) ; Not bound
   "Highlight bookmarks in the region.
 No prefix arg:   all bookmarks.
 Prefix arg >= 0: autonamed bookmarks only.
 Prefix arg < 0:  non-autonamed bookmarks only.
 
-\(See `bmkp-light-bookmarks' for arguments when called from Lisp.)"
+\(See `bmkx-light-bookmarks' for arguments when called from Lisp.)"
   (interactive
    (list (region-beginning)
          (region-end)
-         (cond ((not current-prefix-arg) '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays))
-               ((natnump (prefix-numeric-value current-prefix-arg)) '(bmkp-autonamed-overlays))
-               (current-prefix-arg '(bmkp-non-autonamed-overlays)))
+         (cond ((not current-prefix-arg) '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays))
+               ((natnump (prefix-numeric-value current-prefix-arg)) '(bmkx-autonamed-overlays))
+               (current-prefix-arg '(bmkx-non-autonamed-overlays)))
          'MSG))
-  (bmkp-light-bookmarks (bmkp-remove-if-not (lambda (bmk) (let ((pos  (bookmark-get-position bmk)))
+  (bmkx-light-bookmarks (bmkx-remove-if-not (lambda (bmk) (let ((pos  (bookmark-get-position bmk)))
                                                        (and (>= pos start)  (<= pos end))))
-                                            (bmkp-this-buffer-alist-only))
+                                            (bmkx-this-buffer-alist-only))
                         overlays-symbols msgp))
 
-;;;###autoload (autoload 'bmkp-light-autonamed-this-buffer "bookmark+")
-(defun bmkp-light-autonamed-this-buffer (&optional msgp) ; Not bound
+;;;###autoload (autoload 'bmkx-light-autonamed-this-buffer "bookmark-x")
+(defun bmkx-light-autonamed-this-buffer (&optional msgp) ; Not bound
   "Highlight all autonamed bookmarks.
-When called from Lisp non-nil MSGP is passed to `bmkp-light-bookmarks'."
+When called from Lisp non-nil MSGP is passed to `bmkx-light-bookmarks'."
   (interactive (list 'MSG))
-  (bmkp-light-bookmarks (bmkp-autonamed-this-buffer-alist-only) '(bmkp-autonamed-overlays) msgp))
+  (bmkx-light-bookmarks (bmkx-autonamed-this-buffer-alist-only) '(bmkx-autonamed-overlays) msgp))
 
-;;;###autoload (autoload 'bmkp-light-non-autonamed-this-buffer "bookmark+")
-(defun bmkp-light-non-autonamed-this-buffer (&optional msgp) ; Not bound
+;;;###autoload (autoload 'bmkx-light-non-autonamed-this-buffer "bookmark-x")
+(defun bmkx-light-non-autonamed-this-buffer (&optional msgp) ; Not bound
   "Highlight all non-autonamed bookmarks.
-When called from Lisp non-nil MSGP is passed to `bmkp-light-bookmarks'."
+When called from Lisp non-nil MSGP is passed to `bmkx-light-bookmarks'."
   (interactive (list 'MSG))
-  (bmkp-light-bookmarks (bmkp-remove-if #'bmkp-autonamed-bookmark-p (bmkp-this-buffer-alist-only))
-                        '(bmkp-non-autonamed-overlays) msgp))
+  (bmkx-light-bookmarks (bmkx-remove-if #'bmkx-autonamed-bookmark-p (bmkx-this-buffer-alist-only))
+                        '(bmkx-non-autonamed-overlays) msgp))
 
-;;;###autoload (autoload 'bmkp-cycle-lighted-this-buffer "bookmark+")
-(defun bmkp-cycle-lighted-this-buffer (increment &optional other-window startoverp) ; Not bound
+;;;###autoload (autoload 'bmkx-cycle-lighted-this-buffer "bookmark-x")
+(defun bmkx-cycle-lighted-this-buffer (increment &optional other-window startoverp) ; Not bound
   "Cycle through highlighted bookmarks in this buffer by INCREMENT.
 Positive INCREMENT cycles forward.  Negative INCREMENT cycles backward.
 Interactively, the prefix arg determines INCREMENT:
  Plain `C-u': 1
  otherwise: the numeric prefix arg value
 
-To change the sort order, you can filter the `*Bmkp List*' to show
+To change the sort order, you can filter the `*Bmkx List*' to show
 only highlighted bookmarks for this buffer, sort the bookmarks there,
-and use `\\[bmkp-choose-navlist-from-bookmark-list]', choosing `CURRENT *Bmkp List*' as the
+and use `\\[bmkx-choose-navlist-from-bookmark-list]', choosing `CURRENT *Bmkx List*' as the
 navigation list.
 
 Then you can cycle the bookmarks using `bookmark-cycle'
-\(`\\[bmkp-next-bookmark-repeat]' etc.), instead of `bookmark-cycle-lighted-this-buffer'.
+\(`\\[bmkx-next-bookmark-repeat]' etc.), instead of `bookmark-cycle-lighted-this-buffer'.
 
 In Lisp code:
  Non-nil OTHER-WINDOW means jump to the bookmark in another window.
- Non-nil STARTOVERP means reset `bmkp-current-nav-bookmark' to the
+ Non-nil STARTOVERP means reset `bmkx-current-nav-bookmark' to the
   first bookmark in the navlist."
   (interactive (let ((startovr  (consp current-prefix-arg)))
                  (list (if startovr 1 (prefix-numeric-value current-prefix-arg)) nil startovr)))
-  (bmkp-maybe-load-default-file)
-  (let ((bmkp-sort-comparer  bmkp-this-file/buffer-cycle-sort-comparer))
-    (setq bmkp-nav-alist  (bmkp-sort-omit (bmkp-this-buffer-lighted-alist-only))))
-  (unless bmkp-nav-alist (error "No lighted bookmarks for cycling"))
-  (unless (and bmkp-current-nav-bookmark
+  (bmkx-maybe-load-default-file)
+  (let ((bmkx-sort-comparer  bmkx-this-file/buffer-cycle-sort-comparer))
+    (setq bmkx-nav-alist  (bmkx-sort-omit (bmkx-this-buffer-lighted-alist-only))))
+  (unless bmkx-nav-alist (error "No lighted bookmarks for cycling"))
+  (unless (and bmkx-current-nav-bookmark
                (not startoverp)
-               (bmkp-get-bookmark bmkp-current-nav-bookmark 'NOERROR)
-               (bmkp-this-buffer-p bmkp-current-nav-bookmark)) ; Exclude desktops etc.
-    (setq bmkp-current-nav-bookmark  (car bmkp-nav-alist)))
-  (if (bmkp-cycle-1 increment other-window startoverp)
-      (unless (or (bmkp-sequence-bookmark-p bmkp-current-nav-bookmark)
-                  (bmkp-function-bookmark-p bmkp-current-nav-bookmark))
-        (message "Position: %9d, Bookmark: `%s'" (point) (bmkp-bookmark-name-from-record
-                                                          bmkp-current-nav-bookmark)))
-    (message "Invalid bookmark: `%s'" (bmkp-bookmark-name-from-record bmkp-current-nav-bookmark))))
+               (bmkx-get-bookmark bmkx-current-nav-bookmark 'NOERROR)
+               (bmkx-this-buffer-p bmkx-current-nav-bookmark)) ; Exclude desktops etc.
+    (setq bmkx-current-nav-bookmark  (car bmkx-nav-alist)))
+  (if (bmkx-cycle-1 increment other-window startoverp)
+      (unless (or (bmkx-sequence-bookmark-p bmkx-current-nav-bookmark)
+                  (bmkx-function-bookmark-p bmkx-current-nav-bookmark))
+        (message "Position: %9d, Bookmark: `%s'" (point) (bmkx-bookmark-name-from-record
+                                                          bmkx-current-nav-bookmark)))
+    (message "Invalid bookmark: `%s'" (bmkx-bookmark-name-from-record bmkx-current-nav-bookmark))))
 
-;;;###autoload (autoload 'bmkp-cycle-lighted-this-buffer-other-window "bookmark+")
-(defun bmkp-cycle-lighted-this-buffer-other-window (increment &optional startoverp) ; Not bound
-  "Same as `bmkp-cycle-lighted-this-buffer' but uses another window."
+;;;###autoload (autoload 'bmkx-cycle-lighted-this-buffer-other-window "bookmark-x")
+(defun bmkx-cycle-lighted-this-buffer-other-window (increment &optional startoverp) ; Not bound
+  "Same as `bmkx-cycle-lighted-this-buffer' but uses another window."
   (interactive (let ((startovr  (consp current-prefix-arg)))
                  (list (if startovr 1 (prefix-numeric-value current-prefix-arg)) startovr)))
-  (bmkp-cycle-lighted-this-buffer increment 'OTHER-WINDOW startoverp))
+  (bmkx-cycle-lighted-this-buffer increment 'OTHER-WINDOW startoverp))
 
-;;;###autoload (autoload 'bmkp-next-lighted-this-buffer "bookmark+")
-(defun bmkp-next-lighted-this-buffer (n &optional startoverp) ; Repeatable key (e.g. `S-f2'), not bound
+;;;###autoload (autoload 'bmkx-next-lighted-this-buffer "bookmark-x")
+(defun bmkx-next-lighted-this-buffer (n &optional startoverp) ; Repeatable key (e.g. `S-f2'), not bound
   "Jump to the Nth-next highlighted bookmark in the current buffer.
 N defaults to 1, meaning the next one.
 Plain `C-u' means start over at the first one.
-See also `bmkp-cycle-lighted-this-buffer'."
+See also `bmkx-cycle-lighted-this-buffer'."
   (interactive (let ((startovr  (consp current-prefix-arg)))
                  (list (if startovr 1 (prefix-numeric-value current-prefix-arg)) startovr)))
-  (bmkp-cycle-lighted-this-buffer n nil startoverp))
+  (bmkx-cycle-lighted-this-buffer n nil startoverp))
 
-;;;###autoload (autoload 'bmkp-previous-lighted-this-buffer "bookmark+")
-(defun bmkp-previous-lighted-this-buffer (n &optional startoverp) ; Repeatable key (e.g. `f2'), not bound
+;;;###autoload (autoload 'bmkx-previous-lighted-this-buffer "bookmark-x")
+(defun bmkx-previous-lighted-this-buffer (n &optional startoverp) ; Repeatable key (e.g. `f2'), not bound
   "Jump to the Nth-previous highlighted bookmark in the current buffer.
-See `bmkp-next-lighted-this-buffer'."
+See `bmkx-next-lighted-this-buffer'."
   (interactive (let ((startovr  (consp current-prefix-arg)))
                  (list (if startovr 1 (prefix-numeric-value current-prefix-arg)) startovr)))
-  (bmkp-cycle-lighted-this-buffer (- n) nil startoverp))
+  (bmkx-cycle-lighted-this-buffer (- n) nil startoverp))
 
-;;;###autoload (autoload 'bmkp-next-lighted-this-buffer-repeat "bookmark+")
-(defun bmkp-next-lighted-this-buffer-repeat () ; `C-x x C-down'
+;;;###autoload (autoload 'bmkx-next-lighted-this-buffer-repeat "bookmark-x")
+(defun bmkx-next-lighted-this-buffer-repeat () ; `C-x x C-down'
   "Jump to the next highlighted bookmark in the current buffer.
-This is a repeatable version of `bmkp-next-bookmark-this-buffer'."
+This is a repeatable version of `bmkx-next-bookmark-this-buffer'."
   (interactive)
   (require 'repeat)
-  (bmkp-repeat-command 'bmkp-next-lighted-this-buffer))
+  (bmkx-repeat-command 'bmkx-next-lighted-this-buffer))
 
-;;;###autoload (autoload 'bmkp-previous-lighted-this-buffer-repeat "bookmark+")
-(defun bmkp-previous-lighted-this-buffer-repeat () ; `C-x x C-up'
+;;;###autoload (autoload 'bmkx-previous-lighted-this-buffer-repeat "bookmark-x")
+(defun bmkx-previous-lighted-this-buffer-repeat () ; `C-x x C-up'
   "Jump to the previous highlighted bookmark in the current buffer.
-See `bmkp-next-lighted-this-buffer-repeat'."
+See `bmkx-next-lighted-this-buffer-repeat'."
   (interactive)
   (require 'repeat)
-  (bmkp-repeat-command 'bmkp-previous-lighted-this-buffer))
+  (bmkx-repeat-command 'bmkx-previous-lighted-this-buffer))
 
 ;; Keep the alias for a while, in case someone has it referenced in a state file.
-(defalias 'bmkp-describe-bookmark-lighted-here 'bmkp-describe-bookmark-lighted-on-this-line)
-(bmkp-make-obsolete 'bmkp-describe-bookmark-lighted-here 'bmkp-describe-bookmark-lighted-on-this-line
+(defalias 'bmkx-describe-bookmark-lighted-here 'bmkx-describe-bookmark-lighted-on-this-line)
+(bmkx-make-obsolete 'bmkx-describe-bookmark-lighted-here 'bmkx-describe-bookmark-lighted-on-this-line
                     "2022-11-12")
 
-;;;###autoload (autoload 'bmkp-describe-bookmark-lighted-here "bookmark+")
-;;;###autoload (autoload 'bmkp-describe-bookmark-lighted-on-this-line "bookmark+")
-(defun bmkp-describe-bookmark-lighted-on-this-line (&optional position defn) ; `C-x x ?'
+;;;###autoload (autoload 'bmkx-describe-bookmark-lighted-here "bookmark-x")
+;;;###autoload (autoload 'bmkx-describe-bookmark-lighted-on-this-line "bookmark-x")
+(defun bmkx-describe-bookmark-lighted-on-this-line (&optional position defn) ; `C-x x ?'
   "Describe a highlighted bookmark on this line, preferably one at point.
 Other than preferring a bookmark at point, if more than one
 highlighted bookmark is present then which one is described is
 undefined.  When multiple highlighted bookmarks are present you might
-want to use `\\[bmkp-bookmarks-lighted-at-point]' to see the names of all of the bookmarks at
-point, and then use `\\[bmkp-describe-bookmark]' to describe one of them.
+want to use `\\[bmkx-bookmarks-lighted-at-point]' to see the names of all of the bookmarks at
+point, and then use `\\[bmkx-describe-bookmark]' to describe one of them.
 
 When called from Lisp:
  Use POSITION, not point.
  DEFN corresponds to the prefix arg: non-nil means show the internal
   definition of the bookmark."
   (interactive (list (point) current-prefix-arg))
-  (let ((bmk  (or (bmkp-a-bookmark-lighted-at-pos position 'FULL)
-                  (bmkp-a-bookmark-lighted-on-this-line 'FULL))))
+  (let ((bmk  (or (bmkx-a-bookmark-lighted-at-pos position 'FULL)
+                  (bmkx-a-bookmark-lighted-on-this-line 'FULL))))
     (unless bmk (error "No highlighted bookmark on this line"))
-    (bmkp-describe-bookmark bmk defn)))
+    (bmkx-describe-bookmark bmk defn)))
 
 
 ;;(@* "Other Functions")
 ;;  *** Other Functions ***
 
-(defun bmkp-light-face (bookmark)
+(defun bmkx-light-face (bookmark)
   "Return the face to use to highlight BOOKMARK.
 BOOKMARK is a bookmark name or a bookmark record.
 Returns:
  nil if BOOKMARK is not a valid bookmark;
  the `:face', if any, specified by BOOKMARK's `lighting' entry;
- `bmkp-light-autonamed-region' if an autonamed region bookmark;
- `bmkp-light-non-autonamed-region' if a non-autonamed region bookmark;
- `bmkp-light-autonamed' if an autonamed non-region bookmark;
- `bmkp-light-non-autonamed' otherwise."
-  (setq bookmark  (bmkp-get-bookmark bookmark 'NOERROR))
-  (or (bmkp-lighting-face bookmark)
-      (and bookmark  (if (bmkp-region-bookmark-p bookmark)
-                         (if (bmkp-autonamed-bookmark-p bookmark)
-                             'bmkp-light-autonamed-region
-                           'bmkp-light-non-autonamed-region)
-                       (if (bmkp-autonamed-bookmark-p bookmark)
-                           'bmkp-light-autonamed
-                         'bmkp-light-non-autonamed)))))
+ `bmkx-light-autonamed-region' if an autonamed region bookmark;
+ `bmkx-light-non-autonamed-region' if a non-autonamed region bookmark;
+ `bmkx-light-autonamed' if an autonamed non-region bookmark;
+ `bmkx-light-non-autonamed' otherwise."
+  (setq bookmark  (bmkx-get-bookmark bookmark 'NOERROR))
+  (or (bmkx-lighting-face bookmark)
+      (and bookmark  (if (bmkx-region-bookmark-p bookmark)
+                         (if (bmkx-autonamed-bookmark-p bookmark)
+                             'bmkx-light-autonamed-region
+                           'bmkx-light-non-autonamed-region)
+                       (if (bmkx-autonamed-bookmark-p bookmark)
+                           'bmkx-light-autonamed
+                         'bmkx-light-non-autonamed)))))
 
-(defun bmkp-light-style (bookmark)
+(defun bmkx-light-style (bookmark)
   "Return the style to use to highlight BOOKMARK.
 BOOKMARK is a bookmark name or a bookmark record.
 Returns:
  * nil if BOOKMARK is not a valid bookmark;
  * the `:style', if any, specified by BOOKMARK's `lighting' entry;
- * the value of `bmkp-light-style-autonamed-region' if autonamed and
+ * the value of `bmkx-light-style-autonamed-region' if autonamed and
      recording a region
- * the value of `bmkp-light-style-non-autonamed-region' if autonamed
+ * the value of `bmkx-light-style-non-autonamed-region' if autonamed
      and recording a region
- * the value of `bmkp-light-style-autonamed' if autonamed and not
+ * the value of `bmkx-light-style-autonamed' if autonamed and not
      recording a region
- * the value of `bmkp-light-style-non-autonamed-region' if autonamed
+ * the value of `bmkx-light-style-non-autonamed-region' if autonamed
      and not recording a region"
-  (setq bookmark  (bmkp-get-bookmark bookmark 'NOERROR))
-  (or (bmkp-lighting-style bookmark)
-      (and bookmark  (if (bmkp-region-bookmark-p bookmark)
-                         (if (bmkp-autonamed-bookmark-p bookmark)
-                             bmkp-light-style-autonamed-region
-                           bmkp-light-style-non-autonamed-region)
-                       (if (bmkp-autonamed-bookmark-p bookmark)
-                           bmkp-light-style-autonamed
-                         bmkp-light-style-non-autonamed)))))
+  (setq bookmark  (bmkx-get-bookmark bookmark 'NOERROR))
+  (or (bmkx-lighting-style bookmark)
+      (and bookmark  (if (bmkx-region-bookmark-p bookmark)
+                         (if (bmkx-autonamed-bookmark-p bookmark)
+                             bmkx-light-style-autonamed-region
+                           bmkx-light-style-non-autonamed-region)
+                       (if (bmkx-autonamed-bookmark-p bookmark)
+                           bmkx-light-style-autonamed
+                         bmkx-light-style-non-autonamed)))))
 
-(defun bmkp-light-when (bookmark)
+(defun bmkx-light-when (bookmark)
   "Return non-nil if BOOKMARK should be highlighted.
 BOOKMARK's  `:when' condition is used to determine this.
 BOOKMARK is a bookmark name or a bookmark record."
-  (setq bookmark  (bmkp-get-bookmark bookmark 'NOERROR))
-  (and bookmark  (not (eq :no-light (eval (bmkp-lighting-when bookmark))))))
+  (setq bookmark  (bmkx-get-bookmark bookmark 'NOERROR))
+  (and bookmark  (not (eq :no-light (eval (bmkx-lighting-when bookmark))))))
 
-(defun bmkp-lighting-face (bookmark)
+(defun bmkx-lighting-face (bookmark)
   "`:face' specified by BOOKMARK's `lighting', or nil if no `:face' entry.
 BOOKMARK is a bookmark name or a bookmark record.
 
 The `:face' entry is the face (a symbol) used to highlight BOOKMARK.
 Alternatively, it can be `auto' or nil, which both mean the same as
 having no `:face' entry: do not override automatic face choice."
-  (bmkp-lighting-attribute bookmark :face))
+  (bmkx-lighting-attribute bookmark :face))
 
-(defun bmkp-lighting-style (bookmark)
+(defun bmkx-lighting-style (bookmark)
   "`:style' specified by BOOKMARK's `lighting', or nil if no `:style' entry.
 BOOKMARK is a bookmark name or a bookmark record.
 
 The `:style' entry is the style used to highlight BOOKMARK.
-It is a value acceptable for `bmkp-light-style-non-autonamed'.
+It is a value acceptable for `bmkx-light-style-non-autonamed'.
 Alternatively, it can be `auto' or nil, which both mean the same as
 having no `:style' entry: do not override automatic style choice."
-  (bmkp-lighting-attribute bookmark :style))
+  (bmkx-lighting-attribute bookmark :style))
 
-(defun bmkp-lighting-when (bookmark)
+(defun bmkx-lighting-when (bookmark)
   "`:when' specified by BOOKMARK's `lighting', or nil if no `:when' entry.
 BOOKMARK is a bookmark name or a bookmark record.
 
@@ -1345,39 +1350,39 @@ The `:when' entry is a sexp that is eval'd when you try to highlight
 BOOKMARK.  If the result is the symbol `:no-light', then do not
 highlight.  Otherwise, highlight.  (Note that highlighting happens if
 the value is nil or there is no `:when' entry.)"
-  (bmkp-lighting-attribute bookmark :when))
+  (bmkx-lighting-attribute bookmark :when))
 
-(defun bmkp-lighting-attribute (bookmark attribute)
+(defun bmkx-lighting-attribute (bookmark attribute)
   "ATTRIBUTE specified by BOOKMARK's `lighting', or nil if no such attribute.
 BOOKMARK is a bookmark name or a bookmark record.
 ATTRIBUTE is `:style' or `:face'."
-  (setq bookmark  (bmkp-get-bookmark bookmark 'NOERROR))
-  (let* ((lighting  (and bookmark  (bmkp-get-lighting bookmark)))
+  (setq bookmark  (bmkx-get-bookmark bookmark 'NOERROR))
+  (let* ((lighting  (and bookmark  (bmkx-get-lighting bookmark)))
          (attr      (and (consp lighting)  (plist-get lighting attribute))))
     (when (and (eq 'auto attr)  (not (eq :when attribute)))
       (setq attr  nil))
     attr))
 
-(defun bmkp-get-lighting (bookmark)
+(defun bmkx-get-lighting (bookmark)
   "Return the `lighting' property list for BOOKMARK.
 This is the cdr of the `lighting' entry (i.e. the rest of the entry,
   with `lighting' removed).
 BOOKMARK is a bookmark name or a bookmark record."
   (bookmark-prop-get bookmark 'lighting))
 
-(defun bmkp-bookmark-overlay-p (overlay)
+(defun bmkx-bookmark-overlay-p (overlay)
   "Return non-nil if OVERLAY is a bookmark overlay.
 The non-nil value returned is in fact the full bookmark."
   (and (overlayp overlay)  (overlay-get overlay 'bookmark)))
 
-(defun bmkp-default-lighted ()
+(defun bmkx-default-lighted ()
   "Return a highlighted bookmark at point or on this line, or nil if none.
 If there is at least one highlighted bookmark at point, return a list
 of all such."
-  (or (bmkp-bookmarks-lighted-at-point)
-      (bmkp-a-bookmark-lighted-on-this-line)))
+  (or (bmkx-bookmarks-lighted-at-point)
+      (bmkx-a-bookmark-lighted-on-this-line)))
 
-(defun bmkp-a-bookmark-lighted-on-this-line (&optional fullp)
+(defun bmkx-a-bookmark-lighted-on-this-line (&optional fullp)
   "Return a bookmark highlighted on the current line or nil if none.
 The search for a highlighted bookmark moves left to bol from point,
  then right to eol from point.
@@ -1386,42 +1391,42 @@ Return the bookmark name or, if FULLP non-nil, the full bookmark data."
         (bol  (1+ (line-beginning-position)))
         (eol  (1- (line-end-position)))
         bmk)
-    (catch 'bmkp-a-bookmark-lighted-on-this-line
+    (catch 'bmkx-a-bookmark-lighted-on-this-line
       (while (>= pos bol)
-        (when (setq bmk  (bmkp-a-bookmark-lighted-at-pos pos))
-          (throw 'bmkp-a-bookmark-lighted-on-this-line bmk))
+        (when (setq bmk  (bmkx-a-bookmark-lighted-at-pos pos))
+          (throw 'bmkx-a-bookmark-lighted-on-this-line bmk))
         (setq pos  (1- pos)))
       (while (<= pos eol)
-        (when (setq bmk  (bmkp-a-bookmark-lighted-at-pos pos))
-          (throw 'bmkp-a-bookmark-lighted-on-this-line bmk))
+        (when (setq bmk  (bmkx-a-bookmark-lighted-at-pos pos))
+          (throw 'bmkx-a-bookmark-lighted-on-this-line bmk))
         (setq pos  (1+ pos)))
       nil)
-    (when (and bmk  fullp)  (setq bmk  (bmkp-get-bookmark bmk)))
+    (when (and bmk  fullp)  (setq bmk  (bmkx-get-bookmark bmk)))
     bmk))
 
-(defun bmkp-a-bookmark-lighted-at-pos (&optional position fullp)
+(defun bmkx-a-bookmark-lighted-at-pos (&optional position fullp)
   "Return a bookmark (in current bookmark list) highlighted at POSITION.
 Return nil if there is none such.
 POSITION defaults to point.
 Return the bookmark name or, if FULLP non-nil, the full bookmark data."
   (unless position (setq position  (point)))
   (let (bmk)
-    (catch 'bmkp-a-bookmark-lighted-at-pos
+    (catch 'bmkx-a-bookmark-lighted-at-pos
       (dolist (ov  (overlays-at position))
         (when (setq bmk  (overlay-get ov 'bookmark))
-          (throw 'bmkp-a-bookmark-lighted-at-pos bmk)))
+          (throw 'bmkx-a-bookmark-lighted-at-pos bmk)))
       nil)
-    (let ((b-in-list  (bmkp-get-bookmark-in-alist bmk 'NOERROR)))
+    (let ((b-in-list  (bmkx-get-bookmark-in-alist bmk 'NOERROR)))
       (and b-in-list                    ; Must be in current bookmark list.
-           (if fullp b-in-list (bmkp-bookmark-name-from-record bmk))))))
+           (if fullp b-in-list (bmkx-bookmark-name-from-record bmk))))))
 
-(defun bmkp-read-set-lighting-args (&optional default-style default-face default-when)
+(defun bmkx-read-set-lighting-args (&optional default-style default-face default-when)
   "Read args STYLE, FACE, and WHEN for commands that set `lighting' prop.
 Optional args are the default values (strings) for reading new values."
   (let* ((style       (cdr (assoc (let ((completion-ignore-case  t))
-                                    (completing-read "Style: " bmkp-light-styles-alist
+                                    (completing-read "Style: " bmkx-light-styles-alist
                                                      nil t nil nil default-style))
-                                  bmkp-light-styles-alist)))
+                                  bmkx-light-styles-alist)))
          (face        (and (not (member style '(lfringe rfringe none))) ; No face possible for these.
                            (y-or-n-p "Change face? ") ; Allow nil, for `auto'.
                            (condition-case nil ; Emacs 22+ accepts a default.
@@ -1441,45 +1446,45 @@ Optional args are the default values (strings) for reading new values."
                         (cdr (assoc when when-cands)))))
     (list style face evald)))
 
-(defun bmkp-lighted-alist-only ()
+(defun bmkx-lighted-alist-only ()
   "`bookmark-alist', with only highlighted bookmarks.
 A new list is returned (no side effects)."
-  (bmkp-maybe-load-default-file)
-  (bmkp-remove-if-not (lambda (bmk) (bmkp-lighted-p bmk)) bookmark-alist))
+  (bmkx-maybe-load-default-file)
+  (bmkx-remove-if-not (lambda (bmk) (bmkx-lighted-p bmk)) bookmark-alist))
 
-(defun bmkp-this-buffer-lighted-alist-only ()
+(defun bmkx-this-buffer-lighted-alist-only ()
   "`bookmark-alist', with only highlighted bookmarks for the current buffer.
 A new list is returned (no side effects)."
-  (bmkp-maybe-load-default-file)
-  (bmkp-remove-if-not (lambda (bmk) (and (bmkp-this-buffer-p bmk)  (bmkp-lighted-p bmk)))
+  (bmkx-maybe-load-default-file)
+  (bmkx-remove-if-not (lambda (bmk) (and (bmkx-this-buffer-p bmk)  (bmkx-lighted-p bmk)))
                       bookmark-alist))
 
-(defun bmkp-number-lighted (&optional overlays-symbols)
+(defun bmkx-number-lighted (&optional overlays-symbols)
   "Number of bookmarks highlighted.
-\(See `bmkp-light-bookmarks' for argument when called from Lisp.)"
-  (unless overlays-symbols (setq overlays-symbols  '(bmkp-autonamed-overlays bmkp-non-autonamed-overlays)))
+\(See `bmkx-light-bookmarks' for argument when called from Lisp.)"
+  (unless overlays-symbols (setq overlays-symbols  '(bmkx-autonamed-overlays bmkx-non-autonamed-overlays)))
   (let ((count  0))
     (dolist (ov-symb  overlays-symbols)
       (dolist (ov  (symbol-value ov-symb)) (when (overlay-buffer ov) (setq count  (1+ count)))))
     count))
 
-(defalias 'bmkp-lighted-p 'bmkp-overlay-of-bookmark)
-(defun bmkp-overlay-of-bookmark (bookmark &optional overlays)
+(defalias 'bmkx-lighted-p 'bmkx-overlay-of-bookmark)
+(defun bmkx-overlay-of-bookmark (bookmark &optional overlays)
   "Return the overlay for BOOKMARK in OVERLAYS, or nil if none.
 BOOKMARK is a bookmark name or a bookmark record.
 Optional arg OVERLAYS is the list of overlays to check.
 If nil, check overlays for both autonamed and non-autonamed bookmarks."
-  (setq bookmark  (bmkp-get-bookmark bookmark 'NOERROR))
+  (setq bookmark  (bmkx-get-bookmark bookmark 'NOERROR))
   (and bookmark                         ; Return nil for no such bookmark.
-       (catch 'bmkp-overlay-of-bookmark
+       (catch 'bmkx-overlay-of-bookmark
          (dolist (ov  (if overlays
                           (apply #'append (mapcar #'symbol-value overlays))
-                        (append bmkp-autonamed-overlays bmkp-non-autonamed-overlays)))
+                        (append bmkx-autonamed-overlays bmkx-non-autonamed-overlays)))
            (when (and (overlay-buffer ov)  (eq bookmark (overlay-get ov 'bookmark)))
-             (throw 'bmkp-overlay-of-bookmark ov)))
+             (throw 'bmkx-overlay-of-bookmark ov)))
          nil)))
 
-(defun bmkp-make/move-overlay-of-style (style pos autonamedp bookmark &optional overlay)
+(defun bmkx-make/move-overlay-of-style (style pos autonamedp bookmark &optional overlay)
   "Return a bookmark overlay of STYLE at position POS for BOOKMARK.
 AUTONAMEDP non-nil means the bookmark is autonamed.
 Regardless of STYLE, set `help-echo' to the bookmark description.
@@ -1490,8 +1495,8 @@ If STYLE is `none' then:
   If OVERLAY is non-nil, delete it and return nil."
   (let ((ov  overlay))
     (cl-case style
-      (region        (and (bmkp-region-bookmark-p bookmark)
-                          (let ((end  (bmkp-get-end-position bookmark)))
+      (region        (and (bmkx-region-bookmark-p bookmark)
+                          (let ((end  (bmkx-get-end-position bookmark)))
                             (if (not ov)
                                 (setq ov  (make-overlay pos end nil 'FRONT-ADVANCE))
                               (move-overlay ov pos end)))))
@@ -1507,10 +1512,10 @@ If STYLE is `none' then:
                          (move-overlay ov
                                        (progn (goto-char pos) (line-beginning-position 1))
                                        (progn (goto-char pos) (line-beginning-position 2))))))
-      (lfringe       (setq ov  (bmkp-make/move-fringe 'left  pos autonamedp ov)))
-      (rfringe       (setq ov  (bmkp-make/move-fringe 'right pos autonamedp ov)))
-      (line+lfringe  (setq ov  (bmkp-make/move-fringe 'left  pos autonamedp ov 'LINEP)))
-      (line+rfringe  (setq ov  (bmkp-make/move-fringe 'right pos autonamedp ov 'LINEP)))
+      (lfringe       (setq ov  (bmkx-make/move-fringe 'left  pos autonamedp ov)))
+      (rfringe       (setq ov  (bmkx-make/move-fringe 'right pos autonamedp ov)))
+      (line+lfringe  (setq ov  (bmkx-make/move-fringe 'left  pos autonamedp ov 'LINEP)))
+      (line+rfringe  (setq ov  (bmkx-make/move-fringe 'right pos autonamedp ov 'LINEP)))
       (bol           (if (not ov)
                          (setq ov  (save-excursion (goto-char pos)
                                                    (make-overlay (line-beginning-position)
@@ -1528,13 +1533,13 @@ If STYLE is `none' then:
       (none          (when ov (delete-overlay ov))  (setq ov nil)))
 
     ;; Emacs bug # prevents making use of a face in a `help-echo' tooltip.
-    ;; (when ov (overlay-put ov 'help-echo (bmkp-propertize (funcall bmkp-tooltip-content-function bookmark)
-    ;;                                                      'face 'bmkp-tooltip-content-face)))
+    ;; (when ov (overlay-put ov 'help-echo (bmkx-propertize (funcall bmkx-tooltip-content-function bookmark)
+    ;;                                                      'face 'bmkx-tooltip-content-face)))
     ;;
     ;; The `help-echo' property accepts a function -- Emacs only calls it on
     ;; demand (when the user actually hovers).  Pass a lambda so we do not pay
-    ;; the cost of `bmkp-tooltip-content-function' on every overlay creation.
-    ;; This matters: the default function `bmkp-bookmark-description' runs
+    ;; the cost of `bmkx-tooltip-content-function' on every overlay creation.
+    ;; This matters: the default function `bmkx-bookmark-description' runs
     ;; `image-dired-get-thumbnail-image' and `exiftool' for files matching
     ;; `image-file-name-regexp'.  Eager evaluation made every auto-light pay
     ;; that cost (and errored on PDFs when "pdf" was in `image-file-name-extensions',
@@ -1543,16 +1548,16 @@ If STYLE is `none' then:
     (when ov
       (overlay-put ov 'help-echo
                    (lambda (_window _object _pos)
-                     (funcall bmkp-tooltip-content-function bookmark))))
+                     (funcall bmkx-tooltip-content-function bookmark))))
     ov))
 
 ;; Not used for Emacs 20-21.
-(defun bmkp-make/move-fringe (side pos autonamedp &optional overlay linep)
+(defun bmkx-make/move-fringe (side pos autonamedp &optional overlay linep)
   "Return an overlay that uses the fringe.
 If SIDE is `right' then use the right fringe, otherwise left.
 POS is the overlay position.
-AUTONAMEDP: non-nil means use face `bmkp-light-fringe-autonamed'.
-            nil means use face `bmkp-light-fringe-non-autonamed'.
+AUTONAMEDP: non-nil means use face `bmkx-light-fringe-autonamed'.
+            nil means use face `bmkx-light-fringe-non-autonamed'.
 If OVERLAY is non-nil it is the overlay to use.
  Otherwise, create a new overlay.
 Non-nil LINEP means also highlight the line containing POS."
@@ -1566,42 +1571,42 @@ Non-nil LINEP means also highlight the line containing POS."
                                               (1+ (point))
                                               nil
                                               'FRONT-ADVANCE))))
-    (overlay-put ov 'before-string (bmkp-fringe-string side autonamedp))
+    (overlay-put ov 'before-string (bmkx-fringe-string side autonamedp))
     (if linep
         (move-overlay ov (save-excursion (goto-char pos) (line-beginning-position 1))
                       (save-excursion (goto-char pos) (line-beginning-position 2)))
       (overlay-put ov 'face nil))       ; Remove any non-fringe highlighting.
     ov))
 
-(defun bmkp-fringe-string (side autonamedp)
+(defun bmkx-fringe-string (side autonamedp)
   "Return a fringe string for a bookmark overlay.
 If SIDE is `right' then use the right fringe, otherwise left.
-AUTONAMEDP: non-nil means use face `bmkp-light-fringe-autonamed'.
-            nil means use face `bmkp-light-fringe-non-autonamed'."
+AUTONAMEDP: non-nil means use face `bmkx-light-fringe-autonamed'.
+            nil means use face `bmkx-light-fringe-non-autonamed'."
   (let ((fringe-string  (copy-sequence (if autonamedp "*AUTO*" "*NONAUTO*"))))
     (put-text-property 0         (length fringe-string)
                        'display  (if (eq side 'right)
                                      (list 'right-fringe
-                                           bmkp-light-right-fringe-bitmap
+                                           bmkx-light-right-fringe-bitmap
                                            (if autonamedp
-                                               'bmkp-light-fringe-autonamed
-                                             'bmkp-light-fringe-non-autonamed))
+                                               'bmkx-light-fringe-autonamed
+                                             'bmkx-light-fringe-non-autonamed))
                                    (list 'left-fringe
-                                         bmkp-light-left-fringe-bitmap
+                                         bmkx-light-left-fringe-bitmap
                                          (if autonamedp
-                                             'bmkp-light-fringe-autonamed
-                                           'bmkp-light-fringe-non-autonamed)))
+                                             'bmkx-light-fringe-autonamed
+                                           'bmkx-light-fringe-non-autonamed)))
                        fringe-string)
     fringe-string))
 
-;; This is also in `bookmark+-bmu.el', since `bookmark+-lit.el' is loaded first but is optional.
+;; This is also in `bookmark-x-bmu.el', since `bookmark-x-lit.el' is loaded first but is optional.
 ;;
-(defalias 'bmkp--pop-to-buffer-same-window 'pop-to-buffer-same-window)
+(defalias 'bmkx--pop-to-buffer-same-window 'pop-to-buffer-same-window)
 
 
 ;;;;;;;;;;;;;;;;;;;
 
-(provide 'bookmark+-lit)
+(provide 'bookmark-x-lit)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; bookmark+-lit.el ends here
+;;; bookmark-x-lit.el ends here
