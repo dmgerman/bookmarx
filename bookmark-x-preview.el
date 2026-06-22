@@ -288,28 +288,32 @@ the bare name in a `bmkx-bookmark-name' text property.  Plain strings
     (cond ((consp first) (car first))
           (first first))))
 
-(defun bmkx--make-jump-candidate (bm narrow-alist)
-  "Build a `bmkx-jump' completion candidate for bookmark record BM.
+(defun bmkx-jump-candidate-type-char (bm narrow-alist)
+  "Return the narrow char for bookmark BM under NARROW-ALIST.
+Helper for `bmkx-jump-candidate-format-function' implementations:
+returns the single character that `consult--type-narrow' uses to
+filter BM, mapped from its handler.  Returns nil if no entry in
+NARROW-ALIST matches the bookmark's handler."
+  (alist-get (or (bookmark-get-handler bm) #'bookmark-default-handler)
+             narrow-alist))
 
-The candidate string holds three things:
+(defun bmkx-jump-candidate-default (bm narrow-alist)
+  "Default candidate formatter for `bmkx-jump'.
+
+Returns a propertized string composed of two parts:
 
   - The bookmark name (visible).
-  - Any tag tokens (`#tag1 #tag2 ...'), appended with `display \"\"' so
-    they stay in the candidate for orderless/substring matching but
-    are not shown in the minibuffer.
-  - Text properties: `bmkx-bookmark-name' (the bare name, for
-    `:lookup' / `:state' / annotator); `consult--type' (the narrow
-    character mapped from the handler via NARROW-ALIST, for
-    `consult--type-narrow' / `consult--type-group').
+  - Any tag tokens (`#tag1 #tag2 ...'), appended with `display \"\"'
+    so they stay in the candidate for orderless / substring matching
+    but are not shown in the minibuffer.
 
-NARROW-ALIST maps handler symbols to single-char narrow keys, in the
-form consumed by `consult--type-narrow' / `consult--type-group'."
+Both parts carry the text properties required by `consult--read'
+\(see `bmkx-jump-candidate-format-function' for the contract\):
+`bmkx-bookmark-name' and `consult--type'."
   (let* ((name      (car bm))
          (tags      (bookmark-prop-get name 'tags))
          (raw       (when tags (bmkx--tags-segment-raw tags)))
-         (type-char (alist-get
-                     (or (bookmark-get-handler bm) #'bookmark-default-handler)
-                     narrow-alist))
+         (type-char (bmkx-jump-candidate-type-char bm narrow-alist))
          (head      (propertize name
                                 'bmkx-bookmark-name name
                                 'consult--type     type-char)))
@@ -320,6 +324,51 @@ form consumed by `consult--type-narrow' / `consult--type-group'."
                             'bmkx-bookmark-name name
                             'consult--type     type-char))
       head)))
+
+(defcustom bmkx-jump-candidate-format-function #'bmkx-jump-candidate-default
+  "Function that builds a `consult--read' candidate string for `bmkx-jump'.
+
+Called with two arguments:
+
+  BM           -- the bookmark record (an alist entry from
+                  `bookmark-alist').
+  NARROW-ALIST -- the (HANDLER . CHAR) alist used by
+                  `consult--type-narrow' / `consult--type-group',
+                  derived from `bmkx-jump-narrow' for the current
+                  invocation.
+
+The function must return a propertized string used as the candidate
+in the `consult--read' minibuffer.  The string MUST have these text
+properties applied to every character (the simplest way is to build
+the string with `propertize'):
+
+  `bmkx-bookmark-name'  -- the bare bookmark name (a string); consult
+                           uses it for `:lookup', `:state', and the
+                           annotator.  Use the value of `(car BM)'.
+  `consult--type'       -- the narrow character (a fixnum); used by
+                           `consult--type-narrow' /
+                           `consult--type-group'.  Compute with
+                           `bmkx-jump-candidate-type-char'.
+
+To include searchable-but-invisible text (e.g. tag tokens for
+substring matching), append a `propertize'd segment with the
+`display \"\"' property in addition to the two above.
+
+Customize this when you want to control what appears in the candidate
+row -- e.g. include tags inline, prepend the bookmark type, show
+visit counts, etc.  The default is `bmkx-jump-candidate-default'."
+  :type 'function
+  :group 'bookmark-x)
+
+(defun bmkx--make-jump-candidate (bm narrow-alist)
+  "Build a `bmkx-jump' completion candidate for bookmark record BM.
+Dispatches to `bmkx-jump-candidate-format-function'; falls back to
+`bmkx-jump-candidate-default' if the configured value is not a
+function."
+  (funcall (if (functionp bmkx-jump-candidate-format-function)
+               bmkx-jump-candidate-format-function
+             #'bmkx-jump-candidate-default)
+           bm narrow-alist))
 
 (defun bmkx--jump-group-function (narrow)
   "Return a `:group' function honoring `bmkx-jump-group-by'.

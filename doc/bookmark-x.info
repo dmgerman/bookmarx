@@ -533,6 +533,33 @@ graft this UX onto another command.
                       (when (bmkx-info-bookmark-p bmk)
                         (format "info: %s" (bookmark-prop-get bmk 'info-node))))))
 
+   • *Candidate row format.*  The visible candidate line itself (the
+     bookmark name plus a hidden, searchable ‘#tag1 #tag2’ suffix) is
+     built by the function in ‘bmkx-jump-candidate-format-function’.
+     The default, ‘bmkx-jump-candidate-default’, is the behavior
+     described in the previous items.  Override to show more
+     inline--prepend the bookmark type, include visit counts, show tags
+     visibly, etc.  The function receives the bookmark record and the
+     narrow alist, and must return a string with the
+     ‘bmkx-bookmark-name’ and ‘consult--type’ text properties applied
+     (the helper ‘bmkx-jump-candidate-type-char’ computes the narrow
+     char from the record).  Example--show tags inline:
+
+          (setq bmkx-jump-candidate-format-function
+                (lambda (bm narrow-alist)
+                  (let* ((name      (car bm))
+                         (tags      (bookmark-prop-get name 'tags))
+                         (type-char (bmkx-jump-candidate-type-char bm narrow-alist))
+                         (visible   (if tags
+                                        (format "%s   %s" name
+                                                (mapconcat (lambda (tg)
+                                                             (concat "#" (if (consp tg) (car tg) tg)))
+                                                           tags " "))
+                                      name)))
+                    (propertize visible
+                                'bmkx-bookmark-name name
+                                'consult--type     type-char))))
+
    By comparison, ‘consult-bookmark’--with or without an ‘advice-add’ on
 ‘bookmark-jump’--ships only its own type-narrow
 (‘consult-bookmark-narrow’), its built-in annotation (through Marginalia
@@ -2167,7 +2194,7 @@ Command Index
 * bmkx-automatic-bookmark-mode:          Automatic Bookmarking.
                                                               (line  19)
 * bmkx-bookmark-set-confirm-overwrite:   Setting Bookmarks.   (line   6)
-* bmkx-find-file:                        Jumping.             (line 121)
+* bmkx-find-file:                        Jumping.             (line 148)
 * bmkx-info-auto-bookmark-mode:          Automatic Bookmarking.
                                                               (line  36)
 * bmkx-jump:                             Jumping.             (line   6)
@@ -2307,7 +2334,7 @@ Concept Index
 * filtering:                             The Bmkx List Buffer.
                                                               (line 161)
 * filtering, tutorial:                   Tutorial.            (line  75)
-* find-file-style jumping:               Jumping.             (line 121)
+* find-file-style jumping:               Jumping.             (line 148)
 * first session:                         Tutorial.            (line   6)
 * flagging for deletion:                 The Bmkx List Buffer.
                                                               (line 135)
@@ -2336,7 +2363,7 @@ Concept Index
                                                               (line  15)
 * metadata loss:                         Bookmark Records.    (line  67)
 * migration:                             Migration.           (line   6)
-* mode-specific j bindings:              Jumping.             (line 133)
+* mode-specific j bindings:              Jumping.             (line 160)
 * MRU jump:                              Jumping.             (line  14)
 * multiple bookmark files:               Multiple Bookmark Files.
                                                               (line   6)
@@ -2372,7 +2399,7 @@ Concept Index
 * standard keys:                         Standard Keys.       (line   6)
 * tag filter, jump:                      Jumping.             (line  14)
 * tag values:                            Tags.                (line  79)
-* tag-based jumping:                     Jumping.             (line 148)
+* tag-based jumping:                     Jumping.             (line 175)
 * tagging, tutorial:                     Tutorial.            (line  47)
 * tags:                                  Tags.                (line   6)
 * tags column:                           The Bmkx List Buffer.
@@ -2380,7 +2407,7 @@ Concept Index
 * temporary bookmarks:                   Temporary Bookmarks. (line   6)
 * Transient menu:                        Casual Integration.  (line   6)
 * tutorial:                              Tutorial.            (line   6)
-* type-specific jump:                    Jumping.             (line  91)
+* type-specific jump:                    Jumping.             (line 118)
 * types of bookmark:                     Bookmark Types.      (line   6)
 * visiting bookmarks:                    Jumping.             (line   6)
 * window placement, of *Bmkx List*:      The Bmkx List Buffer.
@@ -2399,27 +2426,27 @@ Node: Prefix Keys13179
 Node: Standard Keys14567
 Node: Setting Bookmarks16035
 Node: Jumping19128
-Node: The Bmkx List Buffer27978
-Node: Bookmark Types43713
-Node: Tags50248
-Node: Annotations55296
-Node: Multiple Bookmark Files57859
-Node: Highlighting60554
-Node: Live Preview63758
-Node: Casual Integration65626
-Node: Cycling66764
-Node: Automatic Bookmarking68486
-Node: Autonamed Bookmarks70091
-Node: Temporary Bookmarks71749
-Node: Bookmark Records73679
-Ref: Round Trip Caveat76019
-Node: Customization77896
-Node: Migration81631
-Node: GNU GPL91678
-Node: Key Index92513
-Node: Command Index92625
-Node: Variable Index93559
-Node: Concept Index96481
+Node: The Bmkx List Buffer29584
+Node: Bookmark Types45319
+Node: Tags51854
+Node: Annotations56902
+Node: Multiple Bookmark Files59465
+Node: Highlighting62160
+Node: Live Preview65364
+Node: Casual Integration67232
+Node: Cycling68370
+Node: Automatic Bookmarking70092
+Node: Autonamed Bookmarks71697
+Node: Temporary Bookmarks73355
+Node: Bookmark Records75285
+Ref: Round Trip Caveat77625
+Node: Customization79502
+Node: Migration83237
+Node: GNU GPL93284
+Node: Key Index94119
+Node: Command Index94231
+Node: Variable Index95165
+Node: Concept Index98087
 
 End Tag Table
 

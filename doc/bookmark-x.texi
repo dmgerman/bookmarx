@@ -607,6 +607,37 @@ Gnus messages, etc.):
             (when (bmkx-info-bookmark-p bmk)
               (format "info: %s" (bookmark-prop-get bmk 'info-node))))))
 @end lisp
+
+@item
+@strong{Candidate row format.}  The visible candidate line itself
+(the bookmark name plus a hidden, searchable @code{#tag1 #tag2}
+suffix) is built by the function in
+@code{bmkx-jump-candidate-format-function}.  The default,
+@code{bmkx-jump-candidate-default}, is the behavior described in
+the previous items.  Override to show more inline---prepend the
+bookmark type, include visit counts, show tags visibly, etc.  The
+function receives the bookmark record and the narrow alist, and
+must return a string with the @code{bmkx-bookmark-name} and
+@code{consult--type} text properties applied (the helper
+@code{bmkx-jump-candidate-type-char} computes the narrow char from
+the record).  Example---show tags inline:
+
+@lisp
+(setq bmkx-jump-candidate-format-function
+      (lambda (bm narrow-alist)
+        (let* ((name      (car bm))
+               (tags      (bookmark-prop-get name 'tags))
+               (type-char (bmkx-jump-candidate-type-char bm narrow-alist))
+               (visible   (if tags
+                              (format "%s   %s" name
+                                      (mapconcat (lambda (tg)
+                                                   (concat "#" (if (consp tg) (car tg) tg)))
+                                                 tags " "))
+                            name)))
+          (propertize visible
+                      'bmkx-bookmark-name name
+                      'consult--type     type-char))))
+@end lisp
 @end itemize
 
 By comparison, @code{consult-bookmark}---with or without an

@@ -114,5 +114,67 @@ Stubs marginalia so the test does not require the package."
         (should (string-match-p "/tmp/some/file" annot))))))
 
 
+;;; bmkx-jump-candidate-format-function (consult candidate row)
+
+(ert-deftest bmkx-test-preview/candidate-default-name-and-properties ()
+  "Default formatter returns the name with required text properties."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer buf "x"
+      (bmkx-test--make-bookmark "cand-bmk" buf))
+    (let* ((bm     (assoc "cand-bmk" bookmark-alist))
+           (narrow `((,#'bookmark-default-handler . ?f)))
+           (cand   (bmkx-jump-candidate-default bm narrow)))
+      (should (stringp cand))
+      (should (string-prefix-p "cand-bmk" cand))
+      (should (equal "cand-bmk" (get-text-property 0 'bmkx-bookmark-name cand)))
+      (should (eq ?f          (get-text-property 0 'consult--type      cand))))))
+
+(ert-deftest bmkx-test-preview/candidate-default-appends-hidden-tags ()
+  "Tag tokens are appended with `display \"\"' so they are searchable but hidden."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer buf "x"
+      (bmkx-test--make-bookmark "cand-tagged" buf))
+    (bmkx-add-tags "cand-tagged" '("alpha" "beta") 'NO-UPDATE-P 'NO-MSG-P)
+    (let* ((bm     (assoc "cand-tagged" bookmark-alist))
+           (narrow `((,#'bookmark-default-handler . ?f)))
+           (cand   (bmkx-jump-candidate-default bm narrow)))
+      (should (string-match-p "#alpha" cand))
+      (should (string-match-p "#beta"  cand))
+      ;; The hidden segment starts right after the bookmark name; its first
+      ;; character must carry `display ""'.
+      (should (equal "" (get-text-property (length "cand-tagged") 'display cand))))))
+
+(ert-deftest bmkx-test-preview/candidate-format-honors-user-override ()
+  "A user-supplied `bmkx-jump-candidate-format-function' takes effect.
+The override prepends `[T] ' to the visible name; properties must
+still be applied or consult could not lookup the candidate."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer buf "x"
+      (bmkx-test--make-bookmark "cand-ovr" buf))
+    (let* ((bm     (assoc "cand-ovr" bookmark-alist))
+           (narrow `((,#'bookmark-default-handler . ?f)))
+           (bmkx-jump-candidate-format-function
+            (lambda (bm narrow-alist)
+              (let* ((name      (car bm))
+                     (type-char (bmkx-jump-candidate-type-char bm narrow-alist)))
+                (propertize (concat "[T] " name)
+                            'bmkx-bookmark-name name
+                            'consult--type     type-char)))))
+      (let ((cand  (bmkx--make-jump-candidate bm narrow)))
+        (should (string-prefix-p "[T] cand-ovr" cand))
+        (should (equal "cand-ovr" (get-text-property 0 'bmkx-bookmark-name cand)))))))
+
+(ert-deftest bmkx-test-preview/candidate-format-falls-back-when-non-function ()
+  "A non-function `bmkx-jump-candidate-format-function' falls back to the default."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer buf "x"
+      (bmkx-test--make-bookmark "cand-fallback" buf))
+    (let* ((bm     (assoc "cand-fallback" bookmark-alist))
+           (narrow `((,#'bookmark-default-handler . ?f)))
+           (bmkx-jump-candidate-format-function 'not-a-function))
+      (let ((cand  (bmkx--make-jump-candidate bm narrow)))
+        (should (string-prefix-p "cand-fallback" cand))))))
+
+
 (provide 'bmkx-test-preview)
 ;;; bmkx-test-preview.el ends here

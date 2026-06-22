@@ -465,6 +465,35 @@ that are /not/ available through =consult-bookmark= --- even if you
                 (format "info: %s" (bookmark-prop-get bmk 'info-node))))))
   #+end_src
 
+- *Candidate row format.*  The visible candidate line itself (the
+  bookmark name + hidden, searchable =#tag1 #tag2= suffix) is built
+  by the function in =bmkx-jump-candidate-format-function=.  The
+  default, =bmkx-jump-candidate-default=, is the behavior described
+  in the previous bullets.  Override to show more inline -- e.g.
+  prepend the bookmark type, include visit counts, show tags
+  visibly.  The function receives the bookmark record and the
+  narrow alist, and must return a string with the
+  =bmkx-bookmark-name= and =consult--type= text properties applied
+  (a helper, =bmkx-jump-candidate-type-char=, computes the narrow
+  char from the record).  Example -- show tags inline:
+
+  #+begin_src emacs-lisp
+  (setq bmkx-jump-candidate-format-function
+        (lambda (bm narrow-alist)
+          (let* ((name      (car bm))
+                 (tags      (bookmark-prop-get name 'tags))
+                 (type-char (bmkx-jump-candidate-type-char bm narrow-alist))
+                 (visible   (if tags
+                                (format "%s   %s" name
+                                        (mapconcat (lambda (tg)
+                                                     (concat "#" (if (consp tg) (car tg) tg)))
+                                                   tags " "))
+                              name)))
+            (propertize visible
+                        'bmkx-bookmark-name name
+                        'consult--type     type-char))))
+  #+end_src
+
 In contrast, =consult-bookmark= --- with or without the
 =advice-add= override above --- ships only its own type-narrow
 (=consult-bookmark-narrow=), its built-in annotation (via Marginalia

@@ -64,6 +64,13 @@ User options:
   =- no file -= marker in the annotation, or nil to leave it.
   Default returns the bookmark's =location= property, so URL / EWW /
   W3M / browse-URL bookmarks show their URL.
+- =bmkx-jump-candidate-format-function= --- function that builds the
+  visible candidate row.  Called with the bookmark record and the
+  narrow alist; must return a string carrying the
+  =bmkx-bookmark-name= and =consult--type= text properties.  Use
+  the helper =bmkx-jump-candidate-type-char= to compute the narrow
+  char.  Default =bmkx-jump-candidate-default= shows the bookmark
+  name and appends a hidden =#tag1 #tag2= suffix.
 
 ** Commands
 
