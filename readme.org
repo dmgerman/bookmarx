@@ -446,6 +446,24 @@ that are /not/ available through =consult-bookmark= --- even if you
 - *Annotation with tags column.*  The display shows an aligned tags
   column followed by =marginalia='s standard
   =type | file | location= annotation.
+- *Location display for non-file bookmarks.*  Marginalia prints
+  =- no file -= in the file column for bookmarks with no file (URL,
+  EWW, W3M, browse-URL, ...).  Bookmark-X substitutes the bookmark's
+  =location= property in place of that marker, so URL bookmarks show
+  their URL.  The substitution is governed by the defcustom
+  =bmkx-bookmark-location-function=, which is called with the
+  bookmark record and must return a string (substitute) or nil
+  (leave marginalia's output alone).  The default,
+  =bmkx-bookmark-location-default=, returns the =location= property.
+  Override to format other types:
+
+  #+begin_src emacs-lisp
+  (setq bmkx-bookmark-location-function
+        (lambda (bmk)
+          (or (bookmark-prop-get bmk 'location)
+              (when (bmkx-info-bookmark-p bmk)
+                (format "info: %s" (bookmark-prop-get bmk 'info-node))))))
+  #+end_src
 
 In contrast, =consult-bookmark= --- with or without the
 =advice-add= override above --- ships only its own type-narrow
@@ -533,8 +551,9 @@ and whether the match is literal or against a regexp (=%= = regexp).
 
 | Command                                             | Key                    | Meaning                                  |
 |-----------------------------------------------------+------------------------+------------------------------------------|
-| =bmkx-all-tags-jump=                                  | =C-x j t *=             | Bookmark with all given tags.            |
+| =bmkx-tag-jump=                                    | =C-x j t T=             | Bookmark that has every given tag.       |
 | =bmkx-some-tags-jump=                                 | =C-x j t +=             | Bookmark with at least one given tag.    |
+| =bmkx-all-tags-jump=                                  | =C-x j t *=             | Bookmark whose tags are all in the set.  |
 | =bmkx-all-tags-regexp-jump=                           | =C-x j t % *=           | Bookmark whose every tag matches regexp. |
 | =bmkx-some-tags-regexp-jump=                          | =C-x j t % +=           | Bookmark with some tag matching regexp.  |
 | =bmkx-file-{all,some}-tags-{regexp-}jump=             | =C-x j t f * / +/...=   | File or directory bookmark.              |

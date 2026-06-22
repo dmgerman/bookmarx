@@ -80,5 +80,76 @@
     (should-not (member "old" (bmkx-test--tag-names "rn-b")))))
 
 
+;;; bmkx-has-tags-alist-only and bmkx-tag-jump
+;;;
+;;; These cover the intuitive \"requested tags ⊆ bookmark's tags\"
+;;; semantics that distinguishes them from `bmkx-all-tags-alist-only'
+;;; / `bmkx-all-tags-jump' (subset-from-the-other-direction).
+
+(defun bmkx-test--names (alist)
+  "Return the sorted bookmark names in ALIST."
+  (sort (mapcar #'car alist) #'string<))
+
+(defmacro bmkx-test--with-tagged-bookmarks (&rest body)
+  "Fixture: three bookmarks with tags foo / foo+bar / baz.
+Bound names: \"only-foo\", \"foo-and-bar\", \"only-baz\"."
+  (declare (indent 0) (debug t))
+  `(bmkx-test-with-clean-bookmarks
+     (bmkx-test-with-fixture-buffer buf "abcdef"
+       (bmkx-test--make-bookmark "only-foo"     buf 1)
+       (bmkx-test--make-bookmark "foo-and-bar"  buf 3)
+       (bmkx-test--make-bookmark "only-baz"     buf 5))
+     (bmkx-add-tags "only-foo"    '("foo")        'NO-UPDATE-P 'NO-MSG-P)
+     (bmkx-add-tags "foo-and-bar" '("foo" "bar")  'NO-UPDATE-P 'NO-MSG-P)
+     (bmkx-add-tags "only-baz"    '("baz")        'NO-UPDATE-P 'NO-MSG-P)
+     ,@body))
+
+(ert-deftest bmkx-test-tags/has-tags-alist-only-single ()
+  "A single requested tag matches every bookmark that has it, other tags allowed."
+  (bmkx-test--with-tagged-bookmarks
+    (should (equal '("foo-and-bar" "only-foo")
+                   (bmkx-test--names (bmkx-has-tags-alist-only '("foo")))))))
+
+(ert-deftest bmkx-test-tags/has-tags-alist-only-conjunctive ()
+  "Multiple requested tags require the bookmark to have every one."
+  (bmkx-test--with-tagged-bookmarks
+    (should (equal '("foo-and-bar")
+                   (bmkx-test--names (bmkx-has-tags-alist-only '("foo" "bar")))))))
+
+(ert-deftest bmkx-test-tags/has-tags-alist-only-missing-tag ()
+  "A requested tag absent from every bookmark yields the empty list."
+  (bmkx-test--with-tagged-bookmarks
+    (should-not (bmkx-has-tags-alist-only '("nope")))))
+
+(ert-deftest bmkx-test-tags/has-tags-alist-only-empty-matches-all ()
+  "An empty requested-tag list matches every bookmark."
+  (bmkx-test--with-tagged-bookmarks
+    (should (equal '("foo-and-bar" "only-baz" "only-foo")
+                   (bmkx-test--names (bmkx-has-tags-alist-only '()))))))
+
+(ert-deftest bmkx-test-tags/has-tags-vs-all-tags-divergence ()
+  "Confirm `bmkx-has-tags-alist-only' and `bmkx-all-tags-alist-only' disagree.
+Requesting (\"foo\") under the has-every-tag semantics matches the
+bookmark tagged (\"foo\" \"bar\"); under the tags-are-all-in-set
+semantics, it does not."
+  (bmkx-test--with-tagged-bookmarks
+    (should      (member "foo-and-bar"
+                         (bmkx-test--names (bmkx-has-tags-alist-only '("foo")))))
+    (should-not  (member "foo-and-bar"
+                         (bmkx-test--names (bmkx-all-tags-alist-only '("foo")))))))
+
+(ert-deftest bmkx-test-tags/jump-to-tag-lands-on-tagged-bookmark ()
+  "`bmkx-tag-jump' called from Lisp jumps to the named match."
+  (bmkx-test--with-tagged-bookmarks
+    (let ((before  (or (bookmark-prop-get "foo-and-bar" 'visits) 0)))
+      (bmkx-tag-jump '("bar") "foo-and-bar")
+      (should (> (or (bookmark-prop-get "foo-and-bar" 'visits) 0) before)))))
+
+(ert-deftest bmkx-test-tags/jump-to-tag-no-match-errors ()
+  "`bmkx-tag-jump' signals when no bookmark has every requested tag."
+  (bmkx-test--with-tagged-bookmarks
+    (should-error (bmkx-tag-jump '("foo" "baz") "only-foo"))))
+
+
 (provide 'bmkx-test-tags)
 ;;; bmkx-test-tags.el ends here

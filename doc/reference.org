@@ -59,6 +59,11 @@ User options:
 - =bmkx-jump-sort-by= --- =mru= (default), =visits=, or =alpha=.
 - =bmkx-jump-group-by= --- =nil= (default), =type=, or =tag=.
 - =bmkx-jump-narrow= --- type-narrow key map; see the docstring.
+- =bmkx-bookmark-location-function= --- function called with a
+  bookmark record; returns a string to substitute for marginalia's
+  =- no file -= marker in the annotation, or nil to leave it.
+  Default returns the bookmark's =location= property, so URL / EWW /
+  W3M / browse-URL bookmarks show their URL.
 
 ** Commands
 
@@ -103,6 +108,7 @@ User options:
 | =bmkx-lighted-jump=                    | =C-x j h=    | Highlighted bookmark.                  |
 | =bmkx-temporary-jump=                  | =C-x j x=    | Temporary bookmark.                    |
 | =bmkx-snippet-to-kill-ring=            | =C-x j M-w=, =C-x 4 j M-w= | Yank a snippet bookmark.               |
+| =bmkx-tag-jump=                      | =C-x j t T=  | Jump to a bookmark that has every given tag. |
 | =bmkx-{all,some}-tags-{regexp-}jump=    | =C-x j t ...= | Tag-based jump (see [[file:../readme.org::#tags][Tags]]). |
 | =bmkx-find-file-{all,some}-tags-{regexp-}= | =C-x j t C-f ...= | Same, =find-file=-style.            |
 | =bmkx-next-bookmark-repeat= / =bmkx-previous-bookmark-repeat= | =C-x x f/b= ... | Cycle navlist.            |

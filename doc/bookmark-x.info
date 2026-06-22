@@ -515,6 +515,24 @@ graft this UX onto another command.
      column followed by Marginalia's standard ‘type | file | location’
      annotation.
 
+   • *Location display for non-file bookmarks.*  Marginalia prints ‘- no
+     file -’ in the file column for bookmarks with no file (URL, EWW,
+     W3M, browse-URL, ...).  Bookmark-X substitutes the bookmark's
+     ‘location’ property in place of that marker, so URL bookmarks show
+     their URL. The substitution is governed by the defcustom
+     ‘bmkx-bookmark-location-function’, which is called with the
+     bookmark record and must return a string (substitute) or ‘nil’
+     (leave Marginalia's output alone).  The default,
+     ‘bmkx-bookmark-location-default’, returns the ‘location’ property.
+     Override to format other types (Info nodes, man pages, Gnus
+     messages, etc.):
+
+          (setq bmkx-bookmark-location-function
+                (lambda (bmk)
+                  (or (bookmark-prop-get bmk 'location)
+                      (when (bmkx-info-bookmark-p bmk)
+                        (format "info: %s" (bookmark-prop-get bmk 'info-node))))))
+
    By comparison, ‘consult-bookmark’--with or without an ‘advice-add’ on
 ‘bookmark-jump’--ships only its own type-narrow
 (‘consult-bookmark-narrow’), its built-in annotation (through Marginalia
@@ -588,16 +606,25 @@ regexp (‘%’).
 
 Command                        Key              Meaning
 ---------------------------------------------------------------------------
-‘bmkx-all-tags-jump’           ‘C-x j t *’      With all given tags.
+‘bmkx-tag-jump’                ‘C-x j t T’      Has every given tag.
 ‘bmkx-some-tags-jump’          ‘C-x j t +’      With at least one tag.
+‘bmkx-all-tags-jump’           ‘C-x j t *’      Tags all contained in a
+                                                set.
 ‘bmkx-all-tags-regexp-jump’    ‘C-x j t % *’    Every tag matches a
                                                 regexp.
 ‘bmkx-some-tags-regexp-jump’   ‘C-x j t % +’    Some tag matches a
                                                 regexp.
-‘bmkx-file-all-tags-jump’      ‘C-x j t f *’    File bookmark with all
-                                                tags.
+‘bmkx-file-all-tags-jump’      ‘C-x j t f *’    File bookmark, tags
+                                                subset.
 ‘bmkx-find-file-all-tags’      ‘C-x j t C-f     ‘read-file-name’
                                *’               version.
+
+Match semantics differ: ‘bmkx-tag-jump’ treats its argument as a set
+every member of which the bookmark must have (REQUESTED ⊆ BOOKMARK);
+‘bmkx-all-tags-jump’ and the file/autofile ‘*-all-tags-*’ variants treat
+it as a superset of the bookmark's tag set (BOOKMARK ⊆ REQUESTED).  For
+a per-tag binding (e.g.\ "jump to a bookmark tagged ‘work’"), use
+‘bmkx-tag-jump’.
 
    Each command has an ‘-other-window’ twin under ‘C-x 4 j t ...’.
 
@@ -2140,7 +2167,7 @@ Command Index
 * bmkx-automatic-bookmark-mode:          Automatic Bookmarking.
                                                               (line  19)
 * bmkx-bookmark-set-confirm-overwrite:   Setting Bookmarks.   (line   6)
-* bmkx-find-file:                        Jumping.             (line 103)
+* bmkx-find-file:                        Jumping.             (line 121)
 * bmkx-info-auto-bookmark-mode:          Automatic Bookmarking.
                                                               (line  36)
 * bmkx-jump:                             Jumping.             (line   6)
@@ -2280,7 +2307,7 @@ Concept Index
 * filtering:                             The Bmkx List Buffer.
                                                               (line 161)
 * filtering, tutorial:                   Tutorial.            (line  75)
-* find-file-style jumping:               Jumping.             (line 103)
+* find-file-style jumping:               Jumping.             (line 121)
 * first session:                         Tutorial.            (line   6)
 * flagging for deletion:                 The Bmkx List Buffer.
                                                               (line 135)
@@ -2309,7 +2336,7 @@ Concept Index
                                                               (line  15)
 * metadata loss:                         Bookmark Records.    (line  67)
 * migration:                             Migration.           (line   6)
-* mode-specific j bindings:              Jumping.             (line 115)
+* mode-specific j bindings:              Jumping.             (line 133)
 * MRU jump:                              Jumping.             (line  14)
 * multiple bookmark files:               Multiple Bookmark Files.
                                                               (line   6)
@@ -2345,7 +2372,7 @@ Concept Index
 * standard keys:                         Standard Keys.       (line   6)
 * tag filter, jump:                      Jumping.             (line  14)
 * tag values:                            Tags.                (line  79)
-* tag-based jumping:                     Jumping.             (line 130)
+* tag-based jumping:                     Jumping.             (line 148)
 * tagging, tutorial:                     Tutorial.            (line  47)
 * tags:                                  Tags.                (line   6)
 * tags column:                           The Bmkx List Buffer.
@@ -2353,7 +2380,7 @@ Concept Index
 * temporary bookmarks:                   Temporary Bookmarks. (line   6)
 * Transient menu:                        Casual Integration.  (line   6)
 * tutorial:                              Tutorial.            (line   6)
-* type-specific jump:                    Jumping.             (line  73)
+* type-specific jump:                    Jumping.             (line  91)
 * types of bookmark:                     Bookmark Types.      (line   6)
 * visiting bookmarks:                    Jumping.             (line   6)
 * window placement, of *Bmkx List*:      The Bmkx List Buffer.
@@ -2372,27 +2399,27 @@ Node: Prefix Keys13179
 Node: Standard Keys14567
 Node: Setting Bookmarks16035
 Node: Jumping19128
-Node: The Bmkx List Buffer26465
-Node: Bookmark Types42200
-Node: Tags48735
-Node: Annotations53783
-Node: Multiple Bookmark Files56346
-Node: Highlighting59041
-Node: Live Preview62245
-Node: Casual Integration64113
-Node: Cycling65251
-Node: Automatic Bookmarking66973
-Node: Autonamed Bookmarks68578
-Node: Temporary Bookmarks70236
-Node: Bookmark Records72166
-Ref: Round Trip Caveat74506
-Node: Customization76383
-Node: Migration80118
-Node: GNU GPL90165
-Node: Key Index91000
-Node: Command Index91112
-Node: Variable Index92046
-Node: Concept Index94968
+Node: The Bmkx List Buffer27978
+Node: Bookmark Types43713
+Node: Tags50248
+Node: Annotations55296
+Node: Multiple Bookmark Files57859
+Node: Highlighting60554
+Node: Live Preview63758
+Node: Casual Integration65626
+Node: Cycling66764
+Node: Automatic Bookmarking68486
+Node: Autonamed Bookmarks70091
+Node: Temporary Bookmarks71749
+Node: Bookmark Records73679
+Ref: Round Trip Caveat76019
+Node: Customization77896
+Node: Migration81631
+Node: GNU GPL91678
+Node: Key Index92513
+Node: Command Index92625
+Node: Variable Index93559
+Node: Concept Index96481
 
 End Tag Table
 

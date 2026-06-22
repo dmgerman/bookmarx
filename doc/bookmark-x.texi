@@ -586,6 +586,27 @@ by group key and the chosen sort applies within each group.
 @strong{Annotation with tags column.}  The display shows an aligned
 tags column followed by Marginalia's standard
 @code{type | file | location} annotation.
+
+@item
+@strong{Location display for non-file bookmarks.}  Marginalia prints
+@code{- no file -} in the file column for bookmarks with no file
+(URL, EWW, W3M, browse-URL, ...).  Bookmark-X substitutes the
+bookmark's @code{location} property in place of that marker, so URL
+bookmarks show their URL.  The substitution is governed by the
+defcustom @code{bmkx-bookmark-location-function}, which is called
+with the bookmark record and must return a string (substitute) or
+@code{nil} (leave Marginalia's output alone).  The default,
+@code{bmkx-bookmark-location-default}, returns the @code{location}
+property.  Override to format other types (Info nodes, man pages,
+Gnus messages, etc.):
+
+@lisp
+(setq bmkx-bookmark-location-function
+      (lambda (bmk)
+        (or (bookmark-prop-get bmk 'location)
+            (when (bmkx-info-bookmark-p bmk)
+              (format "info: %s" (bookmark-prop-get bmk 'info-node))))))
+@end lisp
 @end itemize
 
 By comparison, @code{consult-bookmark}---with or without an
@@ -666,13 +687,23 @@ against a regexp (@kbd{%}).
 
 @multitable @columnfractions .42 .22 .36
 @headitem Command @tab Key @tab Meaning
-@item @code{bmkx-all-tags-jump}             @tab @kbd{C-x j t *}     @tab With all given tags.
+@item @code{bmkx-tag-jump}               @tab @kbd{C-x j t T}     @tab Has every given tag.
 @item @code{bmkx-some-tags-jump}            @tab @kbd{C-x j t +}     @tab With at least one tag.
+@item @code{bmkx-all-tags-jump}             @tab @kbd{C-x j t *}     @tab Tags all contained in a set.
 @item @code{bmkx-all-tags-regexp-jump}      @tab @kbd{C-x j t % *}   @tab Every tag matches a regexp.
 @item @code{bmkx-some-tags-regexp-jump}     @tab @kbd{C-x j t % +}   @tab Some tag matches a regexp.
-@item @code{bmkx-file-all-tags-jump}        @tab @kbd{C-x j t f *}   @tab File bookmark with all tags.
+@item @code{bmkx-file-all-tags-jump}        @tab @kbd{C-x j t f *}   @tab File bookmark, tags subset.
 @item @code{bmkx-find-file-all-tags}        @tab @kbd{C-x j t C-f *} @tab @code{read-file-name} version.
 @end multitable
+
+@noindent
+Match semantics differ: @code{bmkx-tag-jump} treats its argument as
+a set every member of which the bookmark must have (@var{requested}
+⊆ @var{bookmark}); @code{bmkx-all-tags-jump} and the
+file/autofile @code{*-all-tags-*} variants treat it as a superset of
+the bookmark's tag set (@var{bookmark} ⊆ @var{requested}).
+For a per-tag binding (e.g.\@: ``jump to a bookmark tagged
+@samp{work}''), use @code{bmkx-tag-jump}.
 
 Each command has an @code{-other-window} twin under
 @kbd{C-x 4 j t ...}.

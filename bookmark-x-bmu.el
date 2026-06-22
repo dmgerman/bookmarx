@@ -1607,7 +1607,8 @@ Prefix `j' uses another window; prefix `J' reuses this window:
 `\\[bmkx-variable-list-jump]'\t- Variable-list bookmark
 
 `\\[bmkx-some-tags-jump-other-window]'\t- Bookmark having some tags you specify
-`\\[bmkx-all-tags-jump-other-window]'\t- Bookmark having each tag you specify
+`\\[bmkx-tag-jump-other-window]'\t- Bookmark that has every tag you specify
+`\\[bmkx-all-tags-jump-other-window]'\t- Bookmark whose tags are all in a set you specify
 `\\[bmkx-some-tags-regexp-jump-other-window]'\t- Bookmark having a tag that matches a regexp
 `\\[bmkx-all-tags-regexp-jump-other-window]'\t- Bookmark having all its tags match a regexp
 `\\[bmkx-file-some-tags-jump-other-window]'\t- File bookmark having some tags you specify

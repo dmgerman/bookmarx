@@ -484,6 +484,8 @@ there are such bookmarks can take a little time."
 (define-key bmkx-jump-other-window-map "t*"   'bmkx-all-tags-jump-other-window)         ; `C-x 4 j t *'
 (define-key bmkx-jump-map              "t+"   'bmkx-some-tags-jump)                       ; `C-x j t +'
 (define-key bmkx-jump-other-window-map "t+"   'bmkx-some-tags-jump-other-window)        ; `C-x 4 j t +'
+(define-key bmkx-jump-map              "tT"   'bmkx-tag-jump)                          ; `C-x j t T'
+(define-key bmkx-jump-other-window-map "tT"   'bmkx-tag-jump-other-window)           ; `C-x 4 j t T'
 
 (define-key bmkx-jump-map              "t%*"  'bmkx-all-tags-regexp-jump)               ; `C-x j t % *'
 (define-key bmkx-jump-other-window-map "t%*"
@@ -1373,10 +1375,13 @@ Menu for bookmarks that target this file or buffer.")
     :help "Jump to a bookmark that has at least one tag matching a regexp that you enter"))
 (define-key bmkx-jump-tags-menu [bmkx-all-tags-jump-other-window]
   '(menu-item "All Tags in Set..." bmkx-all-tags-jump-other-window
-    :help "Jump to a bookmark that has all of a set of tags that you enter"))
+    :help "Jump to a bookmark whose tags are all contained in a set you enter"))
+(define-key bmkx-jump-tags-menu [bmkx-tag-jump-other-window]
+  '(menu-item "Carrying Every Tag..." bmkx-tag-jump-other-window
+    :help "Jump to a bookmark that has every tag in a set you enter"))
 (define-key bmkx-jump-tags-menu [bmkx-some-tags-jump-other-window]
   '(menu-item "Any Tag in Set..." bmkx-some-tags-jump-other-window
-    :help "Jump to a bookmark that has some of a set of tags that you enter"))
+    :help "Jump to a bookmark that has at least one tag in a set you enter"))
 
 
 ;; `File' > `Find File or Autofile' submenu

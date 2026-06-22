@@ -503,8 +503,14 @@ Caller (`bmkx-read-bookmark-for-jump') loops while
      :group         (bmkx--jump-group-function narrow)
      :narrow        (consult--type-narrow narrow)
      :keymap        bmkx-jump-minibuffer-map
-     :lookup        (lambda (selected &rest _)
-                      (bmkx--candidate-name selected))
+     :lookup        (lambda (selected candidates &rest _)
+                      ;; The selected string arrives without the text
+                      ;; properties we put on the augmented candidate (the
+                      ;; minibuffer strips them).  Resolve back to the
+                      ;; original candidate via `member' so the
+                      ;; `bmkx-bookmark-name' property is visible.
+                      (bmkx--candidate-name
+                       (or (car (member selected candidates)) selected)))
      :state         (lambda (action cand)
                       (funcall preview action
                                (and cand (bmkx--candidate-name cand)))))))
@@ -555,6 +561,32 @@ Otherwise falls back to `bmkx-completing-read'."
 
 (declare-function marginalia-annotate-bookmark "marginalia")
 
+(defun bmkx-bookmark-location-default (bmk)
+  "Return a display location string for bookmark record BMK, or nil.
+
+The default reads BMK's `location' property.  URL bookmarks (and EWW,
+W3M, and `browse-url' bookmarks) store the URL there; other bookmark
+types that set `location' will also be picked up.  Returns nil when
+no `location' is set, in which case `bmkx-bookmark-annotation' leaves
+marginalia's annotation as-is."
+  (bookmark-prop-get bmk 'location))
+
+(defcustom bmkx-bookmark-location-function #'bmkx-bookmark-location-default
+  "Function returning a display location string for a bookmark, or nil.
+Called with one argument: the bookmark record (the alist entry from
+`bookmark-alist').  When the returned string is non-nil and
+`marginalia-annotate-bookmark' rendered the bookmark with the
+`bmkx-non-file-filename' marker (\"   - no file -\"), the marker is
+replaced with the returned string in the annotation shown by
+`bmkx-bookmark-annotation' (consult / minibuffer path).  A nil
+return preserves marginalia's original output.
+
+The default, `bmkx-bookmark-location-default', returns the bookmark's
+`location' property.  Override to format additional types (Info
+nodes, man pages, Gnus messages, etc.) or to customize the rendering."
+  :type 'function
+  :group 'bookmark-x)
+
 (defun bmkx--tags-segment-raw (tags)
   "Return TAGS rendered as space-separated `#tag' tokens (a plain string)."
   (mapconcat (lambda (tag) (concat "#" (if (consp tag) (car tag) tag)))
@@ -604,7 +636,18 @@ Either part may be missing.  Returns nil if both are missing."
          (tags       (and bmk (bmkx-get-tags bmk)))
          (raw-tags   (if tags (bmkx--tags-segment-raw tags) ""))
          (base-part  (and (fboundp 'marginalia-annotate-bookmark)
-                          (marginalia-annotate-bookmark name))))
+                          (marginalia-annotate-bookmark name)))
+         (location   (and bmk
+                          (functionp bmkx-bookmark-location-function)
+                          (funcall bmkx-bookmark-location-function bmk))))
+    (when (and (stringp location)
+               (stringp base-part)
+               (string-match-p (regexp-quote bmkx-non-file-filename) base-part))
+      (setq base-part
+            (replace-regexp-in-string
+             (regexp-quote bmkx-non-file-filename)
+             (concat "   " location)
+             base-part t t)))
     (cond
      ;; Nothing to show.
      ((and (zerop width) (null base-part)) nil)

@@ -191,7 +191,8 @@
 ;;    `bmkx-jump-in-navlist-other-window',
 ;;    `bmkx-jump-to-bookmark-linked-at' (Emacs 22+),
 ;;    `bmkx-jump-to-bookmark-linked-at-mouse' (Emacs 22+),
-;;    `bmkx-jump-to-list', `bmkx-jump-to-type',
+;;    `bmkx-jump-to-list', `bmkx-tag-jump',
+;;    `bmkx-tag-jump-other-window', `bmkx-jump-to-type',
 ;;    `bmkx-jump-to-type-other-window', `bmkx-list-all-tags',
 ;;    `bmkx-list-defuns-in-commands-file', `bmkx-local-file-jump',
 ;;    `bmkx-local-file-jump-other-window',
@@ -555,7 +556,7 @@
 ;;    `bmkx-handle-region-default',
 ;;    `bmkx-handle-region+narrow-indirect', `bmkx-handler-cp',
 ;;    `bmkx-handler-pred', `bmkx-has-tag-p',
-;;    `bmkx-image-alist-only',
+;;    `bmkx-has-tags-alist-only', `bmkx-image-alist-only',
 ;;    `bmkx-image-bookmark-p', `bmkx-info-alist-only',
 ;;    `bmkx-info-bookmark-p', `bmkx-info-node-name-cp',
 ;;    `bmkx-info-position-cp', `bmkx-isearch-bookmarks' (Emacs 23+),
@@ -3724,15 +3725,35 @@ that option is non-nil."
 
 (put 'bmkx-all-tags-alist-only 'bmkx-read-arg 'bmkx-read-tags-completing)
 (defun bmkx-all-tags-alist-only (tags)
-  "`bookmark-alist', but with only bookmarks having all their tags in TAGS.
-Does not include bookmarks that have no tags.
-A new list is returned (no side effects)."
+  "`bookmark-alist', restricted to bookmarks whose tags are all in TAGS.
+A bookmark matches if every tag it has appears in TAGS (i.e. the
+bookmark's tag set is a subset of TAGS).  Bookmarks with no tags do
+not match.  A new list is returned (no side effects).
+
+This is the inverse of the more common \"bookmark has every tag in
+TAGS\" check; for that, see `bmkx-has-tags-alist-only'."
   (bmkx-maybe-load-default-file)
   (bmkx-remove-if-not
    (lambda (bmk)
      (let* ((tgs       tags)
                     (bmk-tags  (bmkx-get-tags bmk)))
        (and bmk-tags  (bmkx-every (lambda (tag) (member (bmkx-tag-name tag) tgs)) bmk-tags))))
+   bookmark-alist))
+
+(put 'bmkx-has-tags-alist-only 'bmkx-read-arg 'bmkx-read-tags-completing)
+(defun bmkx-has-tags-alist-only (tags)
+  "`bookmark-alist', restricted to bookmarks that have every tag in TAGS.
+TAGS is a list of tag-name strings.  A bookmark matches if, for each
+NAME in TAGS, the bookmark has a tag with that name (other tags on
+the bookmark are allowed).  An empty TAGS list matches every bookmark.
+A new list is returned (no side effects).
+
+Contrast `bmkx-all-tags-alist-only', which matches when the
+bookmark's tag set is a subset of TAGS."
+  (bmkx-maybe-load-default-file)
+  (bmkx-remove-if-not
+   (lambda (bmk)
+     (bmkx-every (lambda (tag) (bmkx-has-tag-p bmk tag)) tags))
    bookmark-alist))
 
 (put 'bmkx-all-tags-regexp-alist-only 'bmkx-read-arg 'bmkx-read-regexp)
@@ -4601,7 +4622,17 @@ Non-nil optional arg FLIP-USE-REGION-P means temporarily flip the
   (run-hooks 'bmkx-before-jump-hook)
   (bookmark-maybe-historicize-string (bmkx-bookmark-name-from-record bookmark))
   (let ((bmkx-use-region  (if flip-use-region-p (not bmkx-use-region) bmkx-use-region)))
-    (bmkx--jump-via bookmark display-function)))
+    (condition-case err
+        (bmkx--jump-via bookmark display-function)
+      ;; Translate handler failures into a one-line user-error so the
+      ;; minibuffer shows a clean message instead of a stack trace when
+      ;; the bookmark's file is missing, the buffer is gone, or the
+      ;; handler signals any other file-error.  `bookmark-error-no-filename'
+      ;; (raised by built-in `bookmark-default-handler') is caught too.
+      ((file-error bookmark-error-no-filename)
+       (user-error "Cannot jump to bookmark `%s': %s"
+                   (bmkx-bookmark-name-from-record bookmark)
+                   (error-message-string err))))))
 
 (defun bmkx-select-buffer-other-window (buffer)
   "Select BUFFER in another window.
@@ -5334,6 +5365,9 @@ message."
                                   (function . ,function)
                                   (handler  . bmkx-jump-function))
                   nil nil (not msg-p))
+  ;; Same prompt-for-tags hook `bmkx-set' runs, missing here originally.
+  (when (and msg-p  bmkx-prompt-for-tags-flag)
+    (bmkx-add-tags bookmark-name (bmkx-read-tags-completing) 'NO-UPDATE-P))
   (let ((new  (bmkx-bookmark-record-from-name bookmark-name 'NOERROR)))
     (unless (memq new bmkx-latest-bookmark-alist)
       (setq bmkx-latest-bookmark-alist  (cons new bmkx-latest-bookmark-alist)))
@@ -8047,15 +8081,16 @@ Non-interactively:
 * Non-nil MSG-P means display a status message."
   (interactive
    (let* ((default-url   (or (bmkx-thing-at-point 'url)
-                             (thing-at-point-url-at-point)
-                             ;; TEMPORARY hack to work around Emacs bug #44822.
-                             "https://example.com"))
+                             (thing-at-point-url-at-point)))
           (parg          current-prefix-arg)
           (prefix-only   (and parg  (natnump (prefix-numeric-value parg))))
           (no-overw      (and parg  (atom current-prefix-arg))))
-     (list (if (require 'ffap nil t)
-               (ffap-read-file-or-url "URL: " default-url)
-             (read-from-minibuffer "URL: " nil nil nil nil default-url))
+     ;; Plain `read-from-minibuffer' here (not `ffap-read-file-or-url'):
+     ;; on Emacs 31 the latter triggers an apparent-cycle-of-symbolic-links
+     ;; error when its default is a URL, because the file-name machinery
+     ;; calls `file-truename' through ffap's URL handler and loops.
+     ;; Filename completion is irrelevant for URL input anyway.
+     (list (read-from-minibuffer "URL: " nil nil nil nil default-url)
            prefix-only
            (if prefix-only
                (read-string "Prefix for bookmark name: ")
@@ -8075,6 +8110,11 @@ Non-interactively:
                                    (cdr (bmkx-make-record))  no-overwrite-p  no-refresh-p  (not msg-p)))
       (error (setq failure  err)))
     (when failure (error "Failed to create bookmark for `%s':\n%s\n" url failure))
+    ;; Same prompt-for-tags hook `bmkx-set' runs, missing here originally.
+    ;; Keyed on MSG-P (the "I'm user-facing" flag passed through wrappers)
+    ;; rather than `called-interactively-p', so wrappers see it too.
+    (when (and msg-p  bmkx-prompt-for-tags-flag)
+      (bmkx-add-tags (car bmk) (bmkx-read-tags-completing) 'NO-UPDATE-P))
     bmk))                               ; Return the bookmark.
 
 ;;;###autoload (autoload 'bmkx-file-target-set "bookmark-x")
@@ -8152,6 +8192,9 @@ Non-interactively:
     (unless no-refresh-p (bmkx-refresh/rebuild-menu-list bmk (not msg-p)))
     (when (and msg-p  (not (file-exists-p file)))
       (message "File name is now bookmarked, but no such file yet: `%s'" (expand-file-name file)))
+    ;; Same prompt-for-tags hook `bmkx-set' runs, missing here originally.
+    (when (and msg-p  bmkx-prompt-for-tags-flag)
+      (bmkx-add-tags (car bmk) (bmkx-read-tags-completing) 'NO-UPDATE-P))
     bmk))                               ; Return the bookmark.
 
 (defun bmkx-make-record-for-target-file (file)
@@ -11354,7 +11397,16 @@ for info about using a prefix argument."
 
 ;;;###autoload (autoload 'bmkx-all-tags-jump "bookmark-x")
 (defun bmkx-all-tags-jump (tags bookmark &optional interactivep) ; `C-x j t *'
-  "Jump to a BOOKMARK that has all of the TAGS.
+  "Jump to a BOOKMARK whose tags are all contained in TAGS.
+A candidate is any bookmark whose tag set is a (non-empty) subset of
+TAGS.  In particular, a bookmark tagged \"foo\" and \"bar\" is a
+candidate when TAGS is (\"foo\" \"bar\") or (\"foo\" \"bar\" \"baz\"),
+but not when TAGS is (\"foo\") alone.  Bookmarks with no tags are
+excluded.
+
+To jump to a bookmark that has every name in a given tag set
+\(\"tagged with foo and bar\"), use `bmkx-tag-jump' instead.
+
 Hit `RET' to enter each tag, then hit `RET' again after the last tag.
 You can use completion to enter the bookmark name and each tag.
 If you specify no tags, then every bookmark that has some tags is a
@@ -11365,22 +11417,72 @@ time.  Use a prefix argument if you want to refresh them."
   (interactive
    (let* ((tgs    (bmkx-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkx-all-tags-alist-only tgs)))
-     (unless alist (error "No bookmarks have all of the specified tags"))
+     (unless alist (error "No bookmarks whose tags are all in the specified set"))
      (list tgs (bmkx-completing-read "Bookmark" (bmkx-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkx-all-tags-alist-only tags))
-    (error "No bookmarks have all of the specified tags"))
+    (error "No bookmarks whose tags are all in the specified set"))
   (bmkx-jump bookmark))
 
 ;;;###autoload (autoload 'bmkx-all-tags-jump-other-window "bookmark-x")
 (defun bmkx-all-tags-jump-other-window (tags bookmark &optional interactivep) ; `C-x 4 j t *'
-  "`bmkx-all-tags-jump', but in another window."
+  "`bmkx-all-tags-jump', but in another window.
+See `bmkx-all-tags-jump' for the (subset) match semantics, and
+`bmkx-tag-jump-other-window' for the more common \"has every tag in
+TAGS\" variant."
   (interactive
    (let* ((tgs    (bmkx-read-tags-completing nil nil current-prefix-arg))
           (alist  (bmkx-all-tags-alist-only tgs)))
-     (unless alist (error "No bookmarks have all of the specified tags"))
+     (unless alist (error "No bookmarks whose tags are all in the specified set"))
      (list tgs (bmkx-completing-read "Bookmark" (bmkx-default-bookmark-name alist) alist) t)))
   (unless (or interactivep  (bmkx-all-tags-alist-only tags))
-    (error "No bookmarks have all of the specified tags"))
+    (error "No bookmarks whose tags are all in the specified set"))
+  (bmkx-jump-other-window bookmark))
+
+;;;###autoload (autoload 'bmkx-tag-jump "bookmark-x")
+(defun bmkx-tag-jump (tags bookmark &optional interactivep) ; `C-x j t T'
+  "Jump to a BOOKMARK that has every tag in TAGS.
+TAGS is a tag-name string or a list of tag-name strings.  A bookmark
+matches when, for every NAME in TAGS, the bookmark has a tag with
+that name (other tags on the bookmark are allowed).
+
+Contrast `bmkx-all-tags-jump', which matches when the bookmark's tag
+set is a subset of TAGS.
+
+Interactively, you are prompted for the tag(s) and then for the
+bookmark, with completion restricted to the matching set.  Hit `RET'
+to enter each tag, then `RET' again after the last tag.
+
+By default, the tag choices for completion are NOT refreshed, to save
+time.  Use a prefix argument if you want to refresh them.
+
+In Lisp code:
+TAGS is a string (treated as a one-element list) or a list of strings.
+BOOKMARK is a bookmark name or a bookmark record.
+Non-nil INTERACTIVEP signals that input came from the minibuffer; it
+ suppresses the redundant no-match check the Lisp path performs."
+  (interactive
+   (let* ((tgs    (bmkx-read-tags-completing nil nil current-prefix-arg))
+          (alist  (bmkx-has-tags-alist-only tgs)))
+     (unless tgs   (error "You did not specify any tags"))
+     (unless alist (error "No bookmarks have all of the specified tags"))
+     (list tgs (bmkx-completing-read "Bookmark" (bmkx-default-bookmark-name alist) alist) t)))
+  (let ((tag-list  (if (stringp tags) (list tags) tags)))
+    (unless (or interactivep  (bmkx-has-tags-alist-only tag-list))
+      (error "No bookmarks have all of the specified tags")))
+  (bmkx-jump bookmark))
+
+;;;###autoload (autoload 'bmkx-tag-jump-other-window "bookmark-x")
+(defun bmkx-tag-jump-other-window (tags bookmark &optional interactivep) ; `C-x 4 j t T'
+  "`bmkx-tag-jump', but in another window."
+  (interactive
+   (let* ((tgs    (bmkx-read-tags-completing nil nil current-prefix-arg))
+          (alist  (bmkx-has-tags-alist-only tgs)))
+     (unless tgs   (error "You did not specify any tags"))
+     (unless alist (error "No bookmarks have all of the specified tags"))
+     (list tgs (bmkx-completing-read "Bookmark" (bmkx-default-bookmark-name alist) alist) t)))
+  (let ((tag-list  (if (stringp tags) (list tags) tags)))
+    (unless (or interactivep  (bmkx-has-tags-alist-only tag-list))
+      (error "No bookmarks have all of the specified tags")))
   (bmkx-jump-other-window bookmark))
 
 ;;;###autoload (autoload 'bmkx-all-tags-regexp-jump "bookmark-x")
@@ -12950,6 +13052,123 @@ Don't forget to mention your Emacs and library versions."))
                  bmkx-automatic-bookmark-mode
                  bmkx-turn-on-automatic-bookmark-mode
                  :group 'bookmark-plus :require 'bookmark-x))))
+
+
+;;(@* "Auto-update Bookmarks")
+;;  *** Auto-update Bookmarks ***
+;;
+;; A bookmark tagged with `bmkx-auto-update-tag' (default "auto-update")
+;; behaves as a "reading position" tracker: when `bmkx-auto-update-mode'
+;; is on, the bookmark's position and context strings are refreshed to
+;; the current point of the buffer visiting its filename, on three
+;; triggers:
+;;
+;;   - An idle timer firing every `bmkx-auto-update-interval' seconds.
+;;   - `kill-buffer-hook'         (catches "I'm closing this file").
+;;   - `window-state-change-hook' (catches "I switched away from it").
+;;
+;; Untagged bookmarks are not touched.  Bookmarks whose file is not
+;; currently visited (no live buffer for it) are not touched either.
+
+(defcustom bmkx-auto-update-tag "auto-update"
+  "Tag value that marks a bookmark as auto-updated.
+A bookmark carrying this tag has its position and context strings
+periodically refreshed to the current point of the buffer visiting
+its filename, when `bmkx-auto-update-mode' is on."
+  :type 'string :group 'bookmark-plus)
+
+(defcustom bmkx-auto-update-interval 60
+  "Seconds of idle time between ticks of `bmkx-auto-update-mode'."
+  :type 'integer :group 'bookmark-plus)
+
+(defvar bmkx-auto-update--timer nil
+  "Internal idle timer for `bmkx-auto-update-mode'.")
+
+(defun bmkx-auto-update--tagged-p (bm)
+  "Return non-nil if bookmark record BM carries `bmkx-auto-update-tag'."
+  (cl-some (lambda (tag)
+             (equal (if (consp tag) (car tag) tag) bmkx-auto-update-tag))
+           (bookmark-prop-get (car bm) 'tags)))
+
+(defun bmkx-auto-update--refresh (bm buffer)
+  "Refresh BM's location from BUFFER's current point.
+Updates position, front/rear context strings, and last-modified;
+leaves name, id, tags, annotation, handler intact."
+  (with-current-buffer buffer
+    (let ((fresh  (cdr (bookmark-make-record-default))))
+      (dolist (field '(position front-context-string rear-context-string))
+        (let ((val  (alist-get field fresh)))
+          (when val (bookmark-prop-set bm field val))))
+      (bookmark-prop-set bm 'last-modified (current-time)))))
+
+(defun bmkx-auto-update--tick (&optional only-buffer)
+  "Refresh auto-update bookmarks whose file is currently visited.
+With ONLY-BUFFER non-nil, restrict to the bookmark whose file is
+that buffer's `buffer-file-name'."
+  (let ((target-file  (and only-buffer (buffer-file-name only-buffer))))
+    (dolist (bm bookmark-alist)
+      (when (bmkx-auto-update--tagged-p bm)
+        (let* ((file (bookmark-get-filename bm))
+               (buf  (cond
+                      (target-file
+                       (and file (bmkx-same-file-p file target-file) only-buffer))
+                      (file
+                       (find-buffer-visiting file)))))
+          (when (buffer-live-p buf)
+            (bmkx-auto-update--refresh bm buf)))))))
+
+;;;###autoload (autoload 'bmkx-auto-update-now "bookmark-x")
+(defun bmkx-auto-update-now ()
+  "Force an immediate refresh of every auto-update bookmark.
+Refreshes any bookmark tagged `bmkx-auto-update-tag' whose file is
+currently visited by a live buffer.  See `bmkx-auto-update-mode'."
+  (interactive)
+  (bmkx-auto-update--tick)
+  (when (called-interactively-p 'interactive)
+    (message "Auto-update bookmarks refreshed.")))
+
+(defun bmkx-auto-update--on-kill-buffer ()
+  "Refresh auto-update bookmarks for the buffer being killed, then return."
+  (when (and bmkx-auto-update-mode  (buffer-file-name))
+    (bmkx-auto-update--tick (current-buffer))))
+
+(defun bmkx-auto-update--on-window-state-change ()
+  "Run a global auto-update tick on every window-state change.
+Cheap: iterates only auto-update-tagged bookmarks."
+  (when bmkx-auto-update-mode
+    (bmkx-auto-update--tick)))
+
+;;;###autoload (autoload 'bmkx-auto-update-mode "bookmark-x")
+(define-minor-mode bmkx-auto-update-mode
+  "Toggle global auto-tracking of bookmarks tagged `bmkx-auto-update-tag'.
+
+When the mode is on, three triggers refresh a tagged bookmark's
+position and context strings to the current point of the buffer
+visiting its file:
+
+  - An idle timer firing every `bmkx-auto-update-interval' seconds.
+  - `kill-buffer-hook'         (catches \"closing the file\").
+  - `window-state-change-hook' (catches \"switching away\").
+
+Untagged bookmarks are not touched.  Files whose buffer is not
+currently visited are not touched either.
+
+Use `bmkx-auto-update-now' to force an immediate refresh."
+  :init-value nil :global t :group 'bookmark-plus
+  (when bmkx-auto-update--timer
+    (cancel-timer bmkx-auto-update--timer)
+    (setq bmkx-auto-update--timer nil))
+  (cond
+   (bmkx-auto-update-mode
+    (setq bmkx-auto-update--timer
+          (run-with-idle-timer bmkx-auto-update-interval 'REPEAT
+                               #'bmkx-auto-update--tick))
+    (add-hook 'kill-buffer-hook         #'bmkx-auto-update--on-kill-buffer)
+    (add-hook 'window-state-change-hook #'bmkx-auto-update--on-window-state-change))
+   (t
+    (remove-hook 'kill-buffer-hook         #'bmkx-auto-update--on-kill-buffer)
+    (remove-hook 'window-state-change-hook #'bmkx-auto-update--on-window-state-change))))
+
 
 (defun bmkx-not-near-other-automatic-bmks (&optional position)
   "Is POSITION far enough from automatic bookmarks to create a new one?
