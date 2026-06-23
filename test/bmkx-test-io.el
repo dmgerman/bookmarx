@@ -103,5 +103,73 @@ the second occurrence (foo -> foo<2>)."
           (should (cl-some (lambda (n) (string-match-p "foo<[0-9]+>" n)) names)))))))
 
 
+;;; bmkx-extend-temp-to-builtin-flag: built-in API honors `bmkx-temp'
+
+(defun bmkx-test--make-record-for-buffer (buf &optional position)
+  "Build a bookmark record alist for BUF (no NAME prefix), at POSITION."
+  (with-current-buffer buf
+    (save-excursion
+      (goto-char (or position (point-min)))
+      (let ((bookmark-make-record-function #'bmkx-make-record-default))
+        (cdr (funcall bookmark-make-record-function))))))
+
+(defun bmkx-test--match-org-capture (bmk)
+  "Predicate matching the bookmark name \"test-autotemp-target\"."
+  (let ((name (if (stringp bmk) bmk (bmkx-bookmark-name-from-record bmk))))
+    (equal name "test-autotemp-target")))
+
+(ert-deftest bmkx-test-io/builtin-store-fires-autotemp-predicates ()
+  "`bookmark-store' fires `bmkx-autotemp-bookmark-predicates' when the flag is on."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer buf "x"
+      (let ((bmkx-autotemp-bookmark-predicates
+             (cons #'bmkx-test--match-org-capture
+                   bmkx-autotemp-bookmark-predicates))
+            (bmkx-extend-temp-to-builtin-flag t))
+        ;; Ensure advice is installed.
+        (bmkx-extend-temp-to-builtin t)
+        (unwind-protect
+            (progn
+              (bookmark-store "test-autotemp-target"
+                              (bmkx-test--make-record-for-buffer buf)
+                              nil)
+              (should (assoc "test-autotemp-target" bookmark-alist))
+              (should (bmkx-temporary-bookmark-p "test-autotemp-target")))
+          ;; Restore advice state to whatever the user's session had.
+          (bmkx-extend-temp-to-builtin bmkx-extend-temp-to-builtin-flag))))))
+
+(ert-deftest bmkx-test-io/builtin-write-file-skips-temp-records ()
+  "`bookmark-write-file' omits `bmkx-temp' records when the flag is on."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer buf "x"
+      (bmkx-test--make-bookmark "savable-bmk"  buf)
+      (bmkx-test--make-bookmark "ephemeral-bmk" buf))
+    (bmkx-make-bookmark-temporary "ephemeral-bmk")
+    (let ((bmkx-extend-temp-to-builtin-flag t))
+      (bmkx-extend-temp-to-builtin t)
+      (unwind-protect
+          (progn
+            (bookmark-write-file bookmark-default-file)
+            (with-temp-buffer
+              (insert-file-contents bookmark-default-file)
+              (let ((body (buffer-string)))
+                (should     (string-match-p "savable-bmk"  body))
+                (should-not (string-match-p "ephemeral-bmk" body)))))
+        (bmkx-extend-temp-to-builtin bmkx-extend-temp-to-builtin-flag)))))
+
+(ert-deftest bmkx-test-io/extend-temp-to-builtin-toggle-installs-and-removes-advice ()
+  "Calling `bmkx-extend-temp-to-builtin' installs and removes both advices."
+  (let ((orig  bmkx-extend-temp-to-builtin-flag))
+    (unwind-protect
+        (progn
+          (bmkx-extend-temp-to-builtin nil)
+          (should-not (advice-member-p #'bmkx--autotemp-after-bookmark-store           'bookmark-store))
+          (should-not (advice-member-p #'bmkx--strip-temps-around-bookmark-write-file  'bookmark-write-file))
+          (bmkx-extend-temp-to-builtin t)
+          (should (advice-member-p #'bmkx--autotemp-after-bookmark-store           'bookmark-store))
+          (should (advice-member-p #'bmkx--strip-temps-around-bookmark-write-file  'bookmark-write-file)))
+      (bmkx-extend-temp-to-builtin orig))))
+
+
 (provide 'bmkx-test-io)
 ;;; bmkx-test-io.el ends here

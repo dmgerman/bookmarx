@@ -1350,6 +1350,28 @@ current list at once.
 Temporary bookmarks are flagged with =X= in =*Bmkx List*=
 (replacing the annotation flag).
 
+** Coverage across the built-in API
+
+The autotemp predicates and the temp filter at save are honored on
+both the bookmark-x save path (=bmkx-set= / =bmkx-save=) and the
+built-in =bookmark.el= save path (=bookmark-set= / =bookmark-save=,
+triggered automatically by =bookmark-save-flag=).  This matters
+when third-party packages create bookmarks via the built-in API ---
+=org-capture=, for instance, calls =bookmark-set= directly to
+maintain =org-capture-last-stored=, and the built-in autosave fires
+whenever =bookmark-save-flag= is non-nil.
+
+Coverage is controlled by =bmkx-extend-temp-to-builtin-flag=
+(default =t=).  When non-nil, bookmark-x installs:
+
+- =:after= advice on =bookmark-store= so the autotemp predicates
+  fire for any caller, not just =bmkx-set=.
+- =:around= advice on =bookmark-write-file= so the built-in save
+  skips =bmkx-temp= records, just as =bmkx-write-file= does.
+
+Toggling the option through Customize (or with =setopt=) installs
+or removes both advices immediately.
+
 * Automatic bookmarking
 :PROPERTIES:
 :CUSTOM_ID: automatic

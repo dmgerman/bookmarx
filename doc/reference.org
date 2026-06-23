@@ -147,6 +147,23 @@ commands.  Additional commands include =bmkx-copy-tags=,
 | =bmkx-bmenu-make-sequence-from-marked=             | --             | Sequence bookmark from marked.            |
 | =bmkx-bmenu-store-org-link=                        | (mouse-3 menu) | Store an Org link to this bookmark.       |
 
+* Temporary bookmarks
+
+See [[file:../readme.org::#temporary][Temporary bookmarks]] in the README
+for the per-bookmark and per-mode commands.  Relevant user
+options:
+
+- =bmkx-autotemp-bookmark-predicates= --- list of predicates (each
+  receives a bookmark name or record); a new bookmark matching any
+  predicate is auto-marked temporary at creation.
+- =bmkx-extend-temp-to-builtin-flag= --- default =t=.  When non-nil,
+  bookmark-x advises the built-in =bookmark-store= and
+  =bookmark-write-file= so the autotemp predicates and the
+  =bmkx-temp= save filter cover the built-in =bookmark.el= API too
+  (=bookmark-set=, =bookmark-save= triggered by =bookmark-save-flag=,
+  =org-capture=, etc.).  Toggling this option installs or removes
+  both advices immediately.
+
 * Highlighting
 
 See [[file:../readme.org::#highlighting][Highlighting]] in the README for

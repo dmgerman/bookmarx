@@ -2657,10 +2657,18 @@ Otherwise, load `bookmark-default-file'."
   "Display BOOKMARK using DISPLAY-FUNCTION.
 Then run `bookmark-after-jump-hook' and show annotations for BOOKMARK.
 BOOKMARK is a bookmark name or a bookmark record.
-DISPLAY-FUNCTION is as in `bmkx-jump'."
+DISPLAY-FUNCTION is as in `bmkx-jump'.
+
+`bmkx-jump-display-function' is `let'-bound (not `setq'd) so the
+handler chain -- which can re-enter `bmkx--jump-via' indirectly,
+e.g. when `find-file-noselect' inside `bmkx-default-handler' runs
+`find-file-hook' and the hook calls back into the bookmark
+dispatch -- cannot clobber the outer call's display function.  Each
+nested invocation gets its own dynamic binding; the outer's value
+is restored when the inner returns."
   (bmkx-record-visit bookmark 'BATCHP)
-  (setq bmkx-jump-display-function  display-function)
-  (catch 'bmkx--jump-via
+  (let ((bmkx-jump-display-function  display-function))
+   (catch 'bmkx--jump-via
     (let* ((had-handler   (or (bookmark-prop-get bookmark 'file-handler)
                               (bookmark-get-handler bookmark)))
            ;; Snapshot the originating window's buffer before the
@@ -2675,22 +2683,36 @@ DISPLAY-FUNCTION is as in `bmkx-jump'."
       ;;    `switch-to-buffer', which clobbers the originating
       ;;    window's buffer in place regardless of the caller's
       ;;    `display-buffer-overriding-action'.
-      ;; B. Some (e.g. `org-goto-marker-or-bmk', which calls
-      ;;    `pop-to-buffer-same-window') honour the overriding
-      ;;    action and display the destination in a different
+      ;; B. Some only `set-buffer' the destination and leave
+      ;;    displaying to the caller (e.g.
+      ;;    `pdf-view-bookmark-jump-handler').
+      ;; C. Some (e.g. `org-goto-marker-or-bmk') honour the
+      ;;    overriding action and display the destination in a
       ;;    window themselves.
-      ;; C. Some (e.g. `pdf-view-bookmark-jump-handler') only
-      ;;    `set-buffer' the destination and leave displaying to
-      ;;    the caller.
       ;;
-      ;; The built-in `bookmark--jump-via' assumes case C and
-      ;; unconditionally calls the display function.  That gives us
-      ;; a double display in case B (the second one steals a
-      ;; different window from somewhere -- e.g. `*Bmkx List*' --
-      ;; and overlays the destination there) and a wrongly-clobbered
-      ;; origin in case A.
+      ;; We discriminate A from "everything else."  For A, undo the
+      ;; clobber and re-display in the originating window.  In every
+      ;; other case we call DISPLAY-FUNCTION unconditionally:
       ;;
-      ;; Discriminate:
+      ;; - If the handler only set-buffer'd (B), DISPLAY-FUNCTION
+      ;;   does the real display.
+      ;; - If the handler already displayed the destination (C),
+      ;;   `pop-to-buffer-same-window' (and similarly
+      ;;   `pop-to-buffer' in the other-window display path) is
+      ;;   idempotent when the destination already occupies the
+      ;;   selected (or the other) window, so calling it again is
+      ;;   typically a no-op.
+      ;;
+      ;; We deliberately do NOT skip the call when "some" window
+      ;; shows the destination.  That earlier heuristic confused
+      ;; "the handler displayed it just now" with "the destination
+      ;; was already displayed before the handler ran" -- e.g. by a
+      ;; consult preview, by a prior split-screen, or by a hook.
+      ;; The unconditional call ensures DISPLAY-FUNCTION's intent
+      ;; (same-window vs. other-window) wins over leftover window
+      ;; state.  Cost: a custom handler that intentionally displays
+      ;; the destination in a *non-default* window may incur a
+      ;; redundant display in the caller's target window.
       (when (and had-handler  display-function)
         (cond
          ;; Case A: handler clobbered orig-window in place.
@@ -2700,10 +2722,6 @@ DISPLAY-FUNCTION is as in `bmkx-jump'."
                (not (eq (window-buffer orig-window) orig-buffer)))
           (set-window-buffer orig-window orig-buffer)
           (funcall display-function (current-buffer)))
-         ;; Case B: handler already displayed the destination in
-         ;; some window.  Trust it.
-         ((get-buffer-window (current-buffer) t))
-         ;; Case C: handler only set-buffer'd.  Display now.
          (t (funcall display-function (current-buffer))))))
     (unless (and bmkx-use-w32-browser-p  (fboundp 'w32-browser)  (bookmark-get-filename bookmark))
       (let ((win  (get-buffer-window (current-buffer) 0)))
@@ -2737,7 +2755,7 @@ DISPLAY-FUNCTION is as in `bmkx-jump'."
     (run-hooks 'bookmark-after-jump-hook)
     (let ((jump-fn  (bmkx-get-tag-value bookmark "bmkx-jump")))
       (when jump-fn (funcall jump-fn)))
-    (when bookmark-automatically-show-annotations (bmkx-show-annotation bookmark))))
+    (when bookmark-automatically-show-annotations (bmkx-show-annotation bookmark)))))
 
 
 (defun bmkx-prop-set (bookmark prop val &optional _require-name-p)
@@ -13371,6 +13389,99 @@ Non-interactively, non-nil MSG-P means display a status message."
   (when msg-p (message "Bookmark `%s' is now SAVABLE"
                        (if (stringp bookmark) bookmark (bmkx-bookmark-name-from-record bookmark))))
   bookmark)
+
+;;; Make `bmkx-temp' work across the built-in `bookmark.el' API ----------
+;;
+;; Without these advices, the temp-bookmark feature is half-broken
+;; whenever bookmarks are created or saved through the built-in
+;; `bookmark.el' API rather than the bookmark-x API:
+;;
+;;   - `bookmark-store' (used by `bookmark-set' and by callers like
+;;     `org-capture' that bypass `bmkx-set') does not run
+;;     `bmkx-autotemp-bookmark-predicates'.  A bookmark name that
+;;     matches a predicate would still be created as savable.
+;;   - `bookmark-write-file' (called by `bookmark-save', which fires
+;;     automatically when `bookmark-save-flag' is non-nil) does not
+;;     skip records with a non-nil `bmkx-temp' entry, so temp
+;;     bookmarks marked correctly in memory still get persisted to
+;;     the bookmark file on the next auto-save.
+;;
+;; `bmkx-extend-temp-to-builtin-flag' (default t) gates two advices
+;; that close both gaps without changing in-memory state.
+
+(defun bmkx--autotemp-after-bookmark-store (name &rest _ignored)
+  "Apply `bmkx-autotemp-bookmark-predicates' after `bookmark-store'.
+Runs as `:after' advice so the predicates fire on any caller of the
+built-in `bookmark-store' (including `bookmark-set' and external
+packages such as `org-capture' that bypass `bmkx-set').
+
+Errors raised by individual predicates are caught, so a broken
+predicate cannot break `bookmark-store' itself."
+  (catch 'bmkx--autotemp-done
+    (dolist (pred bmkx-autotemp-bookmark-predicates)
+      (when (functionp pred)
+        (condition-case nil
+            (when (funcall pred name)
+              (bmkx-make-bookmark-temporary name)
+              (throw 'bmkx--autotemp-done t))
+          (error nil))))))
+
+(defun bmkx--strip-temps-around-bookmark-write-file (orig-fn &rest args)
+  "Strip temp bookmarks from `bookmark-alist' across ORIG-FN ARGS.
+Runs as `:around' advice on `bookmark-write-file' so that the
+built-in `bookmark-save' path (triggered by `bookmark-save-flag')
+honors `bmkx-temp' the same way `bmkx-write-file' does.  The
+in-memory `bookmark-alist' is unchanged."
+  (let ((bookmark-alist
+         (bmkx-remove-if-not (lambda (bmk) (not (bmkx-temporary-bookmark-p bmk)))
+                             bookmark-alist)))
+    (apply orig-fn args)))
+
+(defun bmkx-extend-temp-to-builtin (enable)
+  "Install or remove the bmkx-temp advices on the built-in API.
+With ENABLE non-nil, install `:after' advice on `bookmark-store' and
+`:around' advice on `bookmark-write-file'.  With ENABLE nil, remove
+both.  Called from the `:set' function of
+`bmkx-extend-temp-to-builtin-flag'; users normally toggle that
+defcustom instead of calling this directly."
+  (cond
+   (enable
+    (advice-add 'bookmark-store      :after  #'bmkx--autotemp-after-bookmark-store)
+    (advice-add 'bookmark-write-file :around #'bmkx--strip-temps-around-bookmark-write-file))
+   (t
+    (advice-remove 'bookmark-store      #'bmkx--autotemp-after-bookmark-store)
+    (advice-remove 'bookmark-write-file #'bmkx--strip-temps-around-bookmark-write-file))))
+
+;;;###autoload (autoload 'bmkx-extend-temp-to-builtin-flag "bookmark-x")
+(defcustom bmkx-extend-temp-to-builtin-flag t
+  "Non-nil means make `bmkx-temp' fully effective across the built-in API.
+
+When non-nil (the default), bookmark-x installs two advices on
+`bookmark.el':
+
+  - `:after' on `bookmark-store' so
+    `bmkx-autotemp-bookmark-predicates' fires whenever any caller
+    creates a bookmark, not only `bmkx-set'.
+  - `:around' on `bookmark-write-file' so the built-in save path
+    (triggered automatically by `bookmark-save-flag') skips records
+    with `bmkx-temp', just as `bmkx-write-file' does.
+
+When nil, neither advice is installed.  In that case, temp
+bookmarks are only honored if every save path goes through
+`bmkx-save' and every creation goes through `bmkx-set'.
+
+Toggling this option through Customize (or with `setopt') installs
+or removes the advices immediately."
+  :type 'boolean :group 'bookmark-x
+  :set (lambda (sym val)
+         (set-default sym val)
+         (bmkx-extend-temp-to-builtin val)))
+
+;; Install at load time so the advices are active even when the
+;; defcustom was set via `defvar' / direct `setq' and the `:set'
+;; function above did not run.
+(when bmkx-extend-temp-to-builtin-flag
+  (bmkx-extend-temp-to-builtin t))
 
 ;;;###autoload (autoload 'bmkx-delete-all-temporary-bookmarks "bookmark-x")
 (defun bmkx-delete-all-temporary-bookmarks (&optional msg-p)

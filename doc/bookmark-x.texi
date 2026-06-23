@@ -1823,6 +1823,35 @@ current list at once.
 
 Temporary bookmarks are flagged with @kbd{X} in @file{*Bmkx List*}.
 
+@section Coverage Across the Built-in API
+@vindex bmkx-extend-temp-to-builtin-flag
+
+The autotemp predicates and the temp filter at save apply on both
+the bookmark-x save path (@code{bmkx-set} / @code{bmkx-save}) and
+the built-in @code{bookmark.el} save path (@code{bookmark-set} /
+@code{bookmark-save}, triggered automatically by
+@code{bookmark-save-flag}).  This matters when third-party packages
+create bookmarks via the built-in API---@code{org-capture}, for
+example, calls @code{bookmark-set} directly to maintain
+@code{org-capture-last-stored}, and the built-in autosave fires
+whenever @code{bookmark-save-flag} is non-nil.
+
+Coverage is gated by @code{bmkx-extend-temp-to-builtin-flag}
+(default @code{t}).  When non-nil, bookmark-x installs:
+
+@itemize @bullet
+@item
+@code{:after} advice on @code{bookmark-store} so the autotemp
+predicates fire for any caller, not just @code{bmkx-set}.
+@item
+@code{:around} advice on @code{bookmark-write-file} so the built-in
+save skips @code{bmkx-temp} records, just as @code{bmkx-write-file}
+does.
+@end itemize
+
+Toggling the option through Customize (or with @code{setopt})
+installs or removes both advices immediately.
+
 
 @node Bookmark Records
 @chapter Bookmark Records

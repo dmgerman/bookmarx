@@ -92,6 +92,84 @@
   "Mock DISPLAY-FUNCTION: record the buffer it was called with."
   (setq bmkx-test-jump--display-called-with buf))
 
+(ert-deftest bmkx-test-jump/display-called-when-dest-already-shown ()
+  "DISPLAY-FUNCTION must run even when the destination is already shown.
+
+This is a regression test for the consult-preview interaction: while
+previewing, the destination buffer is left displayed in some window
+when the user accepts the candidate.  An earlier dispatch shortcut in
+`bmkx--jump-via' (\"if some window shows the destination, the handler
+already displayed it; trust it\") then suppressed the DISPLAY-FUNCTION
+call, leaving the originating window on the previous buffer.  We now
+always call DISPLAY-FUNCTION (modulo the in-place clobber recovery
+branch), so a leftover window from preview or any other source no
+longer hijacks the dispatch."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer dest "destination contents"
+      (let ((dest-file (buffer-file-name dest)))
+        (push (list "preview-hijack"
+                    (cons 'filename dest-file)
+                    (cons 'position 1)
+                    (cons 'handler  #'bmkx-test-jump--custom-handler)
+                    (cons 'id       "test-id-preview-hijack"))
+              bookmark-alist)
+        ;; Simulate the preview leftover: DEST is already shown in
+        ;; some live window before the read returns.  `get-buffer-window'
+        ;; on DEST will return that window from inside `bmkx--jump-via',
+        ;; which used to suppress the DISPLAY-FUNCTION call.
+        (let ((preview-window  (display-buffer dest)))
+          (should (window-live-p preview-window))
+          (setq bmkx-test-jump--custom-called      nil
+                bmkx-test-jump--display-called-with nil)
+          (bmkx-jump "preview-hijack" #'bmkx-test-jump--mock-display)
+          (should bmkx-test-jump--custom-called)
+          (should (bufferp bmkx-test-jump--display-called-with))
+          (should (eq dest bmkx-test-jump--display-called-with)))))))
+
+(ert-deftest bmkx-test-jump/display-fn-let-binding-survives-reentry ()
+  "Regression: `bmkx-jump-display-function' is `let'-bound so a re-entrant
+`bmkx--jump-via' call cannot clobber the outer call's value.
+
+The original implementation used `setq' on the global, so any path
+that re-entered `bmkx--jump-via' (notably the autofile-on-find-file
+hook, which calls `(bmkx--jump-via bmk 'ignore)') overwrote the
+outer caller's display function with `'ignore'.  When the outer
+handler resumed and consulted the global, it found `'ignore' and
+the destination window never switched.  The fix is a `let'-binding
+in `bmkx--jump-via', giving each invocation its own dynamic binding.
+
+The test installs a custom handler on the outer bookmark that, mid-
+jump, calls `bmkx--jump-via' on a second bookmark with `'ignore' as
+the display function -- the same shape as the production re-entry --
+then captures the value of `bmkx-jump-display-function' immediately
+after the inner returns.  With the fix, the captured value is the
+outer's tracker; without the fix, it would be `'ignore'."
+  (bmkx-test-with-clean-bookmarks
+    (bmkx-test-with-fixture-buffer outer "outer destination contents"
+      (bmkx-test-with-fixture-buffer inner "inner destination contents"
+        (let* ((captured-after-inner  nil)
+               (outer-buf             outer)
+               (inner-buf             inner))
+          (push (list "outer-bmk"
+                      (cons 'filename (buffer-file-name outer-buf))
+                      (cons 'position 1)
+                      (cons 'handler
+                            (lambda (_bmk)
+                              (bmkx--jump-via (assoc "inner-bmk" bookmark-alist)
+                                              'ignore)
+                              (setq captured-after-inner bmkx-jump-display-function)
+                              (set-buffer outer-buf)))
+                      (cons 'id "test-id-outer-rb"))
+                bookmark-alist)
+          (push (list "inner-bmk"
+                      (cons 'filename (buffer-file-name inner-buf))
+                      (cons 'position 1)
+                      (cons 'handler (lambda (_bmk) (set-buffer inner-buf)))
+                      (cons 'id "test-id-inner-rb"))
+                bookmark-alist)
+          (bmkx-jump "outer-bmk" #'bmkx-test-jump--mock-display)
+          (should (eq captured-after-inner #'bmkx-test-jump--mock-display)))))))
+
 (ert-deftest bmkx-test-jump/custom-handler-receives-display-call ()
   "Jumping to a custom-handler bookmark must invoke DISPLAY-FUNCTION
 on the destination buffer.

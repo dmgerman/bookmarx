@@ -12,7 +12,7 @@
 ;; Copyright (C) 2026, Daniel M. German, all rights reserved.
 ;;
 ;; Created: Fri Sep 15 07:58:41 2000
-;; Version: 2026.06.22
+;; Version: 2026.06.23
 ;;
 ;; URL: https://github.com/dmgerman/bookmarx
 ;;
