@@ -706,10 +706,20 @@ Either part may be missing.  Returns nil if both are missing."
     (when (and (stringp location)
                (stringp base-part)
                (string-match-p (regexp-quote bmkx-non-file-filename) base-part))
+      ;; URL bookmarks created by Bookmark-X use the no-file marker as their
+      ;; `filename'.  Marginalia therefore formats that field as a filename:
+      ;; it right-pads the short marker on the *left*.  Replacing just the
+      ;; marker retains that padding and makes these URLs start farther right
+      ;; than URL-only bookmarks, whose `location' is formatted directly.
+      ;; Replace the complete marker field while retaining the four-column
+      ;; offset used by URL-only bookmarks, so every URL starts in the same
+      ;; annotation column.
       (setq base-part
             (replace-regexp-in-string
-             (regexp-quote bmkx-non-file-filename)
-             (concat "   " location)
+             (concat (regexp-quote marginalia-separator)
+                     "[[:blank:]]*"
+                     (regexp-quote bmkx-non-file-filename))
+             (concat marginalia-separator "    " location)
              base-part t t)))
     (cond
      ;; Nothing to show.
