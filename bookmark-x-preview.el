@@ -685,17 +685,41 @@ Either part may be missing.  Returns nil if both are missing."
          (tags       (and bmk (bmkx-get-tags bmk)))
          (raw-tags   (if tags (bmkx--tags-segment-raw tags) ""))
          (base-part  (and (fboundp 'marginalia-annotate-bookmark)
-                          (marginalia-annotate-bookmark name)))
+                          (let ((annotation (marginalia-annotate-bookmark name)))
+                            (when annotation
+                              ;; Marginalia's bookmark type field is 10 columns.
+                              ;; The longest type for `consult-bookmark-narrow'
+                              ;; handlers is `Xwidget-Webkit-Jump' (19 columns).
+                              ;; A type longer than Marginalia's 10-column minimum
+                              ;; is not truncated, so locate its actual end
+                              ;; before adding only the remaining padding.
+                              (let* ((type       (or (marginalia--bookmark-type bmk) ""))
+                                     (type-width (max 10 (length type)))
+                                     (type-end   (+ 1 (length marginalia-separator) type-width))
+                                     (padding    (max 0 (- 19 type-width))))
+                                (concat (substring annotation 0 type-end)
+                                        (make-string padding ?\s)
+                                        (substring annotation type-end)))))))
          (location   (and bmk
                           (functionp bmkx-bookmark-location-function)
                           (funcall bmkx-bookmark-location-function bmk))))
     (when (and (stringp location)
                (stringp base-part)
                (string-match-p (regexp-quote bmkx-non-file-filename) base-part))
+      ;; URL bookmarks created by Bookmark-X use the no-file marker as their
+      ;; `filename'.  Marginalia therefore formats that field as a filename:
+      ;; it right-pads the short marker on the *left*.  Replacing just the
+      ;; marker retains that padding and makes these URLs start farther right
+      ;; than URL-only bookmarks, whose `location' is formatted directly.
+      ;; Replace the complete marker field while retaining the four-column
+      ;; offset used by URL-only bookmarks, so every URL starts in the same
+      ;; annotation column.
       (setq base-part
             (replace-regexp-in-string
-             (regexp-quote bmkx-non-file-filename)
-             (concat "   " location)
+             (concat (regexp-quote marginalia-separator)
+                     "[[:blank:]]*"
+                     (regexp-quote bmkx-non-file-filename))
+             (concat marginalia-separator "    " location)
              base-part t t)))
     (cond
      ;; Nothing to show.
